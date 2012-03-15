@@ -48,6 +48,8 @@ GetOptions();" pde-abbv-no-blank 0)
 
 (define-abbrev-table 'global-abbrev-table '())
 
+(define-abbrev-table 'google-maps-static-mode-abbrev-table '())
+
 (define-abbrev-table 'idl-mode-abbrev-table '())
 
 (define-abbrev-table 'inferior-python-mode-abbrev-table '())

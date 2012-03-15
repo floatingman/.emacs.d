@@ -21,7 +21,6 @@
 
 ;;; Commentary:
 
-;; 
 
 ;;; Code:
 
@@ -29,8 +28,6 @@
   (require 'cl))
 
 (require 'auto-complete)
-
-
 
 ;;;; Additional sources
 

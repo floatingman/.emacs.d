@@ -7,3 +7,14 @@
 
 ;; shortcut function to insert license headers
 (pymacs-load "license")
+
+;;Shorten URLs with is.gd
+(pymacs-exec "import shorten_url")
+(defun shorten-url (start end)
+  (interactive "r")
+  (let ((region (buffer-substring start end)))
+    (let ((rt (pymacs-eval (format "shorten_url.shorten_in_text('''%s''')" region))))
+      (kill-region start end)
+      (insert rt)
+      )
+  ))

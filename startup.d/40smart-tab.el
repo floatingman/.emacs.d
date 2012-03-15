@@ -13,7 +13,17 @@
         try-expand-dabbrev-all-buffers
         try-expand-dabbrev-from-kill
         try-complete-file-name
-        try-complete-lisp-symbol))
+        try-complete-lisp-symbol
+        ac-))
+
+(define-key read-expression-map [(tab)] 'hippie-expand)
+
+(defun hippie-unexpand ()
+  (interactive)
+  (hippie-expand 0))
+
+(define-key read-expression-map [(shift tab)] 'hippie-unexpand)
+
 
 (setq smart-tab-using-hippie-expand t)
 

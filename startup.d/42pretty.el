@@ -1,2 +1,2 @@
 (require 'pretty-mode)
-(global-pretty-mode 1)
+(global-pretty-mode nil)

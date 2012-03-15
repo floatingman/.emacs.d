@@ -53,6 +53,22 @@
 ;; buffer-file-name)))
 ;; (sudo))))
 
+;; Pairing parentheses
+
+;; All languages:
+(setq skeleton-pair t)
+(global-set-key "(" 'skeleton-pair-insert-maybe)
+(global-set-key "[" 'skeleton-pair-insert-maybe)
+(global-set-key "{" 'skeleton-pair-insert-maybe)
+(global-set-key "\"" 'skeleton-pair-insert-maybe)
+
+;; Individual language pairings
+
+;; Just python
+(add-hook 'python-mode-hook
+	  (lambda ()
+	    (define-key python-mode-map "'" 'skeleton-pair-insert-maybe)))
+
 (set-face-attribute 'default nil :height 105)
 
 (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
@@ -89,3 +105,8 @@
 ;; block cursors are extraordinary ugly
 (bar-cursor-mode t)
 
+; delete seleted text when typing
+(delete-selection-mode 1)
+
+;; Line numbering
+(setq linum-format "%4d")

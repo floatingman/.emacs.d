@@ -7,7 +7,7 @@
 (global-set-key (kbd "C-x C-b") 'ibuffer)
 (global-set-key (kbd "C-c C-f") 'insert-file-name)
 (global-set-key (kbd "M-Y") 'yank-pop-backwards)
-(global-set-key (kbd "C-z") 'repeat)
+(global-set-key (kbd "C-z") 'undo)
 (global-set-key (kbd "C-M-}") 'forward-page)
 (global-set-key (kbd "C-M-{") 'backward-page)
 
@@ -66,3 +66,13 @@
 (global-set-key (kbd "<C-S-down>")   'buf-move-down)
 (global-set-key (kbd "<C-S-left>")   'buf-move-left)
 (global-set-key (kbd "<C-S-right>")  'buf-move-right)
+
+;; Copy-Cut-Paste from clipboard with Super-C Super-X Super-V
+(global-set-key (kbd "s-x") 'clipboard-kill-region) ;;cut
+(global-set-key (kbd "s-c") 'clipboard-kill-ring-save) ;;copy
+(global-set-key (kbd "s-v") 'clipboard-yank) ;;paste
+
+;; calc-mode more comfortable
+(global-set-key (kbd "M-c") 'calc-dispatch)
+
+
