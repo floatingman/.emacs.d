@@ -14,7 +14,7 @@
         try-expand-dabbrev-from-kill
         try-complete-file-name
         try-complete-lisp-symbol
-        ac-))
+        ))
 
 (define-key read-expression-map [(tab)] 'hippie-expand)
 
@@ -27,4 +27,4 @@
 
 (setq smart-tab-using-hippie-expand t)
 
-(global-smart-tab-mode 1)
+(global-smart-tab-mode nil)

@@ -2,3 +2,6 @@
 .git
 .gitignore
 
+/auto-save-list
+/server
+/url

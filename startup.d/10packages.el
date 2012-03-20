@@ -18,3 +18,5 @@
 
 ;;used to swap buffers
 (require 'buffer-move)
+
+(require 'w32-utl)

@@ -1,3 +1,5 @@
+(require 'magit)
+
 (autoload 'magit-status "magit"
   "Open a Magit status buffer for the Git repository containing
 DIR. If DIR is not within a Git repository, offer to create a
