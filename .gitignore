@@ -1,7 +1,9 @@
 *.elc
-.git
-.gitignore
-
+*~
 /auto-save-list
 /server
 /url
+abbrev_defs
+history
+org-clock-save.el
+.org-id-locations
