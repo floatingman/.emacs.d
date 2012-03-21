@@ -20,9 +20,33 @@
 [submodule "vendor/magit"]
 	path = vendor/magit
 	url = https://github.com/magit/magit.git
-[submodule "venodr/multiple-line-edit"]
-	path = venodr/multiple-line-edit
+[submodule "vendor/multiple-line-edit"]
+	path = vendor/multiple-line-edit
 	url = https://github.com/k-talo/multiple-line-edit.el.git
 [submodule "vendor/multi-web-mode"]
 	path = vendor/multi-web-mode
 	url = https://github.com/fgallina/multi-web-mode.git
+[submodule "vendor/php-mode"]
+	path = vendor/php-mode
+	url = https://github.com/ejmr/php-mode.git
+[submodule "vendor/pretty-mode"]
+	path = vendor/pretty-mode
+	url = https://github.com/emacsmirror/pretty-mode.git
+[submodule "vendor/sass-mode"]
+	path = vendor/sass-mode
+	url = https://github.com/nex3/sass-mode.git
+[submodule "vendor/smart-tab"]
+	path = vendor/smart-tab
+	url = https://github.com/haxney/smart-tab.git
+[submodule "vendor/startupd"]
+	path = vendor/startupd
+	url = https://github.com/fgallina/startupd.el.git
+[submodule "vendor/twittering-mode"]
+	path = vendor/twittering-mode
+	url = https://github.com/hayamiz/twittering-mode.git
+[submodule "vendor/yasnippet"]
+	path = vendor/yasnippet
+	url = https://github.com/capitaomorte/yasnippet.git
+[submodule "vendor/zencoding"]
+	path = vendor/zencoding
+	url = https://github.com/rooney/zencoding.git
