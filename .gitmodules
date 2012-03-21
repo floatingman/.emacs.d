@@ -53,3 +53,9 @@
 [submodule "vendor/auto-complete"]
 	path = vendor/auto-complete
 	url = https://github.com/m2ym/auto-complete.git
+[submodule "vendor/anything-config"]
+	path = vendor/anything-config
+	url = https://github.com/fgeller/anything-config.git
+[submodule "vendor/cedet"]
+	path = vendor/cedet
+	url = https://github.com/emacsmirror/cedet.git
