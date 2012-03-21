@@ -20,3 +20,5 @@
 (require 'buffer-move)
 
 (require 'w32-utl)
+
+(require 'anything-config)
