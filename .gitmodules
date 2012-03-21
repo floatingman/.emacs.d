@@ -1,3 +1,28 @@
-[submodule "color-theme-tangotango"]
-	path = color-theme-tangotango
-	url = d:\\home\\.emacs.d\\vendor\\color-theme-tangotango
+
+[submodule "vendor/color-theme-tangotango"]
+	path = vendor/color-theme-tangotango
+	url = https://github.com/juba/color-theme-tangotango
+[submodule "vendor/deft"]
+	path = vendor/deft
+	url = https://github.com/emacsmirror/deft.git
+[submodule "vendor/elpastebin"]
+	path = vendor/elpastebin
+	url = https://github.com/nicferrier/elpastebin.git
+[submodule "vendor/emacs-oauth"]
+	path = vendor/emacs-oauth
+	url = https://github.com/psanford/emacs-oauth.git
+[submodule "vendor/ack-and-a-half"]
+	path = vendor/ack-and-a-half
+	url = https://github.com/jhelwig/ack-and-a-half.git
+[submodule "vendor/haml-mode"]
+	path = vendor/haml-mode
+	url = https://github.com/nex3/haml-mode.git
+[submodule "vendor/magit"]
+	path = vendor/magit
+	url = https://github.com/magit/magit.git
+[submodule "venodr/multiple-line-edit"]
+	path = venodr/multiple-line-edit
+	url = https://github.com/k-talo/multiple-line-edit.el.git
+[submodule "vendor/multi-web-mode"]
+	path = vendor/multi-web-mode
+	url = https://github.com/fgallina/multi-web-mode.git
