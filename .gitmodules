@@ -71,3 +71,12 @@
 [submodule "vendor/yaml-mode"]
 	path = vendor/yaml-mode
 	url = https://github.com/yoshiki/yaml-mode.git
+[submodule "rinari"]
+	path = rinari
+	url = https://github.com/eschulte/rinari.git
+[submodule "vendor/rinari"]
+	path = vendor/rinari
+	url = https://github.com/eschulte/rinari.git
+[submodule "vendor/cucumber"]
+	path = vendor/cucumber
+	url = https://github.com/michaelklishin/cucumber.el.git
