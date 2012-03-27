@@ -13,6 +13,7 @@
 (setq color-theme-load-all-themes nil)
 (require 'color-theme)
 (require 'color-theme-tangotango)
+(require 'color-theme-twilight)
 
 (defun color-theme-my-setup (module &optional variant)
   (let ((theme (if variant
@@ -41,4 +42,4 @@
     (add-hook 'after-make-frame-functions 'test-win-sys)
     (funcall theme)))
 
-(color-theme-my-setup 'color-theme-tangotango)
+(color-theme-my-setup 'color-theme-twilight)
