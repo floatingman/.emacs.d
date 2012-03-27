@@ -50,9 +50,6 @@
 [submodule "vendor/zencoding"]
 	path = vendor/zencoding
 	url = https://github.com/rooney/zencoding.git
-[submodule "vendor/auto-complete"]
-	path = vendor/auto-complete
-	url = https://github.com/m2ym/auto-complete.git
 [submodule "vendor/anything-config"]
 	path = vendor/anything-config
 	url = https://github.com/fgeller/anything-config.git
@@ -62,3 +59,6 @@
 [submodule "vendor/bbdb"]
 	path = vendor/bbdb
 	url = https://github.com/emacsmirror/bbdb.git
+[submodule "vendor/twilight-emacs"]
+	path = vendor/twilight-emacs
+	url = https://github.com/crafterm/twilight-emacs.git
