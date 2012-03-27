@@ -62,3 +62,6 @@
 [submodule "vendor/twilight-emacs"]
 	path = vendor/twilight-emacs
 	url = https://github.com/crafterm/twilight-emacs.git
+[submodule "vendor/textmate-mode"]
+	path = vendor/textmate-mode
+	url = https://github.com/defunkt/textmate.el.git
