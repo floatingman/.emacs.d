@@ -80,3 +80,6 @@
 [submodule "vendor/cucumber"]
 	path = vendor/cucumber
 	url = https://github.com/michaelklishin/cucumber.el.git
+[submodule "vendor/jump"]
+	path = vendor/jump
+	url = https://github.com/eschulte/jump.el.git
