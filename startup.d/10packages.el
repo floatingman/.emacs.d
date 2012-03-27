@@ -23,4 +23,3 @@
 
 (require 'anything-config)
 
-(require 'coffee-mode)
