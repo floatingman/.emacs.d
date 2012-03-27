@@ -1,4 +1,4 @@
-(require coffee-mode)
+(require 'coffee-mode)
 
 (defun coffee-custom ()
   "coffee-mode-hook"
