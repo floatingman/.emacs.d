@@ -219,3 +219,30 @@ original" (interactive)
 	    (define-key python-mode-map (kbd "M-<left>")
 	      'balle-python-shift-left))
 	  )
+
+;;auto indent pasted text into a buffer
+;;http://www.emacswiki.org/emacs/AutoIndentation#SmartPaste
+
+(dolist (command '(yank yank-pop))
+  (eval `(defadvice ,command (after indent-region activate)
+           (and (not current-prefix-arg)
+                (member major-mode '(emacs-lisp-mode lisp-mode
+                                                     clojure-mode    scheme-mode
+                                                     haskell-mode    ruby-mode
+                                                     rspec-mode      python-mode
+                                                     c-mode          c++-mode
+                                                     objc-mode       latex-mode
+                                                     plain-tex-mode))
+                (let ((mark-even-if-inactive transient-mark-mode))
+                  (indent-region (region-beginning) (region-end) nil))))))
+
+; defining line duplication hotkey
+(defun duplicate-line ()
+  (interactive)
+  (move-beginning-of-line 1)
+  (kill-line)
+  (yank)
+  (newline)
+  (yank)
+)
+(global-set-key (kbd "C-c d") 'duplicate-line)

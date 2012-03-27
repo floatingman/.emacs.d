@@ -22,3 +22,5 @@
 (require 'w32-utl)
 
 (require 'anything-config)
+
+(require 'coffee-mode)
