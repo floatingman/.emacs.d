@@ -23,3 +23,6 @@
 
 (require 'anything-config)
 
+(require 'rspec-mode)
+
+(require 'git-emacs-autoloads)
