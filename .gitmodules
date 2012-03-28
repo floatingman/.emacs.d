@@ -17,9 +17,6 @@
 [submodule "vendor/haml-mode"]
 	path = vendor/haml-mode
 	url = https://github.com/nex3/haml-mode.git
-[submodule "vendor/magit"]
-	path = vendor/magit
-	url = https://github.com/magit/magit.git
 [submodule "vendor/multiple-line-edit"]
 	path = vendor/multiple-line-edit
 	url = https://github.com/k-talo/multiple-line-edit.el.git
@@ -92,3 +89,6 @@
 [submodule "vendor/git-emacs"]
 	path = vendor/git-emacs
 	url = https://github.com/tsgates/git-emacs.git
+[submodule "vendor/nxhtml"]
+	path = vendor/nxhtml
+	url = https://github.com/emacsmirror/nxhtml.git
