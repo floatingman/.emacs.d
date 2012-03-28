@@ -26,3 +26,9 @@
 (require 'rspec-mode)
 
 (require 'git-emacs-autoloads)
+
+(require 'mode-compile)
+
+(require 'el-expectations)
+
+(require 'el-mock)
