@@ -22,7 +22,15 @@
  '(ido-work-directory-list (quote ("~/" "~/code" "C:/Users/dnewman/Desktop")) t)
  '(mouse-avoidance-mode (quote animate) nil (avoid))
  '(server-mode t)
- '(temp-buffer-resize-mode t))
+ '(temp-buffer-resize-mode t)
+ '(tabbar-background-color "black")
+ '(tabbar-home-button (quote (("[o]") "[x]")))
+ '(tabbar-mode t nil (tabbar))
+ '(tabbar-mwheel-mode t nil (tabbar))
+ '(tabbar-scroll-left-button (quote (("<") "=")))
+ '(tabbar-scroll-right-button (quote ((">") "=")))
+ '(tabbar-separator (quote ("|")))
+ '(tabbar-use-images nil))
 (custom-set-faces
   ;; custom-set-faces was added by Custom.
   ;; If you edit it by hand, you could mess it up, so be careful.

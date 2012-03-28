@@ -95,3 +95,6 @@
 [submodule "vendor/mode-compile"]
 	path = vendor/mode-compile
 	url = https://github.com/emacsmirror/mode-compile.git
+[submodule "vendor/tabbar"]
+	path = vendor/tabbar
+	url = https://github.com/dholm/tabbar.git

@@ -32,3 +32,5 @@
 (require 'el-expectations)
 
 (require 'el-mock)
+
+(require 'tabbar)
