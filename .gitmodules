@@ -83,3 +83,12 @@
 [submodule "vendor/jump"]
 	path = vendor/jump
 	url = https://github.com/eschulte/jump.el.git
+[submodule "vendor/rspec-mode"]
+	path = vendor/rspec-mode
+	url = https://github.com/pezra/rspec-mode.git
+[submodule "vendor/mo-git-blame"]
+	path = vendor/mo-git-blame
+	url = https://github.com/voins/mo-git-blame.git
+[submodule "vendor/git-emacs"]
+	path = vendor/git-emacs
+	url = https://github.com/tsgates/git-emacs.git
