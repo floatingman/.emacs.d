@@ -98,3 +98,12 @@
 [submodule "vendor/tabbar"]
 	path = vendor/tabbar
 	url = https://github.com/dholm/tabbar.git
+[submodule "vendor/asciidoc"]
+	path = vendor/asciidoc
+	url = https://github.com/metaperl/asciidoc-el.git
+[submodule "vendor/ahk-org-mode"]
+	path = vendor/ahk-org-mode
+	url = https://github.com/tinku99/ahk-org-mode.git
+[submodule "vendor/maxframe"]
+	path = vendor/maxframe
+	url = https://github.com/rmm5t/maxframe.el.git
