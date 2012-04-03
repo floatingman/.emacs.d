@@ -107,3 +107,6 @@
 [submodule "vendor/maxframe"]
 	path = vendor/maxframe
 	url = https://github.com/rmm5t/maxframe.el.git
+[submodule "vendor/gist"]
+	path = vendor/gist
+	url = https://github.com/defunkt/gist.el.git
