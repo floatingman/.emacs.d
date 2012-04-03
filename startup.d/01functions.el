@@ -92,8 +92,6 @@ See `expand-file-name'."
       (insert (expand-file-name filename))
     (insert filename)))
 
-(provide 'caffeine-utils)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Increase/Decrease font size on the fly
 ;;; Taken from: http://is.gd/iaAo
@@ -209,8 +207,8 @@ original" (interactive)
   (setq deactivate-mark nil)
 )
 
-(global-set-key (kbd "M-<up>") 'move-text-up)
-(global-set-key (kbd "M-<down>") 'move-text-down)
+(global-set-key [(M C up)] 'move-text-up)
+(global-set-key [(M C down)] 'move-text-down)
 
 (add-hook 'python-mode-hook
 	  (lambda ()
