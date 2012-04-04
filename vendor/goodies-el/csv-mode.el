@@ -5,7 +5,7 @@
 ;; Author: Francis J. Wright <F.J.Wright at qmul.ac.uk>
 ;; Time-stamp: <23 August 2004>
 ;; URL: http://centaur.maths.qmul.ac.uk/Emacs/
-;; Version: $Id: csv-mode.el,v 1.50 2004/08/23 17:51:26 fjw Exp $
+;; Version: $Id: csv-mode.el,v 1.1 2005-09-28 01:52:41 psg Exp $
 ;; Keywords: convenience
 
 ;; This file is not part of GNU Emacs.
@@ -248,7 +248,7 @@ Number of spaces used by `csv-align-fields' after separators."
 ;; This mechanism seems to keep XEmacs happy:
 (defvar csv-separator-face 'csv-separator-face
   "Face name to use to highlight separators.")
- 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;  Mode definition, key bindings and menu
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -541,7 +541,7 @@ The default field when read interactively is the current field."
 	(while (not (integerp arg))
 	  (setq arg (eval-minibuffer "Field (integer): " default-field))))))
     (if (eq type 'noarg) region (cons arg region))))
- 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;  Sorting by field
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -644,7 +644,7 @@ point or marker arguments, BEG and END, delimiting the region."
   (interactive (csv-interactive-args 'noarg))
   (barf-if-buffer-read-only)
   (reverse-region beg end))
- 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;  Moving by field
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -731,7 +731,7 @@ which case extend the record as necessary."
       ;; Position at the front of the field
       ;; even if moving backwards.
       (csv-beginning-of-field))))
- 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;  Field index mode
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -808,7 +808,7 @@ Called by `csv-field-index-idle-timer'."
 		  (and field (propertize (format "F%d" field)
 					 'help-echo csv-mode-line-help-echo)))
 	    (force-mode-line-update))))))
- 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;  Killing and yanking fields
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -968,7 +968,7 @@ The fields yanked are those last killed by `csv-kill-fields'."
     (while fields
       (insert (car fields) ?\n)
       (setq fields (cdr fields)))))
- 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;  Aligning fields
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1165,7 +1165,7 @@ spaces and tabs if HARD non-nil\; BEG and END specify region to unalign."
 			       (+ (point) (skip-chars-backward " \t")))
 		(or (eolp) (forward-char))))
 	  (forward-line))))))
- 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;  Transposing rows and columns
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
