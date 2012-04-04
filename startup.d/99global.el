@@ -66,6 +66,12 @@
 	  (lambda ()
 	    (define-key python-mode-map "'" 'skeleton-pair-insert-maybe)))
 
+;; just ruby
+(add-hook 'ruby-mode-hook
+          (lambda ()
+            (define-key ruby-mode-map "'" 'skeleton-pair-insert-maybe)
+            (define-key ruby-mode-map "|" 'skeleton-pair-insert-maybe)))
+
 (set-face-attribute 'default nil :height 105)
 
 (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
