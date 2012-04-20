@@ -113,3 +113,6 @@
 
 ;; Line numbering
 (setq linum-format "%4d")
+
+(setq user-full-name "Daniel Newman"
+      user-mail-address "dwnewman78@gmail.com")

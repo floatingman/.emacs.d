@@ -1,4 +1,4 @@
-(setenv "PYMACS_PYTHON" "C:\\Python27\\python.exe")
+(setenv "PYMACS_PYTHON" "C:/Python27/python.exe")
 (require 'python)
 (require 'pymacs)
 (require 'open-next-line)
@@ -23,9 +23,16 @@
  python-shell-completion-string-code
    "';'.join(get_ipython().Completer.all_completions('''%s'''))\n")
 
-(pymacs-load "ropemacs" "rope-")
 
-;; Stops from erroring if there's a syntax err
+(defun setup-ropemacs ()
+  "Setup the ropemacs harness"
+  (setenv "PYTHONPATH"
+          (concat
+           (getenv "PYTHONPATH") path-separator
+           (concat "~/.emacs.d/vendor/python-mode/python-libs/")))
+  (pymacs-load "ropemacs" "rope-")
+
+  ;; Stops from erroring if there's a syntax err
   (setq ropemacs-codeassist-maxfixes 3)
 
   ;; Configurations
@@ -33,7 +40,8 @@
   (setq ropemacs-enable-autoimport t)
 
 
-  (setq ropemacs-autoimport-modules '("os" "shutil" "sys" "logging" "django.*"))
+  (setq ropemacs-autoimport-modules '("os" "shutil" "sys" "logging"
+				      "django.*"))
 
 
 
@@ -46,6 +54,8 @@
                     ((file-exists-p "../.ropeproject")
                      (rope-open-project (concat default-directory "..")))
                     )))
+  )
+
 
 ;; Cython Mode
 (autoload 'cython-mode "cython-mode" "Mode for editing Cython source files")
@@ -59,6 +69,8 @@
 
 (add-hook 'python-mode-hook '(lambda ()
      (define-key python-mode-map "\C-m" 'newline-and-indent)))
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Auto-completion
@@ -159,6 +171,29 @@
 
 ;; End Tab completion
 
+
+(eval-after-load 'python
+  '(progn
+     ;;==================================================
+     ;; Ropemacs Configuration
+     ;;==================================================
+     (setup-ropemacs)
+
+     ;;==================================================
+     ;; Virtualenv Commands
+     ;;==================================================
+     (autoload 'virtualenv-activate "virtualenv"
+       "Activate a Virtual Environment specified by PATH" t)
+     (autoload 'virtualenv-workon "virtualenv"
+       "Activate a Virtual Environment present using virtualenvwrapper" t)
+
+
+     ;; Not on all modes, please
+     (add-hook 'python-mode-hook 'flymake-find-file-hook)
+
+
+     )
+  )
 
 ;;Workaround so that Autocomplete is by default is only invoked explicitly,
 ;;but still automatically updates as you type while attempting to complete.
