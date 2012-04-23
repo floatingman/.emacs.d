@@ -257,3 +257,36 @@ original" (interactive)
   (insert-kbd-macro name)               ; copy the macro
   (newline)                             ; insert a newline
   (switch-to-buffer nil))               ; return to the initial buffer
+
+
+;; Insert date ask for format
+(defun insert-date (format)
+  "Wrapper around format-time-string."
+  (interactive "MFormat: ")
+  (insert (format-time-string format)))
+
+;; Insert date in standard format
+(defun insert-standard-date ()
+  "Inserts standard date time string."
+  (interactive)
+  (insert (format-time-string "%c")))
+
+(global-set-key (kbd "C-c d") 'insert-date)
+
+
+;;insert a date from the calendar or a date a # of days from today
+(require 'calendar)
+
+(defun insdate-insert-any-date (date)
+  "Insert DATE using the current locale."
+  (interactive (list (calendar-read-date)))
+  (insert (calendar-date-string date)))
+
+(defun insdate-insert-date-from (&optional days)
+  "Insert date that is DAYS from current."
+  (interactive "p*")
+  (insert
+   (calendar-date-string
+    (calendar-gregorian-from-absolute
+     (+ (calendar-absolute-from-gregorian (calendar-current-date))
+        days)))))

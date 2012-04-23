@@ -9,7 +9,7 @@
 (autoload 'align-all-strings "align-string"
   "Align all occurrences of REGEXP in each line of region."
   t)
-  
+
 ;; clipper.el
 (autoload 'clipper-create "clipper" "Create a new 'clip' for use within Emacs."
   t)
@@ -26,7 +26,7 @@
 (autoload 'cyclebuffer-backward "cyclebuffer"
   "Cycle buffer backward."
   t)
-  
+
 ;; dict.el
 (autoload 'dict "dict" "Lookup a word in the dictionary" t)
 (autoload 'dict-region "dict" "Lookup a region in the dictionary" t)
@@ -58,7 +58,7 @@ It's not good for C mode because C's comments are multiline."
                  value))
   :load 'filladapt
   :group 'filladapt)
-  
+
 ;; highlight-completion.el
 (autoload 'highlight-completion-mode "highlight-completion"
   "Activate highlight-completion."
@@ -108,7 +108,7 @@ Stores the value of the prior `home' keybinding.")
 (autoload 'map-lines "map-lines"
   "Map COMMAND over lines matching REGEX."
   t)
-  
+
 ;; minibuf-electric.el
 (defcustom minibuffer-electric-file-name-behavior nil
   "*If non-nil, slash and tilde in certain places cause immediate deletion.
@@ -118,7 +118,7 @@ in `substitute-in-file-name'."
   :require 'minibuf-electric
   :load 'minibuf-electric
   :group 'minibuffer)
-  
+
 ;; rfcview
 (add-to-list 'auto-mode-alist
              '("/rfc[0-9]+\\.txt\\(\\.gz\\)?\\'" . rfcview-mode))
@@ -138,7 +138,7 @@ this function to `after-init-hook'."
 (autoload 'turn-on-setnu-mode "setnu"
   "Turn on setnu-mode."
   nil)
-  
+
 ;; todoo.el
 (when (not (featurep 'xemacs))
   (autoload 'todoo "todoo"
@@ -153,7 +153,7 @@ this function to `after-init-hook'."
 (autoload 'toggle-option "toggle-option"
   "Easily toggle frequently toggled options."
   t)
-  
+
 ;; xrdb-mode.el
 
 (defun xrdb-mode-setup-auto-mode-alist ()
@@ -191,7 +191,7 @@ effects to take effect."
          (when value
            (xrdb-mode-setup-auto-mode-alist)))
   :group 'xrdb)
-  
+
 
 
 (require 'lorem-ipsum)
@@ -226,3 +226,11 @@ effects to take effect."
 (require 'el-mock)
 
 (require 'tabbar)
+
+(require 'gse-number-rect)
+(global-set-key "\C-xru" 'gse-number-rectangle)
+
+(require 'thesaurus)
+(setq thesaurus-bhl-api-key "1d5cbb4b3f8ecfddedaea4680cd51a05")  ;; from registration
+;; optional key binding
+(define-key global-map (kbd "C-x t") 'thesaurus-choose-synonym-and-replace)
