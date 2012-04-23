@@ -107,4 +107,6 @@
 [submodule "vendor/gist"]
 	path = vendor/gist
 	url = https://github.com/defunkt/gist.el.git
-
+[submodule "vendor/tiny-tools"]
+	path = vendor/tiny-tools
+	url = https://github.com/jaalto/project--emacs-tiny-tools
