@@ -9,6 +9,7 @@ org-clock-save.el
 .org-id-locations
 ac-comphist.dat
 tramp
+.thesaurus.cache
 
 # Compiled source #
 ###################

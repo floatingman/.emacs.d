@@ -116,3 +116,7 @@
 
 (setq user-full-name "Daniel Newman"
       user-mail-address "dwnewman78@gmail.com")
+
+(put 'narrow-to-defun  'disabled nil)
+(put 'narrow-to-page   'disabled nil)
+(put 'narrow-to-region 'disabled nil)

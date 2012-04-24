@@ -290,3 +290,18 @@ original" (interactive)
     (calendar-gregorian-from-absolute
      (+ (calendar-absolute-from-gregorian (calendar-current-date))
         days)))))
+
+
+;;using idle timer to kill "Shell Command Output" can be customized to kill
+;;other buffers
+(if completion-ignore-case
+    (defvar reaper
+      (run-with-idle-timer 5 t (lambda ()
+                                 (let ((victim (get-buffer "*Shell Command Output*")))
+                                   (when (and victim (not (get-buffer-window victim t)))
+                                     (message "Killing buffer %s" (buffer-name victim))
+                                     (kill-buffer victim)))))
+      "idle-timer (see \\[run-with-idle-timer]) that deletes the
+      *Shell Command Output* buffer -- that buffer's name is so similar to
+      *shell* that completion makes the latter hard to type.  Use
+      \\[cancel-timer] to cancel it."))
