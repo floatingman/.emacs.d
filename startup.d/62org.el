@@ -6,6 +6,26 @@
 (add-to-list 'load-path (expand-file-name "~/.emacs.d/vendor/org-mode/lisp"))
 (add-to-list 'auto-mode-alist '("\\.\\(org\\|org_archive\\|txt\\)$" . org-mode))
 (require 'org-install)
+
+;;15.14 Habit Tracking
+;;Enable habit tracking (and a bunch of other modules)
+(setq org-modules (quote (org-bbdb
+                          org-bibtex
+                          org-crypt
+                          org-gnus
+                          org-id
+                          org-info
+                          org-jsinfo
+                          org-habit
+                          org-inlinetask
+                          org-irc
+                          org-mew
+                          org-mhe
+                          org-protocol
+                          org-rmail
+                          org-vm
+                          org-wl
+                          org-w3m)))
 ;;
 ;; Standard key bindings
 (global-set-key "\C-cl" 'org-store-link)
@@ -1196,25 +1216,7 @@ Late deadlines first, then scheduled, then non-late deadlines"
 (setq org-log-done (quote time))
 (setq org-log-into-drawer "LOGBOOK")
 
-;;15.14 Habit Tracking
-; Enable habit tracking (and a bunch of other modules)
-(setq org-modules (quote (org-bbdb
-                          org-bibtex
-                          org-crypt
-                          org-gnus
-                          org-id
-                          org-info
-                          org-jsinfo
-                          org-habit
-                          org-inlinetask
-                          org-irc
-                          org-mew
-                          org-mhe
-                          org-protocol
-                          org-rmail
-                          org-vm
-                          org-wl
-                          org-w3m)))
+
 
 ; position the habit graph on the agenda to the right of the default
 (setq org-habit-graph-column 50)
