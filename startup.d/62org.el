@@ -33,7 +33,9 @@
             ;; org-agenda files when directories are include It
             ;; expands the files in the directories individually
             (org-defkey org-mode-map "\C-c["    'undefined)
-            (org-defkey org-mode-map "\C-c]"    'undefined)) 'append)
+            (org-defkey org-mode-map "\C-c]"    'undefined)
+            (org-defkey org-mode-map "\C-c;"    'undefined))
+          'append)
 
 (add-hook 'org-mode-hook
           (lambda ()
@@ -93,8 +95,9 @@
   (interactive)
   (save-excursion
     (org-back-to-heading 'invisible-ok)
-    (org-shifttab)
-    (org-reveal)
+    (hide-other)
+    (org-cycle)
+    (org-cycle)
     (org-cycle)))
 
 (defun bh/set-truncate-lines ()
@@ -144,23 +147,25 @@
               ("DONE" ("WAITING") ("CANCELLED") ("HOLD")))))
 
 ;;3.1 Capture Templates
-
+(setq org-directory "~/git/org")
 (setq org-default-notes-file "~/git/org/refile.org")
 
 ;; Capture templates for: TODO tasks, Notes, appointments, phone calls, and org-protocol
 (setq org-capture-templates
       (quote (("t" "todo" entry (file "~/git/org/refile.org")
-               "* TODO %?\n%U\n%a\n  %i" :clock-in t :clock-resume t)
+               "* TODO %?\n%U\n%a\n" :clock-in t :clock-resume t)
+              ("r" "respond" entry (file "~/git/org/refile.org")
+               "* TODO Respond to %:from on %:subject\n%U\n%a\n" :clock-in t :clock-resume t :immediate-finish t)
               ("n" "note" entry (file "~/git/org/refile.org")
-               "* %? :NOTE:\n%U\n%a\n  %i" :clock-in t :clock-resume t)
+               "* %? :NOTE:\n%U\n%a\n" :clock-in t :clock-resume t)
               ("j" "Journal" entry (file+datetree "~/git/org/diary.org")
-               "* %?\n%U\n  %i" :clock-in t :clock-resume t)
+               "* %?\n%U\n" :clock-in t :clock-resume t)
               ("w" "org-protocol" entry (file "~/git/org/refile.org")
-               "* TODO Review %c\n%U\n  %i" :immediate-finish t)
+               "* TODO Review %c\n%U\n" :immediate-finish t)
               ("p" "Phone call" entry (file "~/git/org/refile.org")
                "* PHONE %? :PHONE:\n%U" :clock-in t :clock-resume t)
               ("h" "Habit" entry (file "~/git/org/refile.org")
-               "* NEXT %?\n%U\n%a\nSCHEDULED: %t .+1d/3d\n:PROPERTIES:\n:STYLE: habit\n:REPEAT_TO_STATE: NEXT\n:END:\n  %i"))))
+               "* NEXT %?\n%U\n%a\nSCHEDULED: %t .+1d/3d\n:PROPERTIES:\n:STYLE: habit\n:REPEAT_TO_STATE: NEXT\n:END:\n"))))
 
 ;; Remove empty LOGBOOK drawers on clock out
 (defun bh/remove-empty-drawer-on-clock-out ()
@@ -176,8 +181,8 @@
 (setq org-refile-targets (quote ((nil :maxlevel . 9)
                                  (org-agenda-files :maxlevel . 9))))
 
-; Stop using paths for refile targets - we file directly with IDO
-(setq org-refile-use-outline-path nil)
+; Use full outline paths for refile targets - we file directly with IDO
+(setq org-refile-use-outline-path t)
 
 ; Targets complete directly with IDO
 (setq org-outline-path-complete-in-steps nil)
@@ -203,6 +208,9 @@
 ;; Do not dim blocked tasks
 (setq org-agenda-dim-blocked-tasks nil)
 
+;; Compact the block agenda view
+(setq org-agenda-compact-blocks t)
+
 ;; Custom agenda command definitions
 (setq org-agenda-custom-commands
       (quote (("N" "Notes" tags "NOTE"
@@ -219,13 +227,13 @@
                        (org-tags-match-list-sublevels nil)))
                 (tags-todo "-CANCELLED/!"
                            ((org-agenda-overriding-header "Stuck Projects")
-                            (org-tags-match-list-sublevels 'indented)
                             (org-agenda-skip-function 'bh/skip-non-stuck-projects)))
                 (tags-todo "-WAITING-CANCELLED/!NEXT"
                            ((org-agenda-overriding-header "Next Tasks")
                             (org-agenda-skip-function 'bh/skip-projects-and-habits-and-single-tasks)
                             (org-agenda-todo-ignore-scheduled t)
                             (org-agenda-todo-ignore-deadlines t)
+                            (org-agenda-todo-ignore-with-date t)
                             (org-tags-match-list-sublevels t)
                             (org-agenda-sorting-strategy
                              '(todo-state-down effort-up category-keep))))
@@ -234,23 +242,23 @@
                             (org-agenda-skip-function 'bh/skip-project-tasks-maybe)
                             (org-agenda-todo-ignore-scheduled t)
                             (org-agenda-todo-ignore-deadlines t)
+                            (org-agenda-todo-ignore-with-date t)
                             (org-agenda-sorting-strategy
                              '(category-keep))))
-                (tags-todo "-CANCELLED/!"
+                (tags-todo "-HOLD-CANCELLED/!"
                            ((org-agenda-overriding-header "Projects")
                             (org-agenda-skip-function 'bh/skip-non-projects)
-                            (org-agenda-todo-ignore-scheduled 'future)
-                            (org-agenda-todo-ignore-deadlines 'future)
                             (org-agenda-sorting-strategy
                              '(category-keep))))
                 (tags-todo "-CANCELLED/!WAITING|HOLD"
                            ((org-agenda-overriding-header "Waiting and Postponed Tasks")
-                            (org-agenda-skip-function 'bh/skip-projects-and-habits)
-                            (org-agenda-todo-ignore-scheduled t)
-                            (org-agenda-todo-ignore-deadlines t)))
+                            (org-tags-match-list-sublevels nil)
+                            (org-agenda-todo-ignore-scheduled 'future)
+                            (org-agenda-todo-ignore-deadlines 'future)))
                 (tags "-REFILE/"
                       ((org-agenda-overriding-header "Tasks to Archive")
-                       (org-agenda-skip-function 'bh/skip-non-archivable-tasks))))
+                       (org-agenda-skip-function 'bh/skip-non-archivable-tasks)
+                       (org-tags-match-list-sublevels nil))))
                nil)
               ("r" "Tasks to Refile" tags "REFILE"
                ((org-agenda-overriding-header "Tasks to Refile")
@@ -263,6 +271,7 @@
                 (org-agenda-skip-function 'bh/skip-projects-and-habits-and-single-tasks)
                 (org-agenda-todo-ignore-scheduled t)
                 (org-agenda-todo-ignore-deadlines t)
+                (org-agenda-todo-ignore-with-date t)
                 (org-tags-match-list-sublevels t)
                 (org-agenda-sorting-strategy
                  '(todo-state-down effort-up category-keep))))
@@ -271,21 +280,19 @@
                 (org-agenda-skip-function 'bh/skip-project-tasks-maybe)
                 (org-agenda-sorting-strategy
                  '(category-keep))))
-              ("p" "Projects" tags-todo "-CANCELLED/!"
+              ("p" "Projects" tags-todo "-HOLD-CANCELLED/!"
                ((org-agenda-overriding-header "Projects")
                 (org-agenda-skip-function 'bh/skip-non-projects)
-                (org-agenda-todo-ignore-scheduled 'future)
-                (org-agenda-todo-ignore-deadlines 'future)
                 (org-agenda-sorting-strategy
                  '(category-keep))))
               ("w" "Waiting Tasks" tags-todo "-CANCELLED/!WAITING|HOLD"
                ((org-agenda-overriding-header "Waiting and Postponed tasks"))
-               (org-agenda-skip-function 'bh/skip-projects-and-habits)
-               (org-agenda-todo-ignore-scheduled 'future)
-               (org-agenda-todo-ignore-deadlines 'future))
+               (org-tags-match-list-sublevels nil))
               ("A" "Tasks to Archive" tags "-REFILE/"
                ((org-agenda-overriding-header "Tasks to Archive")
-                (org-agenda-skip-function 'bh/skip-non-archivable-tasks))))))
+                (org-agenda-skip-function 'bh/skip-non-archivable-tasks)
+                (org-tags-match-list-sublevels nil))))))
+
 ;;5.4.1 Automatically removing context based tasks with / RET
 
 (defun bh/org-auto-exclude-function (tag)
@@ -476,15 +483,13 @@ A prefix arg forces clock in of the default task."
 
 ;;7.1.1 Verify That The Clock Data Is Complete And Correct
 ;; Sometimes I change tasks I'm clocking quickly - this removes clocked tasks with 0:00 duration
-(setq org-clock-out-remove-zero-time-clocks t)
-
-;; Agenda log mode items to display (clock time only by default)
-(setq org-agenda-log-mode-items (quote (clock)))
+;;duplicate
+;;(setq org-clock-out-remove-zero-time-clocks t)
 
 ;;7.1.2 Using Clock Reports To Summarize Time Spent
 ;; Agenda clock report parameters
 (setq org-agenda-clockreport-parameter-plist
-      (quote (:link t :maxlevel 5 :fileskip0 t :compact t)))
+      (quote (:link t :maxlevel 5 :fileskip0 t :compact t :narrow 80)))
 
 ;;7.2.1 Creating A Task Estimate With Column Mode
 ;; Set default column view headings: Task Effort Clock_Summary
@@ -494,6 +499,9 @@ A prefix arg forces clock in of the default task."
 ;; global STYLE property values for completion
 (setq org-global-properties (quote (("Effort_ALL" . "0:15 0:30 1:00 2:00 3:00 4:00 5:00 6:00 7:00 8:00")
                                     ("STYLE_ALL" . "habit"))))
+;;7.3 Providing Progress Reports to Others
+;; Agenda log mode items to display (closed and state changes by default)
+(setq org-agenda-log-mode-items (quote (state)))
 
 ;;8.1 Tags
 ; Tags with fast selection keys
@@ -504,8 +512,8 @@ A prefix arg forces clock in of the default task."
                             ("@church" . ?C)
                             (:endgroup)
                             ("PHONE" . ?p)
-                            ("QUOTE" . ?q)
                             ("WAITING" . ?w)
+                            ("HOLD" . ?h)
                             ("PERSONAL" . ?P)
                             ("WORK" . ?W)
                             ("ORG" . ?O)
@@ -637,15 +645,18 @@ Callers of this function already widen the buffer view."
 
 (defun bh/skip-non-stuck-projects ()
   "Skip trees that are not stuck projects"
+  (bh/list-sublevels-for-projects-indented)
   (save-restriction
     (widen)
     (let ((next-headline (save-excursion (or (outline-next-heading) (point-max)))))
       (if (bh/is-project-p)
           (let* ((subtree-end (save-excursion (org-end-of-subtree t)))
-                 (has-next (save-excursion
-                             (forward-line 1)
-                             (and (< (point) subtree-end)
-                                  (re-search-forward "^\\*+ \\(NEXT\\) " subtree-end t)))))
+                 (has-next ))
+            (save-excursion
+              (forward-line 1)
+              (while (and (not has-next) (< (point) subtree-end) (re-search-forward "^\\*+ NEXT " subtree-end t))
+                (unless (member "WAITING" (org-get-tags-at))
+                  (setq has-next t))))
             (if has-next
                 next-headline
               nil)) ; a stuck project, has subtasks but no next task
@@ -839,20 +850,35 @@ When not restricted, skip project and sub-project tasks, habits, and project rel
   (interactive "p")
   (if (equal arg 4)
       (save-restriction
-        (widen)
-        (org-narrow-to-subtree)
+        (bh/narrow-to-org-subtree)
         (org-show-todo-tree nil))
-    (widen)
-    (org-narrow-to-subtree)
+    (bh/narrow-to-org-subtree)
     (org-show-todo-tree nil)))
 
 (defun bh/widen ()
   (interactive)
-  (widen)
-  (org-agenda-remove-restriction-lock))
+  (if (equal major-mode 'org-agenda-mode)
+      (org-agenda-remove-restriction-lock)
+    (widen)
+    (org-agenda-remove-restriction-lock)))
 
 (add-hook 'org-agenda-mode-hook
           '(lambda () (org-defkey org-agenda-mode-map "W" 'bh/widen))
+          'append)
+
+(defun bh/restrict-to-file-or-follow (arg)
+  "Set agenda restriction to 'file or with argument invoke follow mode.
+I don't use follow mode very often but I restrict to file all the time
+so change the default 'F' binding in the agenda to allow both"
+  (interactive "p")
+  (if (equal arg 4)
+      (org-agenda-follow-mode)
+    (if (equal major-mode 'org-agenda-mode)
+        (bh/set-agenda-restriction-lock 4)
+      (widen))))
+
+(add-hook 'org-agenda-mode-hook
+          '(lambda () (org-defkey org-agenda-mode-map "F" 'bh/restrict-to-file-or-follow))
           'append)
 
 (defun bh/narrow-to-org-subtree ()
@@ -878,6 +904,12 @@ When not restricted, skip project and sub-project tasks, habits, and project rel
     (outline-up-heading 1 'invisible-ok)
     (bh/narrow-to-org-subtree)))
 
+(defun bh/get-pom-from-agenda-restriction-or-point ()
+  (or (org-get-at-bol 'org-hd-marker)
+      (and (marker-position org-agenda-restrict-begin) org-agenda-restrict-begin)
+      (and (equal major-mode 'org-mode) (point))
+      org-clock-marker))
+
 (defun bh/narrow-up-one-level ()
   (interactive)
   (if (equal major-mode 'org-agenda-mode)
@@ -898,7 +930,7 @@ When not restricted, skip project and sub-project tasks, habits, and project rel
 (defun bh/narrow-to-project ()
   (interactive)
   (if (equal major-mode 'org-agenda-mode)
-      (org-with-point-at (org-get-at-bol 'org-hd-marker)
+      (org-with-point-at (bh/get-pom-from-agenda-restriction-or-point)
         (bh/narrow-to-org-project))
     (bh/narrow-to-org-project)))
 
@@ -906,6 +938,28 @@ When not restricted, skip project and sub-project tasks, habits, and project rel
           '(lambda () (org-defkey org-agenda-mode-map "P" 'bh/narrow-to-project))
           'append)
 
+(defvar bh/current-view-project nil)
+
+(defun bh/view-next-project ()
+  (interactive)
+  (unless (marker-position org-agenda-restrict-begin)
+    (goto-char (point-min))
+    (re-search-forward "^Projects$")
+    (setq bh/current-view-project (point)))
+  (bh/widen)
+  (goto-char bh/current-view-project)
+  (forward-visible-line 1)
+  (setq bh/current-view-project (point))
+  (if (org-get-at-bol 'org-hd-marker)
+      (bh/narrow-to-project)
+    (message "All projects viewed.")
+    (ding)))
+
+(add-hook 'org-agenda-mode-hook
+          '(lambda () (org-defkey org-agenda-mode-map "V" 'bh/view-next-project))
+          'append)
+
+(setq org-show-entry-below (quote ((default))))
 
 ;;15.2.2 Limiting the agenda to a subtree
 (add-hook 'org-agenda-mode-hook
@@ -915,17 +969,17 @@ When not restricted, skip project and sub-project tasks, habits, and project rel
 (defun bh/set-agenda-restriction-lock (arg)
   "Set restriction lock to current task subtree or file if prefix is specified"
   (interactive "p")
-  (let* ((pom (org-get-at-bol 'org-hd-marker))
+  (let* ((pom (bh/get-pom-from-agenda-restriction-or-point))
          (tags (org-with-point-at pom (org-get-tags-at))))
     (let ((restriction-type (if (equal arg 4) 'file 'subtree)))
       (save-restriction
         (cond
-         ((equal major-mode 'org-agenda-mode)
+         ((and (equal major-mode 'org-agenda-mode) pom)
           (org-with-point-at pom
             (org-agenda-set-restriction-lock restriction-type)))
          ((and (equal major-mode 'org-mode) (org-before-first-heading-p))
           (org-agenda-set-restriction-lock 'file))
-         (t
+         (pom
           (org-with-point-at pom
             (org-agenda-set-restriction-lock restriction-type))))))))
 
@@ -1108,7 +1162,7 @@ Late deadlines first, then scheduled, then non-late deadlines"
 (setq org-startup-indented t)
 
 ;;15.7.3 Handling Blank Lines
-(setq org-cycle-separator-lines 1)
+(setq org-cycle-separator-lines 2)
 (setq org-blank-before-new-entry (quote ((heading)
                                          (plain-list-item . auto))))
 
@@ -1142,7 +1196,7 @@ Late deadlines first, then scheduled, then non-late deadlines"
 (setq org-log-done (quote time))
 (setq org-log-into-drawer "LOGBOOK")
 
-;;15.15 Habit Tracking
+;;15.14 Habit Tracking
 ; Enable habit tracking (and a bunch of other modules)
 (setq org-modules (quote (org-bbdb
                           org-bibtex
@@ -1209,7 +1263,7 @@ Late deadlines first, then scheduled, then non-late deadlines"
                                       ("A" . ignore)
                                       ("B" . ignore)
                                       ("E" . ignore)
-                                      ("F" . ignore)
+                                      ("F" . bh/restrict-to-file-or-follow)
                                       ("G" . ignore)
                                       ("H" . ignore)
                                       ("J" . org-clock-goto)
@@ -1221,7 +1275,7 @@ Late deadlines first, then scheduled, then non-late deadlines"
                                       ("Q" . ignore)
                                       ("R" . ignore)
                                       ("S" . ignore)
-                                      ("T" . (org-show-todo-tree nil))
+                                      ("T" . bh/org-todo)
                                       ("U" . bh/narrow-up-one-level)
                                       ("V" . ignore)
                                       ("W" . bh/widen)
@@ -1232,8 +1286,7 @@ Late deadlines first, then scheduled, then non-late deadlines"
 (defun bh/show-org-agenda ()
   (interactive)
   (switch-to-buffer "*Org Agenda*")
-  (delete-other-windows)
-  (org-agenda-redo))
+  (delete-other-windows))
 
 ;;15.19 Org Protocol
 (require 'org-protocol)
@@ -1257,7 +1310,7 @@ Late deadlines first, then scheduled, then non-late deadlines"
 (setq org-export-with-timestamps nil)
 
 ;;15.22 Return Follows Links
-(setq org-return-follows-link nil)
+(setq org-return-follows-link t)
 
 ;;15.24 Meeting Notes
 (defun bh/prepare-meeting-notes ()
@@ -1283,7 +1336,7 @@ Late deadlines first, then scheduled, then non-late deadlines"
 
 
 ;;15.27 Prefer Future Dates Or Not?
-(setq org-read-date-prefer-future t)
+(setq org-read-date-prefer-future nil)
 
 ;;15.28 Automatically Change List Bullets
 
@@ -1298,10 +1351,10 @@ Late deadlines first, then scheduled, then non-late deadlines"
 ;;15.31 Agenda Persistent Filters
 (setq org-agenda-persistent-filter t)
 
-;;15.33 Prevent Horizontal Window Splitting
-(setq split-width-threshold 120)
+;;15.33 Mail Links Open Compose-Mail
+(setq org-link-mailto-program (quote (compose-mail "%a" "%s")))
 
-;;15.36 Use Smex For M-X Ido-Completion
+;;15.35 Use Smex For M-X Ido-Completion
 (add-to-list 'load-path (expand-file-name "~/.emacs.d"))
 (require 'smex)
 (smex-initialize)
@@ -1311,39 +1364,73 @@ Late deadlines first, then scheduled, then non-late deadlines"
 (global-set-key (kbd "M-X") 'smex-major-mode-commands)
 
 
-;;15.37 Use Emacs Bookmarks For Fast Navigation
+;;15.36 Use Emacs Bookmarks For Fast Navigation
 ;; Bookmark handling
 ;;
 (global-set-key (kbd "<C-f6>") '(lambda () (interactive) (bookmark-set "SAVED")))
 (global-set-key (kbd "<f6>") '(lambda () (interactive) (bookmark-jump "SAVED")))
 
-;;15.38 Using Org-mime To Email
+;;15.37 Using Org-mime To Email
 (require 'org-mime)
 
-;;15.39 Remove Multiple State Change Log Details From The Agenda
+;;15.38 Remove Multiple State Change Log Details From The Agenda
 (setq org-agenda-skip-additional-timestamps-same-entry t)
 
-;;15.40 Drop old style references in tables
+;;15.39 Drop old style references in tables
 (setq org-table-use-standard-references (quote from))
 
-;;15.41 Use System Settings for File-application Selection
+;;15.40 Use System Settings for File-application Selection
 (setq org-file-apps (quote ((auto-mode . emacs)
                             ("\\.mm\\'" . system)
                             ("\\.x?html?\\'" . system)
                             ("\\.pdf\\'" . system))))
 
-;;15.42 Use The Current Window For The Agenda
+;;15.41 Use The Current Window For The Agenda
 ; Overwrite the current window with the agenda
 (setq org-agenda-window-setup 'current-window)
 
-;;15.43 Delete IDs When Cloning
+;;15.42 Delete IDs When Cloning
 (setq org-clone-delete-id t)
 
-;;15.44 Cycling plain lists
+;;15.43 Cycling plain lists
 (setq org-cycle-include-plain-lists t)
 
-;;15.45 Showing source block syntax highlighting
+;;15.44 Showing source block syntax highlighting
 (setq org-src-fontify-natively t)
+
+;;15.45 Inserting Structure Template Blocks
+(setq org-structure-template-alist
+      (quote (("s" "#+begin_src ?\n\n#+end_src" "<src lang=\"?\">\n\n</src>")
+              ("e" "#+begin_example\n?\n#+end_example" "<example>\n?\n</example>")
+              ("q" "#+begin_quote\n?\n#+end_quote" "<quote>\n?\n</quote>")
+              ("v" "#+begin_verse\n?\n#+end_verse" "<verse>\n?\n</verse>")
+              ("c" "#+begin_center\n?\n#+end_center" "<center>\n?\n</center>")
+              ("l" "#+begin_latex\n?\n#+end_latex" "<literal style=\"latex\">\n?\n</literal>")
+              ("L" "#+latex: " "<literal style=\"latex\">?</literal>")
+              ("h" "#+begin_html\n?\n#+end_html" "<literal style=\"html\">\n?\n</literal>")
+              ("H" "#+html: " "<literal style=\"html\">?</literal>")
+              ("a" "#+begin_ascii\n?\n#+end_ascii")
+              ("A" "#+ascii: ")
+              ("i" "#+index: ?" "#+index: ?")
+              ("I" "#+include %file ?" "<include file=%file markup=\"?\">"))))
+
+;;15.46 NEXT is for Tasks
+(defun bh/mark-next-parent-tasks-todo ()
+  "Visit each parent task and change NEXT states to TODO"
+  (let ((mystate (or (and (fboundp 'state)
+                          state)
+                     (nth 2 (org-heading-components)))))
+    (when (equal mystate "NEXT")
+      (save-excursion
+        (while (org-up-heading-safe)
+          (when (member (nth 2 (org-heading-components)) (list "NEXT"))
+            (org-todo "TODO")))))))
+
+(add-hook 'org-after-todo-state-change-hook 'bh/mark-next-parent-tasks-todo 'append)
+(add-hook 'org-clock-in-hook 'bh/mark-next-parent-tasks-todo 'append)
+
+;;15.47 Startup in content view
+(setq org-startup-folded 'content)
 
 
 
@@ -1367,6 +1454,22 @@ Late deadlines first, then scheduled, then non-late deadlines"
 
 ;;16.7 Show headings at odd levels only or odd-even levels
 (setq org-odd-levels-only nil)
+
+;;16.8 Propagate STARTED To Parent Tasks
+;; Mark parent tasks as started
+(defvar bh/mark-parent-tasks-started nil)
+
+(defun bh/mark-parent-tasks-started ()
+  "Visit each parent task and change TODO states to STARTED"
+  (unless bh/mark-parent-tasks-started
+    (when (equal org-state "STARTED")
+      (let ((bh/mark-parent-tasks-started t))
+        (save-excursion
+          (while (org-up-heading-safe)
+            (when (member (nth 2 (org-heading-components)) (list "TODO" "NEXT"))
+              (org-todo "STARTED"))))))))
+
+(add-hook 'org-after-todo-state-change-hook 'bh/mark-parent-tasks-started 'append)
 
 ;;17.1 Automatic Hourly Commits
 (run-at-time "00:59" 3600 'org-save-all-org-buffers)
