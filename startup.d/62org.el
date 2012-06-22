@@ -37,8 +37,10 @@
 (add-hook 'message-mode-hook 'bbdb-define-all-aliases 'append)
 (add-hook 'message-mode-hook 'orgtbl-mode 'append)
 (add-hook 'message-mode-hook 'turn-on-flyspell 'append)
-(add-hook 'message-mode-hook '(lambda () (setq fill-column 72)) 'append)
-(add-hook 'message-mode-hook '(lambda () (local-set-key (kbd "C-c M-o") 'org-mime-htmlize)) 'append)
+(add-hook 'message-mode-hook '(lambda () (setq fill-column 72))
+          'append)
+(add-hook 'message-mode-hook '(lambda () (local-set-key (kbd "C-c M-o") 'org-mime-htmlize))
+          'append)
 
 (setq org-agenda-files (quote ("~/git/org" "~/git/org/boa/boa.org" "~/git/org/usbank/usbank.org" "~/git/org/aurora/aurora.org")))
 
@@ -51,7 +53,9 @@
           (lambda ()
             ;; Undefine C-c [ and C-c ] since this breaks my
             ;; org-agenda files when directories are include It
-            ;; expands the files in the directories individually
+            ;; expands the files in the directories individually.
+            ;; Undefine C-c ; which is the comment function that
+            ;; I never use.
             (org-defkey org-mode-map "\C-c["    'undefined)
             (org-defkey org-mode-map "\C-c]"    'undefined)
             (org-defkey org-mode-map "\C-c;"    'undefined))
