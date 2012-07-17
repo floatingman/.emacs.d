@@ -1,0 +1,6 @@
+(require 'textmate)
+(defun textmate-mode-enable-hook ()
+(textmate-mode t))
+(add-hook 'feature-mode-hook 'textmate-mode-enable-hook)
+(add-hook 'ruby-mode-hook 'textmate-mode-enable-hook)
+(add-hook 'clojure-mode-hook 'textmate-mode-enable-hook)
