@@ -58,7 +58,7 @@
 (global-set-key "[" 'skeleton-pair-insert-maybe)
 (global-set-key "{" 'skeleton-pair-insert-maybe)
 (global-set-key "\"" 'skeleton-pair-insert-maybe)
-(global-set-key "<" 'skeleton-pair-insert-maybe)
+
 
 ;; Individual language pairings
 
@@ -72,6 +72,11 @@
           (lambda ()
             (define-key ruby-mode-map "'" 'skeleton-pair-insert-maybe)
             (define-key ruby-mode-map "|" 'skeleton-pair-insert-maybe)))
+
+;; just html
+(add-hook 'html-mode-hook
+          (lambda ()
+            (define-key html-mode-map "<" 'skeleton-pair-insert-maybe)))
 
 (set-face-attribute 'default nil :height 105)
 
@@ -102,8 +107,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; emacs title
-(setq frame-title-format "emacs [%b %*%+ %f]"
-      icon-title-format "emacs [%b]")
+;;(setq frame-title-format "emacs [%b %*%+ %f]"
+;;      icon-title-format "emacs [%b]")
 
 ;; gui settings (misc)
 ;; block cursors are extraordinary ugly
@@ -121,3 +126,5 @@
 (put 'narrow-to-defun  'disabled nil)
 (put 'narrow-to-page   'disabled nil)
 (put 'narrow-to-region 'disabled nil)
+
+(setq ispell-program-name "c:/cygwin/bin/aspell")

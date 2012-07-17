@@ -19,3 +19,4 @@
 ;; python libraries
 (setq pymacs-load-path (list))
 (add-subdirectories-to-load-path 'pymacs-load-path "~/.emacs.d/daniel-pymacs-extensions")
+

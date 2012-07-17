@@ -75,4 +75,25 @@
 ;; calc-mode more comfortable
 (global-set-key (kbd "M-c") 'calc-dispatch)
 
+;;insert date in standard format
+(global-set-key (kbd "C-c d") 'insert-date)
 
+;; duplicate current line
+(global-set-key (kbd "C-c d") 'duplicate-line)
+
+;;move current region or current line up and down
+(global-set-key [(M C up)] 'move-text-up)
+(global-set-key [(M C down)] 'move-text-down)
+
+;;Mark whole line
+(global-set-key (kbd "C-c l") 'mark-line)
+
+;; duplicate a line
+(global-set-key (kbd "C-c y") 'djcb-duplicate-line)
+
+;; duplicate a line and comment the first
+(global-set-key (kbd "C-c c")(lambda()(interactive)(djcb-duplicate-line t)))
+
+;; increase or increase font-size
+(global-set-key (kbd "C-+") 'ryan/increase-font-size)
+(global-set-key (kbd "C--") 'ryan/decrease-font-size)

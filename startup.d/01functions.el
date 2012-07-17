@@ -110,8 +110,6 @@ See `expand-file-name'."
                       :height
                       (floor (* 0.9
                                   (face-attribute 'default :height)))))
-(global-set-key (kbd "C-+") 'ryan/increase-font-size)
-(global-set-key (kbd "C--") 'ryan/decrease-font-size)
 
 ;; code borrowed from http://emacs-fu.blogspot.com/2010/01/duplicating-lines-and-commenting-them.html
 (defun djcb-duplicate-line (&optional commentfirst)
@@ -127,12 +125,6 @@ original" (interactive)
       (concat (if (= 0 (forward-line 1)) "" "\n") str "\n"))
     (forward-line -1)))
 
-;; duplicate a line
-(global-set-key (kbd "C-c y") 'djcb-duplicate-line)
-
-;; duplicate a line and comment the first
-(global-set-key (kbd "C-c c")(lambda()(interactive)(djcb-duplicate-line t)))
-
 ;; Mark whole line
 (defun mark-line (&optional arg)
   "Marks a line"
@@ -140,8 +132,6 @@ original" (interactive)
   (beginning-of-line)
   (push-mark (point) nil t)
   (end-of-line))
-
-(global-set-key (kbd "C-c l") 'mark-line)
 
 ; code copied from http://stackoverflow.com/questions/2423834/move-line-region-up-and-down-in-emacs
 (defun move-text-internal (arg)
@@ -207,9 +197,6 @@ original" (interactive)
   (setq deactivate-mark nil)
 )
 
-(global-set-key [(M C up)] 'move-text-up)
-(global-set-key [(M C down)] 'move-text-down)
-
 (add-hook 'python-mode-hook
 	  (lambda ()
 	    (define-key python-mode-map (kbd "M-<right>")
@@ -243,7 +230,6 @@ original" (interactive)
   (newline)
   (yank)
 )
-(global-set-key (kbd "C-c d") 'duplicate-line)
 
 (defun save-macro (name)
   "save a macro. Take a name as argument
@@ -270,9 +256,6 @@ original" (interactive)
   "Inserts standard date time string."
   (interactive)
   (insert (format-time-string "%c")))
-
-(global-set-key (kbd "C-c d") 'insert-date)
-
 
 ;;insert a date from the calendar or a date a # of days from today
 (require 'calendar)
