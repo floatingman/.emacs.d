@@ -203,7 +203,6 @@ effects to take effect."
 (require 'powershell)
 (require 'bar-cursor)
 (require 'iedit)
-(require 'browse-kill-ring)
 ;;print from web browser
 (require 'hfyview)
 (setq hfyview-quick-print-in-files-menu t)

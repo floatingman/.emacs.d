@@ -51,5 +51,13 @@
    (delq nil (mapcar
               (lambda (x) (if (string-equal (substring x 0 1) ".") x))
               ido-temp-list))))
+
+;;kill ring mangement
+(require 'browse-kill-ring)
 (browse-kill-ring-default-keybindings)
 (setq browse-kill-ring-quit-action 'save-and-restore)
+
+
+;; better undo handling
+(require 'undo-tree)
+(global-undo-tree-mode)

@@ -48,7 +48,7 @@
 (global-set-key (kbd "C-c n") 'global-linum-mode)
 
 ;; browse kill ring bindings
-(browse-kill-ring-default-keybindings)
+;(browse-kill-ring-default-keybindings)
 
 ;; iedit keybindings
 (define-key global-map (kbd "C-;") 'iedit-mode)
