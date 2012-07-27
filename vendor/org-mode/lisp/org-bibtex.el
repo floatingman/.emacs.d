@@ -1,10 +1,10 @@
 ;;; org-bibtex.el --- Org links to BibTeX entries
 ;;
-;; Copyright (C) 2007-2012 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2012  Free Software Foundation, Inc.
 ;;
-;; Author: Bastien Guerry <bzg at altern dot org>
-;;         Carsten Dominik <carsten dot dominik at gmail dot com>
-;;         Eric Schulte <schulte dot eric at gmail dot com>
+;; Authors: Bastien Guerry <bzg at altern dot org>
+;;       Carsten Dominik <carsten dot dominik at gmail dot com>
+;;       Eric Schulte <schulte dot eric at gmail dot com>
 ;; Keywords: org, wp, remember
 ;;
 ;; This file is part of GNU Emacs.
@@ -112,7 +112,7 @@
 (eval-when-compile
   (require 'cl))
 
-(defvar description nil) ; dynamically scoped from org.el
+(defvar org-bibtex-description nil) ; dynamically scoped from org.el
 (defvar org-id-locations)
 
 (declare-function bibtex-beginning-of-entry "bibtex" ())
@@ -210,7 +210,7 @@
     (:year         . "The year of publication or, for an unpublished work, the year it was written.  Generally it should consist of four numerals, such as 1984, although the standard styles can handle any year whose last four nonpunctuation characters are numerals, such as '(about 1984)'"))
   "Bibtex fields with descriptions.")
 
-(defvar *org-bibtex-entries* nil
+(defvar org-bibtex-entries nil
   "List to hold parsed bibtex entries.")
 
 (defcustom org-bibtex-autogen-keys nil
@@ -369,7 +369,7 @@ This variable is relevant only if `org-bibtex-export-tags-as-keywords` is t."
 	    	  (progn (goto-char (match-end 1)) (insert ", "))
 	    	(bibtex-make-field "keywords" t t))
 	      (insert (mapconcat #'identity tags ", ")))
-            (bibtex-reformat) (buffer-string)))))))
+            (buffer-string)))))))
 
 (defun org-bibtex-ask (field)
   (unless (assoc field org-bibtex-fields)
@@ -476,7 +476,7 @@ With optional argument OPTIONAL, also prompt for optional fields."
        :btype (or (cdr (assoc "=type=" entry)) "[no type]")
        :type "bibtex"
        :link link
-       :description description))))
+       :description org-bibtex-description))))
 
 (defun org-create-file-search-in-bibtex ()
   "Create the search string and description for a BibTeX database entry."
@@ -494,7 +494,7 @@ With optional argument OPTIONAL, also prompt for optional fields."
 	(bibtex-autokey-titleword-case-convert-function 'identity)
 	(bibtex-autokey-titleword-length 'infty)
 	(bibtex-autokey-year-title-separator ": "))
-    (setq description (bibtex-generate-autokey)))
+    (setq org-bibtex-description (bibtex-generate-autokey)))
   ;; Now parse the entry, get the key and return it.
   (save-excursion
     (bibtex-beginning-of-entry)
@@ -597,7 +597,7 @@ With a prefix arg, query for optional fields."
   (org-bibtex-create arg t))
 
 (defun org-bibtex-read ()
-  "Read a bibtex entry and save to `*org-bibtex-entries*'.
+  "Read a bibtex entry and save to `org-bibtex-entries'.
 This uses `bibtex-parse-entry'."
   (interactive)
   (flet ((keyword (str) (intern (concat ":" (downcase str))))
@@ -617,14 +617,14 @@ This uses `bibtex-parse-entry'."
                        (otherwise field)))
                    (clean-space (strip-delim (cdr pair)))))
            (save-excursion (bibtex-beginning-of-entry) (bibtex-parse-entry)))
-          *org-bibtex-entries*)))
+          org-bibtex-entries)))
 
 (defun org-bibtex-write ()
-  "Insert a heading built from the first element of `*org-bibtex-entries*'."
+  "Insert a heading built from the first element of `org-bibtex-entries'."
   (interactive)
-  (when (= (length *org-bibtex-entries*) 0)
-    (error "No entries in `*org-bibtex-entries*'."))
-  (let ((entry (pop *org-bibtex-entries*))
+  (when (= (length org-bibtex-entries) 0)
+    (error "No entries in `org-bibtex-entries'."))
+  (let ((entry (pop org-bibtex-entries))
 	(org-special-properties nil)) ; avoids errors with `org-entry-put'
     (flet ((val (field) (cdr (assoc field entry)))
 	   (togtag (tag) (org-toggle-tag tag 'on)))
@@ -661,7 +661,8 @@ This uses `bibtex-parse-entry'."
 (defun org-bibtex-export-to-kill-ring ()
   "Export current headline to kill ring as bibtex entry."
   (interactive)
-  (kill-new (org-bibtex-headline)))
+  (let ((result (org-bibtex-headline)))
+    (kill-new result) result))
 
 (defun org-bibtex-search (string)
   "Search for bibliographical entries in agenda files.

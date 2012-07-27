@@ -1,13 +1,18 @@
 ;;;;; ;;;;; ;;;;; ORG ;;;;; ;;;;; ;;;;;
 ;; reorganized org mode section to fit with http://doc.norang.ca/org-mode.html
 ;; in order to update it more easely
+;;3.1 installing org-mode
+;; copy to vendor/org-mode directory
+;; run make autoloads from org-mode directory in cygwin
 
-;;1.1 Org-Mode Setup
+;;3.2 Org-Mode Setup
 (add-to-list 'load-path (expand-file-name "~/.emacs.d/vendor/org-mode/lisp"))
+(add-to-list 'load-path (expand-file-name "~/.emacs.d/vendor/org-mode/contrib/lisp"))
 (add-to-list 'auto-mode-alist '("\\.\\(org\\|org_archive\\|txt\\)$" . org-mode))
 (require 'org-install)
+(require 'org-checklist)
 
-;;15.14 Habit Tracking
+;;15.14 Habit Tracking this needs to be around the top after loading the libraries
 ;;Enable habit tracking (and a bunch of other modules)
 (setq org-modules (quote (org-bbdb
                           org-bibtex
@@ -74,7 +79,7 @@
 (add-hook 'org-mode-hook (lambda () (abbrev-mode 1)))
 
 
-;;1.5 Key Bindings
+;;3.6 Key Bindings
 ;; Custom Key Bindings
 (global-set-key (kbd "<f12>") 'org-agenda)
 (global-set-key (kbd "<f5>") 'bh/org-todo)
@@ -106,7 +111,7 @@
 (global-set-key (kbd "<f9> v") 'visible-mode)
 (global-set-key (kbd "<f9> SPC") 'bh/clock-in-last-task)
 (global-set-key (kbd "C-<f9>") 'previous-buffer)
-(global-set-key (kbd "M-<f9>") 'org-display-inline-images)
+(global-set-key (kbd "M-<f9>") 'org-toggle-inline-images)
 (global-set-key (kbd "C-x n r") 'narrow-to-region)
 (global-set-key (kbd "C-<f10>") 'next-buffer)
 (global-set-key (kbd "<f11>") 'org-clock-goto)
@@ -142,7 +147,7 @@
   (interactive)
   (switch-to-buffer "*scratch*"))
 
-;;2.1 TODO Keywords
+;;4.1 TODO Keywords
 (setq org-todo-keywords
       (quote ((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!/!)")
               (sequence "WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "PHONE"))))
@@ -156,11 +161,11 @@
               ("CANCELLED" :foreground "forest green" :weight bold)
               ("PHONE" :foreground "forest green" :weight bold))))
 
-;;2.2 Fast Todo Selection
+;;4.2 Fast Todo Selection
 (setq org-use-fast-todo-selection t)
 (setq org-treat-S-cursor-todo-selection-as-state-change nil)
 
-;;2.3 ToDo State Triggers
+;;4.3 ToDo State Triggers
 (setq org-todo-state-tags-triggers
       (quote (("CANCELLED" ("CANCELLED" . t))
               ("WAITING" ("WAITING" . t))
@@ -170,7 +175,7 @@
               ("NEXT" ("WAITING") ("CANCELLED") ("HOLD"))
               ("DONE" ("WAITING") ("CANCELLED") ("HOLD")))))
 
-;;3.1 Capture Templates
+;;5.1 Capture Templates
 (setq org-directory "~/git/org")
 (setq org-default-notes-file "~/git/org/refile.org")
 
@@ -200,7 +205,7 @@
 
 (add-hook 'org-clock-out-hook 'bh/remove-empty-drawer-on-clock-out 'append)
 
-;;4.1 Refile Setup
+;;6.1 Refile Setup
 ; Targets include this file and any file contributing to the agenda - up to 9 levels deep
 (setq org-refile-targets (quote ((nil :maxlevel . 9)
                                  (org-agenda-files :maxlevel . 9))))
@@ -228,9 +233,9 @@
 
 (setq org-refile-target-verify-function 'bh/verify-refile-target)
 
-;;5.1 Setup
-;; Do not dim blocked tasks
-(setq org-agenda-dim-blocked-tasks nil)
+;;7.1 Setup
+;; Dim blocked tasks
+(setq org-agenda-dim-blocked-tasks t)
 
 ;; Compact the block agenda view
 (setq org-agenda-compact-blocks t)
@@ -274,8 +279,9 @@
                             (org-agenda-skip-function 'bh/skip-non-projects)
                             (org-agenda-sorting-strategy
                              '(category-keep))))
-                (tags-todo "-CANCELLED/!WAITING|HOLD"
+                (tags-todo "-CANCELLED+WAITING/!"
                            ((org-agenda-overriding-header "Waiting and Postponed Tasks")
+                            (org-agenda-skip-function 'bh/skip-stuck-projects)
                             (org-tags-match-list-sublevels nil)
                             (org-agenda-todo-ignore-scheduled 'future)
                             (org-agenda-todo-ignore-deadlines 'future)))
@@ -309,7 +315,7 @@
                 (org-agenda-skip-function 'bh/skip-non-projects)
                 (org-agenda-sorting-strategy
                  '(category-keep))))
-              ("w" "Waiting Tasks" tags-todo "-CANCELLED/!WAITING|HOLD"
+              ("w" "Waiting Tasks" tags-todo "-CANCELLED+WAITING/!"
                ((org-agenda-overriding-header "Waiting and Postponed tasks"))
                (org-tags-match-list-sublevels nil))
               ("A" "Tasks to Archive" tags "-REFILE/"
@@ -317,7 +323,7 @@
                 (org-agenda-skip-function 'bh/skip-non-archivable-tasks)
                 (org-tags-match-list-sublevels nil))))))
 
-;;5.4.1 Automatically removing context based tasks with / RET
+;;7.4.1 Automatically removing context based tasks with / RET
 
 (defun bh/org-auto-exclude-function (tag)
   "Automatic task exclusion in the agenda with / RET"
@@ -331,7 +337,7 @@
 (setq org-agenda-auto-exclude-function 'bh/org-auto-exclude-function)
 
 
-;;6.1 Clock Setup
+;;8.1 Clock Setup
 ;;
 ;; Resume clocking task when emacs is restarted
 (org-clock-persistence-insinuate)
@@ -476,7 +482,7 @@ A prefix arg forces clock in of the default task."
     (org-with-point-at clock-in-to-task
       (org-clock-in nil))))
 
-;;6.5 Editing Clock Entries
+;;8.5 Editing Clock Entries
 (setq org-time-stamp-rounding-minutes (quote (1 1)))
 
 (setq org-agenda-clock-consistency-checks
@@ -505,17 +511,17 @@ A prefix arg forces clock in of the default task."
         (org-clock-in))
     (org-clock-out)))
 
-;;7.1.1 Verify That The Clock Data Is Complete And Correct
+;;9.1.1 Verify That The Clock Data Is Complete And Correct
 ;; Sometimes I change tasks I'm clocking quickly - this removes clocked tasks with 0:00 duration
 ;;duplicate
-;;(setq org-clock-out-remove-zero-time-clocks t)
+(setq org-clock-out-remove-zero-time-clocks t)
 
-;;7.1.2 Using Clock Reports To Summarize Time Spent
+;;9.1.2 Using Clock Reports To Summarize Time Spent
 ;; Agenda clock report parameters
 (setq org-agenda-clockreport-parameter-plist
       (quote (:link t :maxlevel 5 :fileskip0 t :compact t :narrow 80)))
 
-;;7.2.1 Creating A Task Estimate With Column Mode
+;;9.2.1 Creating A Task Estimate With Column Mode
 ;; Set default column view headings: Task Effort Clock_Summary
 (setq org-columns-default-format "%80ITEM(Task) %10Effort(Effort){:} %10CLOCKSUM")
 
@@ -523,11 +529,11 @@ A prefix arg forces clock in of the default task."
 ;; global STYLE property values for completion
 (setq org-global-properties (quote (("Effort_ALL" . "0:15 0:30 1:00 2:00 3:00 4:00 5:00 6:00 7:00 8:00")
                                     ("STYLE_ALL" . "habit"))))
-;;7.3 Providing Progress Reports to Others
+;;9.3 Providing Progress Reports to Others
 ;; Agenda log mode items to display (closed and state changes by default)
 (setq org-agenda-log-mode-items (quote (state)))
 
-;;8.1 Tags
+;;10.1 Tags
 ; Tags with fast selection keys
 (setq org-tag-alist (quote ((:startgroup)
                             ("@errand" . ?e)
@@ -539,6 +545,7 @@ A prefix arg forces clock in of the default task."
                             ("WAITING" . ?w)
                             ("HOLD" . ?h)
                             ("PERSONAL" . ?P)
+                            ("CHURCH" . ?R)
                             ("WORK" . ?W)
                             ("ORG" . ?O)
                             ("crypt" . ?E)
@@ -553,6 +560,7 @@ A prefix arg forces clock in of the default task."
 ; For tag searches ignore tasks with scheduled and deadline dates
 (setq org-agenda-tags-todo-honor-ignore-options t)
 
+;;12 Handling Phone Calls
 (require 'bbdb)
 (require 'bbdb-com)
 
@@ -590,11 +598,11 @@ A prefix arg forces clock in of the default task."
                        (t "NameOfCaller")))
     (insert caller)))
 
-;;11.1 Weekly Review Process
+;;13.1 Weekly Review Process
 
 (setq org-agenda-span 'day)
 
-;;11.2 Project Definition And Finding Stuck Projects
+;;13.2 Project Definition And Finding Stuck Projects
 
 (setq org-stuck-projects (quote ("" nil nil "")))
 
@@ -667,6 +675,24 @@ Callers of this function already widen the buffer view."
     (setq org-tags-match-list-sublevels nil))
   nil)
 
+(defun bh/skip-stuck-projects ()
+  "Skip trees that are not stuck projects"
+  (save-restriction
+    (widen)
+    (let ((next-headline (save-excursion (or (outline-next-heading) (point-max)))))
+      (if (bh/is-project-p)
+          (let* ((subtree-end (save-excursion (org-end-of-subtree t)))
+                 (has-next ))
+            (save-excursion
+              (forward-line 1)
+              (while (and (not has-next) (< (point) subtree-end) (re-search-forward "^\\*+ NEXT " subtree-end t))
+                (unless (member "WAITING" (org-get-tags-at))
+                  (setq has-next t))))
+            (if has-next
+                nil
+              next-headline)) ; a stuck project, has subtasks but no next task
+        nil))))
+
 (defun bh/skip-non-stuck-projects ()
   "Skip trees that are not stuck projects"
   (bh/list-sublevels-for-projects-indented)
@@ -693,10 +719,18 @@ Callers of this function already widen the buffer view."
       (save-restriction
         (widen)
         (let ((subtree-end (save-excursion (org-end-of-subtree t))))
-          (if (bh/is-project-p)
-              nil
-            subtree-end)))
-    (org-end-of-subtree t)))
+          (cond
+           ((and (bh/is-project-p)
+              (marker-buffer org-agenda-restrict-begin))nil
+            )
+           ((and (bh/is-project-p)
+                 (not (marker-buffer org-agenda-restrict-begin))
+                 (not (bh/is-project-subtree-p)))
+            nil)
+           (t
+            subtree-end))))
+    (save-excursion
+    (org-end-of-subtree t))))
 
 (defun bh/skip-project-trees-and-habits ()
   "Skip trees that are projects"
@@ -770,14 +804,16 @@ When not restricted, skip project and sub-project tasks, habits, and project rel
         nil
       next-headline)))
 
-;;12.2 Archive Setup
+;;14.2 Archive Setup
 
 (setq org-archive-mark-done nil)
 (setq org-archive-location "%s_archive::* Archived Tasks")
 
 (defun bh/skip-non-archivable-tasks ()
   "Skip trees that are not available for archiving"
-  (let ((next-headline (save-excursion (or (outline-next-heading) (point-max)))))
+  (save-restriction
+    (widen)
+    (let ((next-headline (save-excursion (or (outline-next-heading) (point-max)))))
     ;; Consider only tasks with done todo headings as archivable candidates
     (if (member (org-get-todo-state) org-done-keywords)
         (let* ((subtree-end (save-excursion (org-end-of-subtree t)))
@@ -792,9 +828,9 @@ When not restricted, skip project and sub-project tasks, habits, and project rel
           (if subtree-is-current
               next-headline ; Has a date in this month or last month, skip it
             nil))  ; available to archive
-      (or next-headline (point-max)))))
+      (or next-headline (point-max))))))
 
-;;14.1 Reminder Setup
+;;16.1 Reminder Setup
 ; Erase all reminders and rebuilt reminders for today from the agenda
 (defun bh/org-agenda-to-appt ()
   (interactive)
@@ -804,16 +840,17 @@ When not restricted, skip project and sub-project tasks, habits, and project rel
 ; Rebuild the reminders everytime the agenda is displayed
 (add-hook 'org-finalize-agenda-hook 'bh/org-agenda-to-appt 'append)
 
-; This is at the end of my .emacs - so appointments are set up when Emacs starts
-(bh/org-agenda-to-appt)
-
 ; Activate appointments so we get notifications
 (appt-activate t)
 
 ; If we leave Emacs running overnight - reset the appointments one minute after midnight
 (run-at-time "24:01" nil 'bh/org-agenda-to-appt)
 
-;;;;15.1 Abbrev-mode and Skeletons
+;;15.1 Abbrev-mode and Skeletons
+
+;; Enable abbrev-mode
+(add-hook 'org-mode-hook (lambda () (abbrev-mode 1)))
+
 ;; Skeletons
 ;;
 ;; sblk - Generic block #+begin_FOO .. #+end_FOO
@@ -830,7 +867,7 @@ When not restricted, skip project and sub-project tasks, habits, and project rel
 (define-skeleton skel-org-block-plantuml
   "Insert a org plantuml block, querying for filename."
   "File (no extension): "
-  "#+begin_src plantuml :file " str ".png\n"
+  "#+begin_src plantuml :file " str ".png:cache yes\n"
   _ - \n
   "#+end_src\n")
 
@@ -840,7 +877,7 @@ When not restricted, skip project and sub-project tasks, habits, and project rel
 (define-skeleton skel-org-block-dot
   "Insert a org graphviz dot block, querying for filename."
   "File (no extension): "
-  "#+begin_src dot :file " str ".png :cmdline -Kdot -Tpng\n"
+  "#+begin_src dot :file " str ".png :cache yes :cmdline -Kdot -Tpng\n"
   "graph G {\n"
   _ - \n
   "}\n"
@@ -852,7 +889,7 @@ When not restricted, skip project and sub-project tasks, habits, and project rel
 (define-skeleton skel-org-block-ditaa
   "Insert a org ditaa block, querying for filename."
   "File (no extension): "
-  "#+begin_src ditaa :file " str ".png\n"
+  "#+begin_src ditaa :file " str ".png:cache yes\n"
   _ - \n
   "#+end_src\n")
 
@@ -868,7 +905,7 @@ When not restricted, skip project and sub-project tasks, habits, and project rel
 
 (define-abbrev org-mode-abbrev-table "selisp" "" 'skel-org-block-elisp)
 
-;;15.2.1 Narrowing to a subtree with bh/org-todo
+;;17.2.1 Narrowing to a subtree with bh/org-todo
 
 (defun bh/org-todo (arg)
   (interactive "p")
@@ -937,7 +974,7 @@ so change the default 'F' binding in the agenda to allow both"
 (defun bh/narrow-up-one-level ()
   (interactive)
   (if (equal major-mode 'org-agenda-mode)
-      (org-with-point-at (org-get-at-bol 'org-hd-marker)
+      (org-with-point-at (bh/get-pom-from-agenda-restriction-or-point)
         (bh/narrow-up-one-org-level))
     (bh/narrow-up-one-org-level)))
 
@@ -968,11 +1005,16 @@ so change the default 'F' binding in the agenda to allow both"
   (interactive)
   (unless (marker-position org-agenda-restrict-begin)
     (goto-char (point-min))
-    (re-search-forward "^Projects$")
     (setq bh/current-view-project (point)))
   (bh/widen)
   (goto-char bh/current-view-project)
   (forward-visible-line 1)
+  (while (and (< (point) (point-max))
+              (or (not (org-get-at-bol 'org-hd-marker))
+                  (org-with-point-at (org-get-at-bol 'org-hd-marker)
+                    (or (not (bh/is-project-p))
+                        (bh/is-project-subtree-p)))))
+    (forward-visible-line 1))
   (setq bh/current-view-project (point))
   (if (org-get-at-bol 'org-hd-marker)
       (bh/narrow-to-project)
@@ -1008,12 +1050,12 @@ so change the default 'F' binding in the agenda to allow both"
             (org-agenda-set-restriction-lock restriction-type))))))))
 
 
-;;15.3.1 Highlight The Current Agenda Line
+;;17.3.1 Highlight The Current Agenda Line
 
 ;; Always hilight the current agenda line
 (add-hook 'org-agenda-mode-hook '(lambda () (hl-line-mode 1))'append)
 
-;;15.3.2 Keep Tasks With Timestamps Visible On The Global Todo Lists
+;;17.3.2 Keep Tasks With Timestamps Visible On The Global Todo Lists
 ;; Keep tasks with dates on the global todo lists
 (setq org-agenda-todo-ignore-with-date nil)
 
@@ -1035,17 +1077,17 @@ so change the default 'F' binding in the agenda to allow both"
 ;; Remove completed items from search results
 (setq org-agenda-skip-timestamp-if-done t)
 
-;;15.3.3 Use The Diary For Holidays And Appointments
+;;17.3.3 Use The Diary For Holidays And Appointments
 (setq org-agenda-include-diary nil)
 (setq org-agenda-diary-file "~/git/org/diary.org")
 
 (setq org-agenda-insert-diary-extract-time t)
 
-;;15.3.4 Searches Include Archive Files
+;;17.3.4 Searches Include Archive Files
 ;; Include agenda archive files when searching for things
 (setq org-agenda-text-search-extra-files (quote (agenda-archives)))
 
-;;15.3.5 Agenda View Tweaks
+;;17.3.5 Agenda View Tweaks
 ;; Show all future entries for repeating tasks
 (setq org-agenda-repeating-timestamp-show-all t)
 
@@ -1059,14 +1101,14 @@ so change the default 'F' binding in the agenda to allow both"
               (tags category-up priority-down effort-up)
               (search category-up))))
 
-;; Start the weekly agenda today
+;; Start the weekly agenda on Monday
 (setq org-agenda-start-on-weekday 1)
 
 ;; Enable display of the time grid so we can see the marker for the current time
 (setq org-agenda-time-grid (quote((daily today remove-match)
                                   #("----------------" 0 16
                                     (org-heading t))
-                                  (800 1000 1200 1400 1600 1800 2000))))
+                                  (830 1000 1200 1300 1500 1700))))
 
 ;; Display tags farther right
 (setq org-agenda-tags-column -102)
@@ -1164,70 +1206,65 @@ Late deadlines first, then scheduled, then non-late deadlines"
 (defun bh/is-scheduled-late (date-str)
   (string-match "Sched\.\\(.*\\)x:" date-str))
 
-;;15.3.6 q buries the agenda view buffer
+;;17.3.6 q buries the agenda view buffer
 (add-hook 'org-agenda-mode-hook
           (lambda ()
             (define-key org-agenda-mode-map "q" 'bury-buffer))
           'append)
 
-;;15.4 Checklist Handling
-(add-to-list 'load-path (expand-file-name "~/.emacs.d/vendor/org-mode/contrib/lisp"))
-
-(require 'org-checklist)
-
-;;15.6 Handling Blocked Tasks
+;;17.6 Handling Blocked Tasks
 (setq org-enforce-todo-dependencies t)
 
-;;15.7.1 Controlling Display Of Leading Stars On Headlines
+;;17.7.1 Controlling Display Of Leading Stars On Headlines
 
 (setq org-hide-leading-stars nil)
 
-;;15.7.2 Org-Indent Mode
+;;17.7.2 Org-Indent Mode
 (setq org-startup-indented t)
 
-;;15.7.3 Handling Blank Lines
-(setq org-cycle-separator-lines 2)
+;;17.7.3 Handling Blank Lines
+(setq org-cycle-separator-lines 0)
 (setq org-blank-before-new-entry (quote ((heading)
                                          (plain-list-item . auto))))
 
-;;15.7.4 Adding New Tasks Quickly Without Disturbing The Current Task Content
+;;17.7.4 Adding New Tasks Quickly Without Disturbing The Current Task Content
 (setq org-insert-heading-respect-content nil)
 
-;;15.7.5 Notes At The Top
+;;17.7.5 Notes At The Top
 (setq org-reverse-note-order nil)
 
-;;15.7.6 Searching And Showing Results
+;;17.7.6 Searching And Showing Results
 (setq org-show-following-heading t)
 (setq org-show-hierarchy-above t)
 (setq org-show-siblings (quote ((default))))
 
-;;15.7.7 Editing And Special Key Handling
+;;17.7.7 Editing And Special Key Handling
 (setq org-special-ctrl-a/e 'reversed)
 (setq org-special-ctrl-k t)
 (setq org-yank-adjusted-subtrees t)
 
-;;15.8 Attachments
+;;17.8 Attachments
 (setq org-id-method (quote uuidgen))
 
-;;15.9 Deadlines And Agenda Visibility
+;;17.9 Deadlines And Agenda Visibility
 (setq org-deadline-warning-days 30)
 
-;;15.10 Exporting Tables To CSV
+;;17.10 Exporting Tables To CSV
 
 (setq org-table-export-default-format "orgtbl-to-csv")
 
-;;15.12 Logging Stuff
+;;17.12 Logging Stuff
 (setq org-log-done (quote time))
 (setq org-log-into-drawer "LOGBOOK")
 
 
-
+;;17.14
 ; position the habit graph on the agenda to the right of the default
 (setq org-habit-graph-column 50)
 
 (run-at-time "06:00" 86400 '(lambda () (setq org-habit-show-habits t)))
 
-;;15.17 Handling Encryption
+;;17.17 Handling Encryption
 (require 'org-crypt)
 ; Encrypt all entries before saving
 (org-crypt-use-before-save-magic)
@@ -1235,10 +1272,10 @@ Late deadlines first, then scheduled, then non-late deadlines"
 ; GPG key to use for encryption
 (setq org-crypt-key nil)
 
-;;15.17.1 Auto Save Files
+;;17.17.1 Auto Save Files
 (setq org-crypt-disable-auto-save nil)
 
-;;15.18 Speed Commands
+;;17.18 Speed Commands
 (setq org-use-speed-commands t)
 (setq org-speed-commands-user (quote (("0" . ignore)
                                       ("1" . ignore)
@@ -1294,13 +1331,13 @@ Late deadlines first, then scheduled, then non-late deadlines"
   (switch-to-buffer "*Org Agenda*")
   (delete-other-windows))
 
-;;15.19 Org Protocol
+;;17.19 Org Protocol
 (require 'org-protocol)
 
-;;15.20 Require A Final Newline When Saving Files
+;;17.20 Require A Final Newline When Saving Files
 (setq require-final-newline t)
 
-;;15.21 Insert Inactive Timestamps And Exclude From Export
+;;17.21 Insert Inactive Timestamps And Exclude From Export
 (defun bh/insert-inactive-timestamp ()
   (interactive)
   (org-insert-time-stamp nil t t nil nil nil))
@@ -1315,10 +1352,10 @@ Late deadlines first, then scheduled, then non-late deadlines"
 
 (setq org-export-with-timestamps nil)
 
-;;15.22 Return Follows Links
+;;17.22 Return Follows Links
 (setq org-return-follows-link t)
 
-;;15.24 Meeting Notes
+;;17.24 Meeting Notes
 (defun bh/prepare-meeting-notes ()
   "Prepare meeting notes for email
    Take selected region and convert tabs to spaces, mark TODOs with leading >>>, and copy to kill ring for pasting"
@@ -1334,33 +1371,33 @@ Late deadlines first, then scheduled, then non-late deadlines"
         (goto-char (point-min))
         (kill-ring-save (point-min) (point-max))))))
 
-;;15.25 Highlights Persist After Changes
+;;17.25 Highlights Persist After Changes
 (setq org-remove-highlights-with-change nil)
 
-;;15.26 Getting Up To Date Org-Mode Info Documentation
+;;17.26 Getting Up To Date Org-Mode Info Documentation
 (add-to-list 'Info-default-directory-list "~/.emacs.d/vendor/org-mode/doc")
 
 
-;;15.27 Prefer Future Dates Or Not?
+;;17.27 Prefer Future Dates Or Not?
 (setq org-read-date-prefer-future nil)
 
-;;15.28 Automatically Change List Bullets
+;;17.28 Automatically Change List Bullets
 
 (setq org-list-demote-modify-bullet (quote (("+" . "-")
                                             ("*" . "-")
                                             ("1." . "-")
                                             ("1)" . "-"))))
 
-;;15.29 Remove Indentation On Agenda Tags View
+;;17.29 Remove Indentation On Agenda Tags View
 (setq org-tags-match-list-sublevels t)
 
-;;15.31 Agenda Persistent Filters
+;;17.31 Agenda Persistent Filters
 (setq org-agenda-persistent-filter t)
 
-;;15.33 Mail Links Open Compose-Mail
+;;17.33 Mail Links Open Compose-Mail
 (setq org-link-mailto-program (quote (compose-mail "%a" "%s")))
 
-;;15.35 Use Smex For M-X Ido-Completion
+;;17.35 Use Smex For M-X Ido-Completion
 (add-to-list 'load-path (expand-file-name "~/.emacs.d"))
 (require 'smex)
 (smex-initialize)
@@ -1370,41 +1407,41 @@ Late deadlines first, then scheduled, then non-late deadlines"
 (global-set-key (kbd "M-X") 'smex-major-mode-commands)
 
 
-;;15.36 Use Emacs Bookmarks For Fast Navigation
+;;17.37 Use Emacs Bookmarks For Fast Navigation
 ;; Bookmark handling
 ;;
 (global-set-key (kbd "<C-f6>") '(lambda () (interactive) (bookmark-set "SAVED")))
 (global-set-key (kbd "<f6>") '(lambda () (interactive) (bookmark-jump "SAVED")))
 
-;;15.37 Using Org-mime To Email
+;;17.37 Using Org-mime To Email
 (require 'org-mime)
 
-;;15.38 Remove Multiple State Change Log Details From The Agenda
+;;17.38 Remove Multiple State Change Log Details From The Agenda
 (setq org-agenda-skip-additional-timestamps-same-entry t)
 
-;;15.39 Drop old style references in tables
+;;17.39 Drop old style references in tables
 (setq org-table-use-standard-references (quote from))
 
-;;15.40 Use System Settings for File-application Selection
+;;17.40 Use System Settings for File-application Selection
 (setq org-file-apps (quote ((auto-mode . emacs)
                             ("\\.mm\\'" . system)
                             ("\\.x?html?\\'" . system)
                             ("\\.pdf\\'" . system))))
 
-;;15.41 Use The Current Window For The Agenda
+;;17.41 Use The Current Window For The Agenda
 ; Overwrite the current window with the agenda
 (setq org-agenda-window-setup 'current-window)
 
-;;15.42 Delete IDs When Cloning
+;;17.42 Delete IDs When Cloning
 (setq org-clone-delete-id t)
 
-;;15.43 Cycling plain lists
+;;17.43 Cycling plain lists
 (setq org-cycle-include-plain-lists t)
 
-;;15.44 Showing source block syntax highlighting
+;;17.44 Showing source block syntax highlighting
 (setq org-src-fontify-natively t)
 
-;;15.45 Inserting Structure Template Blocks
+;;17.45 Inserting Structure Template Blocks
 (setq org-structure-template-alist
       (quote (("s" "#+begin_src ?\n\n#+end_src" "<src lang=\"?\">\n\n</src>")
               ("e" "#+begin_example\n?\n#+end_example" "<example>\n?\n</example>")
@@ -1420,7 +1457,7 @@ Late deadlines first, then scheduled, then non-late deadlines"
               ("i" "#+index: ?" "#+index: ?")
               ("I" "#+include %file ?" "<include file=%file markup=\"?\">"))))
 
-;;15.46 NEXT is for Tasks
+;;17.46 NEXT is for Tasks
 (defun bh/mark-next-parent-tasks-todo ()
   "Visit each parent task and change NEXT states to TODO"
   (let ((mystate (or (and (fboundp 'state)
@@ -1435,33 +1472,39 @@ Late deadlines first, then scheduled, then non-late deadlines"
 (add-hook 'org-after-todo-state-change-hook 'bh/mark-next-parent-tasks-todo 'append)
 (add-hook 'org-clock-in-hook 'bh/mark-next-parent-tasks-todo 'append)
 
-;;15.47 Startup in content view
+;;17.47 Startup in content view
 (setq org-startup-folded 'content)
 
 
 
 ;;List of disabled org-mode functions
 
-;;16.1 Task Priorities
-(setq org-enable-priority-commands nil)
+;;17.51 Task Priorities
+(setq org-enable-priority-commands t)
+(setq org-default-priority ?E)
+(setq org-lowest-priority ?E)
 
-;;16.3 Strike-Through Emphasis
+;;17.53 Preserving Source Block Indentation
+(setq org-src-preserve-indentation nil)
+(setq org-edit-src-content-indentation 0)
+
+;;17.54 Prevent Editing Invisible Text
+(setq org-catch-invisible-edits 'error)
+
+;;18.2 Strike-Through Emphasis
 (setq org-emphasis-alist (quote (("*" bold "<b>" "</b>")
                                  ("/" italic "<i>" "</i>")
                                  ("_" underline "<span style=\"text-decoration:underline;\">" "</span>")
                                  ("=" org-code "<code>" "</code>" verbatim)
                                  ("~" org-verbatim "<code>" "</code>" verbatim))))
 
-;;16.4 Subscripts And Superscripts
+;;18.3 Subscripts And Superscripts
 (setq org-use-sub-superscripts nil)
 
-;;16.5 Preserving source block indentation
-(setq org-src-preserve-indentation nil)
-
-;;16.7 Show headings at odd levels only or odd-even levels
+;;18.5 Show headings at odd levels only or odd-even levels
 (setq org-odd-levels-only nil)
 
-;;16.8 Propagate STARTED To Parent Tasks
+;;18.6 Propagate STARTED To Parent Tasks
 ;; Mark parent tasks as started
 (defvar bh/mark-parent-tasks-started nil)
 
@@ -1477,7 +1520,12 @@ Late deadlines first, then scheduled, then non-late deadlines"
 
 (add-hook 'org-after-todo-state-change-hook 'bh/mark-parent-tasks-started 'append)
 
-;;17.1 Automatic Hourly Commits
+;;19.1 Automatic Hourly Commits
 (run-at-time "00:59" 3600 'org-save-all-org-buffers)
 
-;;v2.0
+
+;;16.1 Reminder Setup
+;; This is at the end of my .emacs - so appointments are set up when Emacs starts
+(bh/org-agenda-to-appt)
+
+;;v2.1

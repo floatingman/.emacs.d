@@ -101,7 +101,7 @@ itemized list in org-mode syntax in an HTML buffer and then use
 this command to convert it."
   (let (reg backend-string buf pop-up-frames)
     (save-window-excursion
-      (if (eq major-mode 'org-mode)
+      (if (derived-mode-p 'org-mode)
 	  (setq backend-string (org-lparse-region backend beg end t 'string))
 	(setq reg (buffer-substring beg end)
 	      buf (get-buffer-create "*Org tmp*"))
@@ -901,7 +901,6 @@ version."
 		(funcall f style env-options-plist)
 		(throw 'nextline nil))))
 
-	  (run-hooks 'org-export-html-after-blockquotes-hook)
 	  (when (org-lparse-current-environment-p 'verse)
 	    (let ((i (org-get-string-indentation line)))
 	      (if (> i 0)
@@ -1111,9 +1110,6 @@ version."
       (unless body-only
 	(org-lparse-end 'DOCUMENT-CONTENT))
 
-      (unless (plist-get opt-plist :buffer-will-be-killed)
-	(set-auto-mode t))
-
       (org-lparse-end 'EXPORT)
 
       ;; kill collection buffer
@@ -1221,7 +1217,11 @@ for formatting.  This is required for the DocBook exporter."
     ;; column and the special lines
     (setq lines (org-table-clean-before-export lines)))
   (let* ((caption (org-find-text-property-in-string 'org-caption (car lines)))
+	 (short-caption (or (org-find-text-property-in-string
+			     'org-caption-shortn (car lines)) caption))
 	 (caption (and caption (org-xml-encode-org-text caption)))
+	 (short-caption (and short-caption
+			     (org-xml-encode-plain-text short-caption)))
 	 (label (org-find-text-property-in-string 'org-label (car lines)))
 	 (org-lparse-table-colalign-info (org-lparse-table-get-colalign-info lines))
 	 (attributes (org-find-text-property-in-string 'org-attributes
@@ -1232,11 +1232,13 @@ for formatting.  This is required for the DocBook exporter."
 			       (cdr lines))))))
     (setq lines (org-lparse-org-table-to-list-table lines splice))
     (org-lparse-insert-list-table
-     lines splice caption label attributes head org-lparse-table-colalign-info)))
+     lines splice caption label attributes head org-lparse-table-colalign-info
+     short-caption)))
 
 (defun org-lparse-insert-list-table (lines &optional splice
 					      caption label attributes head
-					      org-lparse-table-colalign-info)
+					      org-lparse-table-colalign-info
+					      short-caption)
   (or (featurep 'org-table)		; required for
       (require 'org-table))		; `org-table-number-regexp'
   (let* ((org-lparse-table-rownum -1) org-lparse-table-ncols i (cnt 0)
@@ -1256,7 +1258,7 @@ for formatting.  This is required for the DocBook exporter."
 	(insert (org-lparse-format-table-row line) "\n")))
      (t
       (setq org-lparse-table-is-styled t)
-      (org-lparse-begin 'TABLE caption label attributes)
+      (org-lparse-begin 'TABLE caption label attributes short-caption)
       (setq org-lparse-table-begin-marker (point))
       (org-lparse-begin-table-rowgroup head)
       (while (setq line (pop lines))
@@ -1287,13 +1289,14 @@ But it has the disadvantage, that no cell- or row-spanning is allowed."
 	     (org-lparse-table-cur-rowgrp-is-hdr
 	      org-export-highlight-first-table-line)
 	     (caption nil)
+	     (short-caption nil)
 	     (attributes nil)
 	     (label nil)
 	     (org-lparse-table-style 'table-table)
 	     (org-lparse-table-is-styled nil)
 	     fields org-lparse-table-ncols i (org-lparse-table-rownum -1)
 	     (empty (org-lparse-format 'SPACES 1)))
-    (org-lparse-begin 'TABLE caption label attributes)
+    (org-lparse-begin 'TABLE caption label attributes short-caption)
     (while (setq line (pop lines))
       (cond
        ((string-match "^[ \t]*\\+-" line)
