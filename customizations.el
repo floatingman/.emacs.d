@@ -1,8 +1,8 @@
 (custom-set-variables
-  ;; custom-set-variables was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
  '(auto-insert (quote other))
  '(auto-insert-alist (quote ((("\\.\\([Hh]\\|hh\\|hpp\\)\\'" . "C / C++ header") . ["template.h" c++-mode my/autoinsert-yas-expand]) (("\\.\\([C]\\|cc\\|cpp\\)\\'" . "C++ source") . ["template.cc" my/autoinsert-yas-expand]) (("\\.sh\\'" . "Shell script") . ["template.sh" my/autoinsert-yas-expand]) (("\\.el\\'" . "Emacs Lisp") . ["template.el" my/autoinsert-yas-expand]) (("\\.pl\\'" . "Perl script") . ["template.pl" my/autoinsert-yas-expand]) (("\\.pm\\'" . "Perl module") . ["template.pm" my/autoinsert-yas-expand]) (("\\.py\\'" . "Python script") . ["template.py" my/autoinsert-yas-expand]) (("[mM]akefile\\'" . "Makefile") . ["Makefile" my/autoinsert-yas-expand]) (("\\.tex\\'" . "TeX/LaTeX") . ["template.tex" my/autoinsert-yas-expand]))))
  '(auto-insert-directory "~/.emacs.d/autoinsert/")
@@ -35,15 +35,11 @@
  '(tabbar-scroll-right-button (quote ((">") "=")))
  '(tabbar-separator (quote ("|")))
  '(tabbar-use-images nil)
- '(temp-buffer-resize-mode t))
+ '(temp-buffer-resize-mode t)
+ '(tidy-temp-directory "~/emacs-meta/"))
 (custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
- ;;'(default ((t (:inherit nil :stipple nil :background "SystemWindow" :foreground "SystemWindowText" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 113 :width normal :foundry "outline" :family "Consolas"))))
- ;;'(highlight ((t (:background "cyan"))))
- ;;'(hl-line ((t (:inherit highlight :background "darkseagreen2"))))
- '(org-mode-line-clock ((t (:background "grey75" :foreground "red" :box (:line-width -1 :style released-button)))) t)
- ;;'(secondary-selection ((t (:background "blue"))))
-)
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(org-mode-line-clock ((t (:background "grey75" :foreground "red" :box (:line-width -1 :style released-button)))) t))
