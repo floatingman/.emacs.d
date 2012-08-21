@@ -1,8 +1,0 @@
-USbank SQL
-
-The following queries will reset loans when doing batch wire approvals
-update GF_TLR_DISBURSEMENTS set S_FSTATUS = 'DTS_WREQ' where Datepart(Month,DATE_PROCESSED) = '12'
-update USB_TLR_DISBURSEMENT set W_APPRVDBY1 = NULL where
-Datepart(Month,W_APPRVDDT1) = '12'
-
-where 12 is the current month.
