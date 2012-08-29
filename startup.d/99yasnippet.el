@@ -1,6 +1,6 @@
 (require 'yasnippet)
 (setq yas/root-directory '("~/.emacs.d/vendor/yasnippet/snippets" "~/.emacs.d/snippets"))
-(yas/initialize)
+(yas/global-mode 1)
 (setq yas/prompt-functions '(yas/dropdown-prompt yas/ido-prompt yas/x-prompt))
 (setq yas/wrap-around-region 'cua)
 
