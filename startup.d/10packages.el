@@ -193,12 +193,7 @@
 ;;   :group 'xrdb)
 
 ;; added from emacs starter kit
-(require 'cl)
-(require 'saveplace)
-(require 'ffap)
-(require 'uniquify)
-(require 'ansi-color)
-(require 'recentf)
+
 
 (require 'lorem-ipsum)
 (require 'column-marker)
@@ -239,3 +234,7 @@
 (setq thesaurus-bhl-api-key "1d5cbb4b3f8ecfddedaea4680cd51a05")  ;; from registration
 ;; optional key binding
 ;;(define-key global-map (kbd "C-x t") 'thesaurus-choose-synonym-and-replace)
+
+(dolist (package '(magit))
+    (unless (package-installed-p package)
+      (package-install package)))

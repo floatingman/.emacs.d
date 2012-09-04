@@ -1,6 +1,0 @@
-# This was cloned from a TextMate bundle for yasnippet.
-#name : clone
-#key : clone
-#condition : (when (boundp 'jquery-project) jquery-project)
-# --
-.clone()$0

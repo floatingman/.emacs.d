@@ -1,6 +1,0 @@
-# This was cloned from a TextMate bundle for yasnippet.
-#name : width
-#key : .width
-#condition : (when (boundp 'jquery-project) jquery-project)
-# --
-.width(${1:integer})$0

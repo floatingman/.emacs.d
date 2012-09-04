@@ -1,6 +1,0 @@
-# This was cloned from a TextMate bundle for yasnippet.
-#name : unbind
-#key : .unbind
-#condition : (when (boundp 'jquery-project) jquery-project)
-# --
-.unbind('${1:event name}')$0

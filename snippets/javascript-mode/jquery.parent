@@ -1,6 +1,0 @@
-# This was cloned from a TextMate bundle for yasnippet.
-#name : parent
-#key : .parent
-#condition : (when (boundp 'jquery-project) jquery-project)
-# --
-.parent('${1:selector expression}')$0

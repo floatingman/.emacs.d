@@ -1,6 +1,0 @@
-# This was cloned from a TextMate bundle for yasnippet.
-#name : prependTo
-#key : .prependTo
-#condition : (when (boundp 'jquery-project) jquery-project)
-# --
-.prependTo('${1:selector expression}')$0

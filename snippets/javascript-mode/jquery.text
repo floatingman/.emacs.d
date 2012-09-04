@@ -1,6 +1,0 @@
-# This was cloned from a TextMate bundle for yasnippet.
-#name : text
-#key : .text
-#condition : (when (boundp 'jquery-project) jquery-project)
-# --
-.text(${1:'some text'})$0

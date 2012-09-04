@@ -334,3 +334,11 @@ original" (interactive)
       (when filename
         (find-file (cdr (assoc filename
                                file-assoc-list))))))
+
+
+(defun starter-kit-pretty-lambdas ()
+  (font-lock-add-keywords
+   nil `(("(\\(lambda\\>\\)"
+          (0 (progn (compose-region (match-beginning 1) (match-end 1)
+                                    ,(make-char 'greek-iso8859-7 107))
+                    nil))))))

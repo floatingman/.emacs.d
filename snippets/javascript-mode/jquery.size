@@ -1,6 +1,0 @@
-# This was cloned from a TextMate bundle for yasnippet.
-#name : size
-#key : .size
-#condition : (when (boundp 'jquery-project) jquery-project)
-# --
-.size()$0

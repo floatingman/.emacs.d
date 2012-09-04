@@ -4,7 +4,7 @@
 (global-set-key (kbd "M-0") 'delete-window) ; was digit-argument
 (global-set-key (kbd "M-o") 'other-window) ; was facemenu-keymap
 (global-set-key (kbd "M-k") 'kill-this-buffer)
-(global-set-key (kbd "C-x C-b") 'ibuffer)
+;;(global-set-key (kbd "C-x C-b") 'ibuffer)
 (global-set-key (kbd "C-c C-f") 'insert-file-name)
 (global-set-key (kbd "M-Y") 'yank-pop-backwards)
 (global-set-key (kbd "C-z") 'undo)
@@ -21,12 +21,8 @@
 (global-set-key '[M-down] 'pager-row-down)
 (global-set-key '[M-kp-2] 'pager-row-down)
 
-;; align selected code on specific regex
-(global-set-key (kbd "C-x a r") 'align-regexp)
-
 ;; some shortcuts
 (global-set-key  [f4]  'goto-line)
-
 
 ;; moving between compilation error
 (global-set-key [f2] 'previous-error)
@@ -95,5 +91,51 @@
 (global-set-key (kbd "C-c c")(lambda()(interactive)(djcb-duplicate-line t)))
 
 ;; increase or increase font-size
-(global-set-key (kbd "C-+") 'ryan/increase-font-size)
-(global-set-key (kbd "C--") 'ryan/decrease-font-size)
+;;(global-set-key (kbd "C-+") 'ryan/increase-font-size)
+;;(global-set-key (kbd "C--") 'ryan/decrease-font-size)
+
+;; emacs-starter-kit-bindings
+;; You know, like Readline.
+(global-set-key (kbd "C-M-h") 'backward-kill-word)
+;; Align your code in a pretty way.
+(global-set-key (kbd "C-x \\") 'align-regexp)
+;; Completion that uses many different methods to find options.
+(global-set-key (kbd "M-/") 'hippie-expand)
+;; Turn on the menu bar for exploring new modes
+(global-set-key [f1] 'menu-bar-mode)
+;; Font Size
+(define-key global-map (kbd "C-+") 'text-scale-increase)
+(define-key global-map (kbd "C--") 'text-scale-decrease)
+;; Use regex searches by default
+(global-set-key (kbd "C-s") 'isearch-forward-regexp)
+(global-set-key (kbd "\C-r") 'isearch-backward-regexp)
+(global-set-key (kbd "C-M-s") 'isearch-forward)
+(global-set-key (kbd "C-M-r") 'isearch-backward)
+;; File Finding
+(global-set-key (kbd "C-x M-f") 'ido-find-file-other-window)
+(global-set-key (kbd "C-x C-p") 'find-file-at-point)
+(global-set-key (kbd "C-c y") 'bury-buffer)
+(global-set-key (kbd "C-c r") 'revert-buffer)
+(global-set-key (kbd "M-`") 'file-cache-minibuffer-complete)
+(global-set-key (kbd "C-x C-b") 'ibuffer)
+(global-set-key (kbd "C-x f") 'recentf-ido-find-file)
+;; Window switching. (C-x o goes to the next window)
+(windmove-default-keybindings) ;; Shift+direction
+(global-set-key (kbd "C-x O") (lambda () (interactive) (other-window -1))) ;; back one
+(global-set-key (kbd "C-x C-o") (lambda () (interactive) (other-window 2))) ;; forward two
+;; Indentation help
+(global-set-key (kbd "C-x ^") 'join-line)
+;; M-x without meta
+(global-set-key (kbd "C-x C-m") 'execute-extended-command)
+;; Help should search more than just commands
+(global-set-key (kbd "C-h a") 'apropos)
+;; Activate occur easily inside isearch
+(define-key isearch-mode-map (kbd "C-o")
+    (lambda () (interactive)
+      (let ((case-fold-search isearch-case-fold-search))
+        (occur (if isearch-regexp
+                   isearch-string
+                 (regexp-quote isearch-string))))))
+;;Rgrep
+;;Rgrep is infinitely useful in multi-file projects.
+(define-key global-map "\C-x\C-r" 'rgrep)
