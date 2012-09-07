@@ -65,47 +65,47 @@
 
 ;; Pairing parentheses
 
-;; All languages:
-(setq skeleton-pair t)
-(global-set-key "(" 'skeleton-pair-insert-maybe)
-(global-set-key "[" 'skeleton-pair-insert-maybe)
-(global-set-key "{" 'skeleton-pair-insert-maybe)
-(global-set-key "\"" 'skeleton-pair-insert-maybe)
+;; ;; All languages:
+;; (setq skeleton-pair t)
+;; (global-set-key "(" 'skeleton-pair-insert-maybe)
+;; (global-set-key "[" 'skeleton-pair-insert-maybe)
+;; (global-set-key "{" 'skeleton-pair-insert-maybe)
+;; (global-set-key "\"" 'skeleton-pair-insert-maybe)
 
 
-;; Individual language pairings
+;; ;; Individual language pairings
 
-;; Just python
-(add-hook 'python-mode-hook
-	  (lambda ()
-	    (define-key python-mode-map "'" 'skeleton-pair-insert-maybe)))
+;; ;; Just python
+;; (add-hook 'python-mode-hook
+;; 	  (lambda ()
+;; 	    (define-key python-mode-map "'" 'skeleton-pair-insert-maybe)))
 
-;; just ruby
-(add-hook 'ruby-mode-hook
-          (lambda ()
-            (define-key ruby-mode-map "'" 'skeleton-pair-insert-maybe)
-            (define-key ruby-mode-map "|" 'skeleton-pair-insert-maybe)))
+;; ;; just ruby
+;; (add-hook 'ruby-mode-hook
+;;           (lambda ()
+;;             (define-key ruby-mode-map "'" 'skeleton-pair-insert-maybe)
+;;             (define-key ruby-mode-map "|" 'skeleton-pair-insert-maybe)))
 
-;; just html
-(add-hook 'html-mode-hook
-          (lambda ()
-            (define-key html-mode-map "<" 'skeleton-pair-insert-maybe)))
+;; ;; just html
+;; (add-hook 'html-mode-hook
+;;           (lambda ()
+;;             (define-key html-mode-map "<" 'skeleton-pair-insert-maybe)))
 
-(set-face-attribute 'default nil :height 105)
+;; (set-face-attribute 'default nil :height 105)
 
-(add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
+;; (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
 
-(setq max-specpdl-size 99999999)
+;; (setq max-specpdl-size 99999999)
 
-(setq enable-recursive-minibuffers t)
-(follow-mode t)
-(setq redisplay-dont-pause t)
+;; (setq enable-recursive-minibuffers t)
+;; (follow-mode t)
+;; (setq redisplay-dont-pause t)
 
-;;Customizations from Ryan McGreary
-(setq-default fill-column 72)
-(setq auto-fill-mode 1)
-;Line by line scrolling
-(setq scroll-step 1)
+;; ;;Customizations from Ryan McGreary
+;; (setq-default fill-column 72)
+;; (setq auto-fill-mode 1)
+;; ;Line by line scrolling
+;; (setq scroll-step 1)
 
 ;Show newlines at end of file
 (define-fringe-bitmap 'empty-line [0 0 #x3c #x3c #x3c #x3c 0 0])

@@ -3,9 +3,9 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(auto-insert (quote other))
- '(auto-insert-alist (quote ((("\\.\\([Hh]\\|hh\\|hpp\\)\\'" . "C / C++ header") . ["template.h" c++-mode my/autoinsert-yas-expand]) (("\\.\\([C]\\|cc\\|cpp\\)\\'" . "C++ source") . ["template.cc" my/autoinsert-yas-expand]) (("\\.sh\\'" . "Shell script") . ["template.sh" my/autoinsert-yas-expand]) (("\\.el\\'" . "Emacs Lisp") . ["template.el" my/autoinsert-yas-expand]) (("\\.pl\\'" . "Perl script") . ["template.pl" my/autoinsert-yas-expand]) (("\\.pm\\'" . "Perl module") . ["template.pm" my/autoinsert-yas-expand]) (("\\.py\\'" . "Python script") . ["template.py" my/autoinsert-yas-expand]) (("[mM]akefile\\'" . "Makefile") . ["Makefile" my/autoinsert-yas-expand]) (("\\.tex\\'" . "TeX/LaTeX") . ["template.tex" my/autoinsert-yas-expand]))))
- '(auto-insert-directory "~/.emacs.d/autoinsert/")
+ ;; '(auto-insert (quote other))
+ ;; '(auto-insert-alist (quote ((("\\.\\([Hh]\\|hh\\|hpp\\)\\'" . "C / C++ header") . ["template.h" c++-mode my/autoinsert-yas-expand]) (("\\.\\([C]\\|cc\\|cpp\\)\\'" . "C++ source") . ["template.cc" my/autoinsert-yas-expand]) (("\\.sh\\'" . "Shell script") . ["template.sh" my/autoinsert-yas-expand]) (("\\.el\\'" . "Emacs Lisp") . ["template.el" my/autoinsert-yas-expand]) (("\\.pl\\'" . "Perl script") . ["template.pl" my/autoinsert-yas-expand]) (("\\.pm\\'" . "Perl module") . ["template.pm" my/autoinsert-yas-expand]) (("\\.py\\'" . "Python script") . ["template.py" my/autoinsert-yas-expand]) (("[mM]akefile\\'" . "Makefile") . ["Makefile" my/autoinsert-yas-expand]) (("\\.tex\\'" . "TeX/LaTeX") . ["template.tex" my/autoinsert-yas-expand]))))
+ ;; '(auto-insert-directory "~/.emacs.d/autoinsert/")
  '(bbdb-file "~/.emacs.private/dot-bbdb")
  ;; '(ido-case-fold t)
  ;; '(ido-confirm-unique-completion t)
