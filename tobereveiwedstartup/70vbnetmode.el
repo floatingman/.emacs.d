@@ -39,7 +39,6 @@
      ;; you might like them.
      (turn-on-font-lock)
      (turn-on-auto-revert-mode)
-     (setq indent-tabs-mode nil)
      (require 'flymake)
      (flymake-mode 1)
    )

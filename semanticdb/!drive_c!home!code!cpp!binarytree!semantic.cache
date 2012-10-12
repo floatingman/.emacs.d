@@ -1,0 +1,409 @@
+;; Object binarytree/
+;; SEMANTICDB Tags save file
+(semanticdb-project-database-file "binarytree/"
+  :tables (list 
+   (semanticdb-table "binarytree.cpp"
+    :major-mode 'c++-mode
+    :tags 
+        '( ("iostream" include (:system-flag t) nil [2 21])
+            ("stddef.h" include (:system-flag t) nil [22 41])
+            ("std" using (:type ("std" type
+                 (:prototype t
+                  :type "namespace")
+                  nil nil)) nil [43 63])
+            ("node" type
+               (:members 
+                  ( ("data" variable (:type "int") (reparse-symbol classsubparts) [84 93])
+                    ("left" variable
+                       (:pointer 1
+                        :type ("node" type
+                             (:prototype t
+                              :type "struct")
+                              nil nil))
+                        (reparse-symbol classsubparts) [98 116])
+                    ("right" variable
+                       (:pointer 1
+                        :type ("node" type
+                             (:prototype t
+                              :type "struct")
+                              nil nil))
+                        (reparse-symbol classsubparts) [121 140]))                  
+                :type "struct")
+                nil [66 143])
+            ("newNode" function
+               (:prototype-flag t
+                :pointer 1
+                :arguments 
+                  ( ("" variable (:type "int") (reparse-symbol arg-sub-list) [189 193]))                  
+                :type ("node" type
+                     (:prototype t
+                      :type "struct")
+                      nil nil))
+                nil [168 194])
+            ("insert" function
+               (:prototype-flag t
+                :pointer 1
+                :arguments 
+                  ( ("" variable
+                       (:pointer 1
+                        :type ("node" type
+                             (:prototype t
+                              :type "struct")
+                              nil nil))
+                        (reparse-symbol arg-sub-list) [215 228])
+                    ("" variable (:type "int") (reparse-symbol arg-sub-list) [229 233]))                  
+                :type ("node" type
+                     (:prototype t
+                      :type "struct")
+                      nil nil))
+                nil [195 234])
+            ("lookup" function
+               (:prototype-flag t
+                :typemodifiers ("static")
+                :arguments 
+                  ( ("" variable
+                       (:pointer 1
+                        :type ("node" type
+                             (:prototype t
+                              :type "struct")
+                              nil nil))
+                        (reparse-symbol arg-sub-list) [253 266])
+                    ("" variable (:type "int") (reparse-symbol arg-sub-list) [267 271]))                  
+                :type "int")
+                nil [235 272])
+            ("build123" function
+               (:prototype-flag t
+                :pointer 1
+                :arguments 
+                  ( ("" variable (:type "char") (reparse-symbol arg-sub-list) [295 300]))                  
+                :type ("node" type
+                     (:prototype t
+                      :type "struct")
+                      nil nil))
+                nil [273 301])
+            ("size" function
+               (:prototype-flag t
+                :arguments 
+                  ( ("" variable
+                       (:pointer 1
+                        :type ("node" type
+                             (:prototype t
+                              :type "struct")
+                              nil nil))
+                        (reparse-symbol arg-sub-list) [311 324]))                  
+                :type "int")
+                nil [302 325])
+            ("maxDepth" function
+               (:prototype-flag t
+                :arguments 
+                  ( ("" variable
+                       (:pointer 1
+                        :type ("node" type
+                             (:prototype t
+                              :type "struct")
+                              nil nil))
+                        (reparse-symbol arg-sub-list) [339 352]))                  
+                :type "int")
+                nil [326 353])
+            ("minValue" function
+               (:prototype-flag t
+                :arguments 
+                  ( ("" variable
+                       (:pointer 1
+                        :type ("node" type
+                             (:prototype t
+                              :type "struct")
+                              nil nil))
+                        (reparse-symbol arg-sub-list) [367 380]))                  
+                :type "int")
+                nil [354 381])
+            ("printTree" function
+               (:prototype-flag t
+                :arguments 
+                  ( ("" variable
+                       (:pointer 1
+                        :type ("node" type
+                             (:prototype t
+                              :type "struct")
+                              nil nil))
+                        (reparse-symbol arg-sub-list) [397 410]))                  
+                :type "void")
+                nil [382 411])
+            ("printPostorder" function
+               (:prototype-flag t
+                :arguments 
+                  ( ("" variable
+                       (:pointer 1
+                        :type ("node" type
+                             (:prototype t
+                              :type "struct")
+                              nil nil))
+                        (reparse-symbol arg-sub-list) [432 445]))                  
+                :type "void")
+                nil [412 446])
+            ("hasPathSum" function
+               (:prototype-flag t
+                :arguments 
+                  ( ("" variable
+                       (:pointer 1
+                        :type ("node" type
+                             (:prototype t
+                              :type "struct")
+                              nil nil))
+                        (reparse-symbol arg-sub-list) [462 475])
+                    ("" variable (:type "int") (reparse-symbol arg-sub-list) [476 480]))                  
+                :type "int")
+                nil [447 481])
+            ("printPaths" function
+               (:prototype-flag t
+                :arguments 
+                  ( ("" variable
+                       (:pointer 1
+                        :type ("node" type
+                             (:prototype t
+                              :type "struct")
+                              nil nil))
+                        (reparse-symbol arg-sub-list) [498 511]))                  
+                :type "void")
+                nil [482 512])
+            ("printPathsRecur" function
+               (:prototype-flag t
+                :arguments 
+                  ( ("" variable
+                       (:pointer 1
+                        :type ("node" type
+                             (:prototype t
+                              :type "struct")
+                              nil nil))
+                        (reparse-symbol arg-sub-list) [534 547])
+                    ("" variable (:type "int") (reparse-symbol arg-sub-list) [548 553])
+                    ("" variable (:type "int") (reparse-symbol arg-sub-list) [555 559]))                  
+                :type "void")
+                nil [513 560])
+            ("printArray" function
+               (:prototype-flag t
+                :arguments 
+                  ( ("" variable (:type "int") (reparse-symbol arg-sub-list) [577 582])
+                    ("" variable (:type "int") (reparse-symbol arg-sub-list) [583 587]))                  
+                :type "void")
+                nil [561 588])
+            ("mirror" function
+               (:prototype-flag t
+                :arguments 
+                  ( ("" variable
+                       (:pointer 1
+                        :type ("node" type
+                             (:prototype t
+                              :type "struct")
+                              nil nil))
+                        (reparse-symbol arg-sub-list) [601 614]))                  
+                :type "void")
+                nil [589 615])
+            ("bstNode1" variable
+               (:pointer 1
+                :type ("node" type
+                     (:prototype t
+                      :type "struct")
+                      nil nil))
+                nil [630 659])
+            ("bstNode2" variable
+               (:pointer 1
+                :type ("node" type
+                     (:prototype t
+                      :type "struct")
+                      nil nil))
+                nil [660 689])
+            ("bstNode3" variable
+               (:pointer 1
+                :type ("node" type
+                     (:prototype t
+                      :type "struct")
+                      nil nil))
+                nil [690 719])
+            ("bstNode4" variable
+               (:pointer 1
+                :type ("node" type
+                     (:prototype t
+                      :type "struct")
+                      nil nil))
+                nil [720 749])
+            ("bstNode5" variable
+               (:pointer 1
+                :type ("node" type
+                     (:prototype t
+                      :type "struct")
+                      nil nil))
+                nil [750 779])
+            ("main" function (:type "int") nil [781 3916])
+            ("lookup" function
+               (:typemodifiers ("static")
+                :arguments 
+                  ( ("node" variable
+                       (:pointer 1
+                        :type ("node" type
+                             (:prototype t
+                              :type "struct")
+                              nil nil))
+                        (reparse-symbol arg-sub-list) [4156 4174])
+                    ("target" variable (:type "int") (reparse-symbol arg-sub-list) [4175 4186]))                  
+                :type "int")
+                nil [4138 4690])
+            ("newNode" function
+               (:pointer 1
+                :arguments 
+                  ( ("data" variable (:type "int") (reparse-symbol arg-sub-list) [4821 4830]))                  
+                :type ("node" type
+                     (:prototype t
+                      :type "struct")
+                      nil nil))
+                nil [4800 4994])
+            ("insert" function
+               (:pointer 1
+                :arguments 
+                  ( ("node" variable
+                       (:pointer 1
+                        :type ("node" type
+                             (:prototype t
+                              :type "struct")
+                              nil nil))
+                        (reparse-symbol arg-sub-list) [5268 5286])
+                    ("data" variable (:type "int") (reparse-symbol arg-sub-list) [5287 5296]))                  
+                :type ("node" type
+                     (:prototype t
+                      :type "struct")
+                      nil nil))
+                nil [5248 5668])
+            ("build123" function
+               (:pointer 1
+                :arguments 
+                  ( ("a" variable (:type "char") (reparse-symbol arg-sub-list) [5987 5994]))                  
+                :type ("node" type
+                     (:prototype t
+                      :type "struct")
+                      nil nil))
+                nil [5965 6674])
+            ("size" function
+               (:arguments 
+                  ( ("node" variable
+                       (:pointer 1
+                        :type ("node" type
+                             (:prototype t
+                              :type "struct")
+                              nil nil))
+                        (reparse-symbol arg-sub-list) [6746 6764]))                  
+                :type "int")
+                nil [6737 6999])
+            ("maxDepth" function
+               (:arguments 
+                  ( ("node" variable
+                       (:pointer 1
+                        :type ("node" type
+                             (:prototype t
+                              :type "struct")
+                              nil nil))
+                        (reparse-symbol arg-sub-list) [7159 7177]))                  
+                :type "int")
+                nil [7146 7424])
+            ("minValue" function
+               (:arguments 
+                  ( ("node" variable
+                       (:pointer 1
+                        :type ("node" type
+                             (:prototype t
+                              :type "struct")
+                              nil nil))
+                        (reparse-symbol arg-sub-list) [7881 7899]))                  
+                :type "int")
+                nil [7868 8000])
+            ("printTree" function
+               (:arguments 
+                  ( ("node" variable
+                       (:pointer 1
+                        :type ("node" type
+                             (:prototype t
+                              :type "struct")
+                              nil nil))
+                        (reparse-symbol arg-sub-list) [8142 8160]))                  
+                :type "void")
+                nil [8127 8298])
+            ("printPostorder" function
+               (:arguments 
+                  ( ("node" variable
+                       (:pointer 1
+                        :type ("node" type
+                             (:prototype t
+                              :type "struct")
+                              nil nil))
+                        (reparse-symbol arg-sub-list) [8576 8594]))                  
+                :type "void")
+                nil [8556 8733])
+            ("hasPathSum" function
+               (:arguments 
+                  ( ("node" variable
+                       (:pointer 1
+                        :type ("node" type
+                             (:prototype t
+                              :type "struct")
+                              nil nil))
+                        (reparse-symbol arg-sub-list) [9679 9697])
+                    ("sum" variable (:type "int") (reparse-symbol arg-sub-list) [9698 9706]))                  
+                :type "int")
+                nil [9664 9897])
+            ("printPaths" function
+               (:arguments 
+                  ( ("node" variable
+                       (:pointer 1
+                        :type ("node" type
+                             (:prototype t
+                              :type "struct")
+                              nil nil))
+                        (reparse-symbol arg-sub-list) [9915 9933]))                  
+                :type "void")
+                nil [9899 9993])
+            ("printPathsRecur" function
+               (:arguments 
+                  ( ("node" variable
+                       (:pointer 1
+                        :type ("node" type
+                             (:prototype t
+                              :type "struct")
+                              nil nil))
+                        (reparse-symbol arg-sub-list) [10016 10034])
+                    ("path" variable
+                       (:dereference 1
+                        :type "int")
+                        (reparse-symbol arg-sub-list) [10035 10047])
+                    ("pathLen" variable (:type "int") (reparse-symbol arg-sub-list) [10048 10060]))                  
+                :type "void")
+                nil [9995 10371])
+            ("printArray" function
+               (:arguments 
+                  ( ("path" variable
+                       (:dereference 1
+                        :type "int")
+                        (reparse-symbol arg-sub-list) [10389 10400])
+                    ("len" variable (:type "int") (reparse-symbol arg-sub-list) [10400 10408]))                  
+                :type "void")
+                nil [10373 10489])
+            ("mirror" function
+               (:arguments 
+                  ( ("node" variable
+                       (:pointer 1
+                        :type ("node" type
+                             (:prototype t
+                              :type "struct")
+                              nil nil))
+                        (reparse-symbol arg-sub-list) [10503 10521]))                  
+                :type "void")
+                nil [10491 10534]))          
+    :file "binarytree.cpp"
+    :pointmax 10531
+    :fsize 10899
+    :lastmodtime '(20600 35144)
+    :unmatched-syntax 'nil
+    )
+   )
+  :file "!drive_c!home!code!cpp!binarytree!semantic.cache"
+  :semantic-tag-version "2.0"
+  :semanticdb-version "2.0"
+  )

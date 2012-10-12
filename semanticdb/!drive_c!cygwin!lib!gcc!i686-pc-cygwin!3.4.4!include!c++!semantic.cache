@@ -1,0 +1,60 @@
+;; Object c++/
+;; SEMANTICDB Tags save file
+(semanticdb-project-database-file "c++/"
+  :tables (list 
+   (semanticdb-table "iostream"
+    :major-mode 'c++-mode
+    :tags 
+        '( ("_GLIBCXX_IOSTREAM" variable (:constant-flag t) nil [1719 1736])
+            ("bits/c++config.h" include (:system-flag t) nil [1767 1794])
+            ("ostream" include (:system-flag t) nil [1795 1813])
+            ("istream" include (:system-flag t) nil [1814 1832])
+            ("std" type
+               (:members 
+                  ( ("cin" variable
+                       (:typemodifiers ("extern")
+                        :type ("istream" type (:type "class") nil nil))
+                        (reparse-symbol namespacesubparts) [2391 2410])
+                    ("cout" variable
+                       (:typemodifiers ("extern")
+                        :type ("ostream" type (:type "class") nil nil))
+                        (reparse-symbol namespacesubparts) [2444 2464])
+                    ("cerr" variable
+                       (:typemodifiers ("extern")
+                        :type ("ostream" type (:type "class") nil nil))
+                        (reparse-symbol namespacesubparts) [2499 2519])
+                    ("clog" variable
+                       (:typemodifiers ("extern")
+                        :type ("ostream" type (:type "class") nil nil))
+                        (reparse-symbol namespacesubparts) [2566 2586])
+                    ("__ioinit" variable
+                       (:typemodifiers ("static")
+                        :type ("ios_base::Init" type (:type "class") nil nil))
+                        (reparse-symbol namespacesubparts) [2991 3022]))                  
+                :type "namespace")
+                nil [1834 3024]))          
+    :file "iostream"
+    :pointmax 3074
+    :fsize 3073
+    :lastmodtime '(18853 6299)
+    :unmatched-syntax '((symbol 1752 . 1765) (symbol 1748 . 1751) (symbol 1741 . 1747) (punctuation 1740 . 1741))
+    :lexical-table 
+        '(("_GLIBCXX_IOSTREAM" . ((number "1" 1737 . 1738)))
+          )
+
+    )
+   (semanticdb-table "ostream"
+    :file "ostream"
+    :fsize 18600
+    :lastmodtime '(18853 6299)
+    )
+   (semanticdb-table "istream"
+    :file "istream"
+    :fsize 27421
+    :lastmodtime '(18853 6299)
+    )
+   )
+  :file "!drive_c!cygwin!lib!gcc!i686-pc-cygwin!3.4.4!include!c++!semantic.cache"
+  :semantic-tag-version "2.0"
+  :semanticdb-version "2.0"
+  )

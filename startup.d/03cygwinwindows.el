@@ -32,4 +32,9 @@
       (setq ediff-shell shell-file-name)
       (setq explicit-shell-args '("--login" "-i"))
       (setq w32-quote-process-args ?\") ;"
+      (defadvice grep-compute-defaults (around grep-compute-defaults-advice-null-device)
+        "Use cygwin's /dev/null as the null-device."
+        (let ((null-device "/dev/null"))
+          ad-do-it))
+      (ad-activate 'grep-compute-defaults)
       ))

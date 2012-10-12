@@ -4,7 +4,7 @@
 (setq sentence-end-double-space nil)
 
 
-(global-set-key (kbd "RET") 'newline-and-indent)
+
 
 ;; Searching based on the current word
 (defun sacha/search-word-backward ()

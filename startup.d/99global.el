@@ -38,7 +38,7 @@
 (setq x-select-enable-clipboard t)
 (setq inhibit-startup-screen t)
 (setq initial-scratch-message "")
-(setq make-backup-files t)
+(setq make-backup-files nil)
 ;; (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
 (setq backup-directory-alist '(("." . "~/emacs-meta/backups")))
