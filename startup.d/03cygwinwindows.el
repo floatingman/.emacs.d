@@ -29,6 +29,10 @@
       (setq shell-file-name "c:/cygwin/bin/bash")
       (setenv "SHELL" shell-file-name)
       (setq explicit-shell-file-name shell-file-name)
+      ;; Remove C-m (^M) characters that appear in output
+
+      (add-hook 'comint-output-filter-functions
+                'comint-strip-ctrl-m)
       (setq ediff-shell shell-file-name)
       (setq explicit-shell-args '("--login" "-i"))
       (setq w32-quote-process-args ?\") ;"

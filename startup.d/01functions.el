@@ -342,3 +342,23 @@ original" (interactive)
           (0 (progn (compose-region (match-beginning 1) (match-end 1)
                                     ,(make-char 'greek-iso8859-7 107))
                     nil))))))
+
+
+(defun goto-longest-line ()
+  "Go to longest line in buffer."
+  (interactive)
+  (let ((longest-line 0)
+        (line 0)
+        (length 0))
+    (save-excursion
+      (goto-char (point-min))
+      (end-of-line)
+      (setq length (current-column))
+      (setq longest-line 0)
+      (while (zerop (forward-line 1))
+        (setq line (1+ line))
+        (end-of-line)
+        (cond ((> (current-column) length)
+               (setq length (current-column))
+               (setq longest-line line)))))
+    (goto-line (1+ longest-line))))

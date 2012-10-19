@@ -238,3 +238,7 @@
 (dolist (package '(magit))
     (unless (package-installed-p package)
       (package-install package)))
+
+(require 'flame)
+
+(require 'math-fns)

@@ -1,0 +1,30 @@
+;; Object interactivepython/
+;; SEMANTICDB Tags save file
+(semanticdb-project-database-file "interactivepython/"
+  :tables (list 
+   (semanticdb-table "rpsls.py"
+    :major-mode 'python-mode
+    :tags 
+        '( ("random" include nil nil [45 58])
+            ("number_to_name" function (:arguments 
+              ( ("number" variable nil (reparse-symbol function_parameters) [295 301]))              ) nil [276 636])
+            ("name_to_number" function (:arguments 
+              ( ("name" variable nil (reparse-symbol function_parameters) [660 664]))              ) nil [641 991])
+            ("rpsls" function (:arguments 
+              ( ("name" variable nil (reparse-symbol function_parameters) [1002 1006]))              ) nil [992 1820])
+            ("rpsls" code nil nil [1847 1860])
+            ("rpsls" code nil nil [1861 1875])
+            ("rpsls" code nil nil [1876 1890])
+            ("rpsls" code nil nil [1891 1906])
+            ("rpsls" code nil nil [1907 1924]))          
+    :file "rpsls.py"
+    :pointmax 2003
+    :fsize 2081
+    :lastmodtime '(20609 42557)
+    :unmatched-syntax 'nil
+    )
+   )
+  :file "!drive_c!home!code!python!interactivepython!semantic.cache"
+  :semantic-tag-version "2.0"
+  :semanticdb-version "2.0"
+  )

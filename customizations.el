@@ -5,9 +5,10 @@
  ;; If there is more than one, they won't work right.
  '(bbdb-file "~/.emacs.private/dot-bbdb")
  '(c-basic-offset 4)
- '(c-set-offset 'topmost-intro 4)
- '(c-set-offset 'cpp-macro -4)
+ '(c-set-offset (quote cpp-macro) t)
  '(php-mode-force-pear t)
+ '(python-version-checked t)
+ '(python-python-command "c:\\cygwin\\usr\\bin\\python2.6.exe")
  '(server-mode t)
  '(smex-save-file "~/emacs-meta/.smex-items")
  '(tabbar-background-color "black")
@@ -19,7 +20,10 @@
  '(tabbar-separator (quote ("|")))
  '(tabbar-use-images nil)
  '(temp-buffer-resize-mode t)
- '(tidy-temp-directory "~/emacs-meta/"))
+ '(tidy-temp-directory "~/emacs-meta/")
+ '(type-break-demo-boring-stats t)
+ '(type-break-good-break-interval 600)
+ '(type-break-good-rest-interval 300))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
