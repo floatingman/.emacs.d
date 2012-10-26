@@ -6,7 +6,7 @@
 ;; Keywords: outlines, hypermedia, calendar, wp
 ;; Homepage: http://orgmode.org
 
-;; This file is part of GNU Emacs.
+;; This file is not part of GNU Emacs.
 
 ;; GNU Emacs is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -174,7 +174,7 @@ heuristically based on the values of `org-e-odt-lib-dir' and
 		  org-e-odt-styles-dir-list)
 	    nil)))
     (unless styles-dir
-      (error "Error (org-e-odt): Cannot find factory styles files. Aborting."))
+      (error "Error (org-e-odt): Cannot find factory styles files, aborting"))
     styles-dir)
   "Directory that holds auxiliary XML files used by the ODT exporter.
 
@@ -1588,7 +1588,7 @@ CONTENTS is nil.  INFO is a plist holding contextual information."
 		       note-class ref-format ref-name n)))))))
     (concat
      ;; Insert separator between two footnotes in a row.
-     (let ((prev (org-export-get-previous-element footnote-reference)))
+     (let ((prev (org-export-get-previous-element footnote-reference info)))
        (and (eq (org-element-type prev) 'footnote-reference)
 	    (format "<text:span text:style-name=\"%s\">%s</text:span>"
 		    "OrgSuperscript" ",")))
@@ -1699,10 +1699,10 @@ holding contextual information."
      ;; 	     (itemized-body (org-e-odt-format-list-item
      ;; 			     contents type nil nil full-text)))
      ;; 	(concat
-     ;; 	 (and (org-export-first-sibling-p headline)
+     ;; 	 (and (org-export-first-sibling-p headline info)
      ;; 	      (org-e-odt-begin-plain-list type))
      ;; 	 itemized-body
-     ;; 	 (and (org-export-last-sibling-p headline)
+     ;; 	 (and (org-export-last-sibling-p headline info)
      ;; 	      "</text:list>"))))
      ;; Case 3. Standard headline.  Export it as a section.
      (t
@@ -2187,7 +2187,7 @@ CONTENTS is nil.  INFO is a plist holding contextual information."
 	    (cdr (assoc-string anchor-type
 			       org-e-odt-default-image-sizes-alist))
 	    ;; Error out.
-	    (error "Cannot determine Image size. Aborting ..."))))
+	    (error "Cannot determine image size, aborting"))))
 	 (width (car size)) (height (cdr size)))
     (cond
      (scale

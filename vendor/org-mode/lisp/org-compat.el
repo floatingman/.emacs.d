@@ -110,6 +110,7 @@ any other entries, and any resulting duplicates will be removed entirely."
 	    t))
       t)))
 
+
 ;;;; Emacs/XEmacs compatibility
 
 ;; Keys
@@ -325,11 +326,6 @@ Works on both Emacs and XEmacs."
 	string)
     (apply 'propertize string properties)))
 
-(defun org-substring-no-properties (string &optional from to)
-  (if (featurep 'xemacs)
-      (org-no-properties (substring string (or from 0) to))
-    (substring-no-properties string from to)))
-
 (defmacro org-find-library-dir (library)
   `(file-name-directory (locate-library ,library)))
 
@@ -388,7 +384,7 @@ TIME defaults to the current time."
     (save-match-data
       (apply 'looking-at args))))
 
-; XEmacs does not have `looking-back'.
+					; XEmacs does not have `looking-back'.
 (if (fboundp 'looking-back)
     (defalias 'org-looking-back 'looking-back)
   (defun org-looking-back (regexp &optional limit greedy)
@@ -446,11 +442,12 @@ With two arguments, return floor and remainder of their quotient."
 	   'condition-case-no-debug)
       'condition-case))
 
+;;;###autoload
 (defmacro org-check-version ()
   "Try very hard to provide sensible version strings."
   (let* ((org-dir        (org-find-library-dir "org"))
 	 (org-version.el (concat org-dir "org-version.el"))
-	 (org-fixup.el   (concat org-dir "../UTILITIES/org-fixup.el")))
+	 (org-fixup.el   (concat org-dir "../mk/org-fixup.el")))
     (if (require 'org-version org-version.el 'noerror)
 	'(progn
 	   (autoload 'org-release     "org-version.el")

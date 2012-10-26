@@ -11,6 +11,13 @@
 (add-to-list 'auto-mode-alist '("\\.\\(org\\|org_archive\\|txt\\)$" . org-mode))
 (require 'org-install)
 (require 'org-checklist)
+(require 'org-id)
+(require 'bbdb)
+(require 'bbdb-com)
+(require 'org-crypt)
+(require 'org-protocol)
+(require 'smex)
+(require 'org-mime)
 
 ;;15.14 Habit Tracking this needs to be around the top after loading the libraries
 ;;Enable habit tracking (and a bunch of other modules)
@@ -194,7 +201,8 @@
               ("p" "Phone call" entry (file "~/git/org/refile.org")
                "* PHONE %? :PHONE:\n%U" :clock-in t :clock-resume t)
               ("h" "Habit" entry (file "~/git/org/refile.org")
-               "* NEXT %?\n%U\n%a\nSCHEDULED: %t .+1d/3d\n:PROPERTIES:\n:STYLE: habit\n:REPEAT_TO_STATE: NEXT\n:END:\n"))))
+               "* NEXT %?\n%U\n%a\nSCHEDULED: %(format-time-string \"<%Y-%m-%d %a .+1d/3d>\")\n:PROPERTIES:\n:STYLE: habit\n:REPEAT_TO_STATE: NEXT\n:END:\n"))))
+              
 
 ;; Remove empty LOGBOOK drawers on clock out
 (defun bh/remove-empty-drawer-on-clock-out ()
@@ -330,7 +338,7 @@
   (and (cond
         ((string= tag "hold")
          t)
-        ((string= tag "farm")
+        ((string= tag "church")
          t))
        (concat "-" tag)))
 
@@ -459,7 +467,7 @@ as the default task."
 
 (add-hook 'org-clock-out-hook 'bh/clock-out-maybe 'append)
 
-(require 'org-id)
+
 (defun bh/clock-in-task-by-id (id)
   "Clock in a task by id"
   (org-with-point-at (org-id-find id 'marker)
@@ -561,8 +569,7 @@ A prefix arg forces clock in of the default task."
 (setq org-agenda-tags-todo-honor-ignore-options t)
 
 ;;12 Handling Phone Calls
-(require 'bbdb)
-(require 'bbdb-com)
+
 
 (global-set-key (kbd "<f9> p") 'bh/phone-call)
 
@@ -830,6 +837,43 @@ When not restricted, skip project and sub-project tasks, habits, and project rel
             nil))  ; available to archive
       (or next-headline (point-max))))))
 
+;;15.1
+;;(setq org-ditaa-jar-path "~/java/ditaa0_6b.jar")
+;;(setq org-plantum1-jar-path "~/java/plantum1.jar")
+
+(add-hook 'org-babel-after-execute-hook 'bh/display-inline-images 'append)
+; Make babel results blocks lowercase
+(setq org-babel-results-keyword "results")
+
+(defun bh/display-inline-images ()
+  (condition-case nil
+      (org-display-inline-images)
+    (error nil)))
+
+(org-babel-do-load-languages
+ (quote org-babel-load-languages)
+ (quote ((emacs-lisp . t)
+         (dot . t)
+         (R . t)
+         (python . t)
+         (ruby . t)
+         (gnuplot . t)
+         (clojure . t)
+         (sh . t)
+         (ledger . t)
+         (org . t)
+         (plantuml . t)
+         (latex . t))))
+
+; Do not prompt to confirm evaluation
+; This may be dangerous - make sure you understand the consequences
+; of setting this -- see the docstring for details
+(setq org-confirm-babel-evaluate nil)
+
+; Use fundamental mode when editing plantuml blocks with C-c '
+(add-to-list 'org-src-lang-modes (quote ("plantuml" . fundamental)))
+
+
 ;;16.1 Reminder Setup
 ; Erase all reminders and rebuilt reminders for today from the agenda
 (defun bh/org-agenda-to-appt ()
@@ -846,7 +890,7 @@ When not restricted, skip project and sub-project tasks, habits, and project rel
 ; If we leave Emacs running overnight - reset the appointments one minute after midnight
 (run-at-time "24:01" nil 'bh/org-agenda-to-appt)
 
-;;15.1 Abbrev-mode and Skeletons
+;;17.1 Abbrev-mode and Skeletons
 
 ;; Enable abbrev-mode
 (add-hook 'org-mode-hook (lambda () (abbrev-mode 1)))
@@ -1110,7 +1154,7 @@ so change the default 'F' binding in the agenda to allow both"
                                     (org-heading t))
                                   (830 1000 1200 1300 1500 1700))))
 
-;; Display tags farther right
+;; Display tags farher right
 (setq org-agenda-tags-column -102)
 
 ;;
@@ -1253,6 +1297,14 @@ Late deadlines first, then scheduled, then non-late deadlines"
 
 (setq org-table-export-default-format "orgtbl-to-csv")
 
+;;17.11 Minimize Emacs Frames
+(setq org-link-frame-setup (quote ((vm . vm-visit-folder)
+                                   (gnus . org-gnus-no-new-news)
+                                   (file . find-file))))
+
+; Use the current window for C-c ' source editing
+(setq org-src-window-setup 'current-window)
+
 ;;17.12 Logging Stuff
 (setq org-log-done (quote time))
 (setq org-log-into-drawer "LOGBOOK")
@@ -1265,7 +1317,7 @@ Late deadlines first, then scheduled, then non-late deadlines"
 (run-at-time "06:00" 86400 '(lambda () (setq org-habit-show-habits t)))
 
 ;;17.17 Handling Encryption
-(require 'org-crypt)
+
 ; Encrypt all entries before saving
 (org-crypt-use-before-save-magic)
 (setq org-tags-exclude-from-inheritance (quote ("crypt")))
@@ -1332,7 +1384,7 @@ Late deadlines first, then scheduled, then non-late deadlines"
   (delete-other-windows))
 
 ;;17.19 Org Protocol
-(require 'org-protocol)
+
 
 ;;17.20 Require A Final Newline When Saving Files
 (setq require-final-newline t)
@@ -1399,7 +1451,7 @@ Late deadlines first, then scheduled, then non-late deadlines"
 
 ;;17.35 Use Smex For M-X Ido-Completion
 (add-to-list 'load-path (expand-file-name "~/.emacs.d"))
-(require 'smex)
+
 (smex-initialize)
 
 (global-set-key (kbd "M-x") 'smex)
@@ -1414,7 +1466,7 @@ Late deadlines first, then scheduled, then non-late deadlines"
 (global-set-key (kbd "<f6>") '(lambda () (interactive) (bookmark-jump "SAVED")))
 
 ;;17.37 Using Org-mime To Email
-(require 'org-mime)
+
 
 ;;17.38 Remove Multiple State Change Log Details From The Agenda
 (setq org-agenda-skip-additional-timestamps-same-entry t)
@@ -1474,6 +1526,22 @@ Late deadlines first, then scheduled, then non-late deadlines"
 
 ;;17.47 Startup in content view
 (setq org-startup-folded 'content)
+
+;;17.48 Allow Alphabetical List Entries
+(setq org-alphabetical-lists t)
+
+;;17.49 Using Orgstruct Mode For Mail
+(add-hook 'message-mode-hook 'orgstruct++-mode 'append)
+(add-hook 'message-mode-hook 'turn-on-auto-fill 'append)
+(add-hook 'message-mode-hook 'bbdb-define-all-aliases 'append)
+(add-hook 'message-mode-hook 'orgtbl-mode 'append)
+(add-hook 'message-mode-hook 'turn-on-flyspell 'append)
+(add-hook 'message-mode-hook
+          '(lambda () (setq fill-column 72))
+          'append)
+(add-hook 'message-mode-hook
+          '(lambda () (local-set-key (kbd "C-c M-o") 'org-mime-htmlize))
+          'append)
 
 
 

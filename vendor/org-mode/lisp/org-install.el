@@ -3,7 +3,7 @@
 ;;; Code:
 
 ;;;### (autoloads (org-babel-describe-bindings) "ob-keys" "ob-keys.el"
-;;;;;;  (20494 47826))
+;;;;;;  (20323 36516))
 ;;; Generated autoloads from ob-keys.el
 
 (autoload 'org-babel-describe-bindings "ob-keys" "\
@@ -14,7 +14,7 @@ Describe all keybindings behind `org-babel-key-prefix'.
 ;;;***
 
 ;;;### (autoloads (org-babel-lob-get-info org-babel-lob-execute-maybe
-;;;;;;  org-babel-lob-ingest) "ob-lob" "ob-lob.el" (20494 47826))
+;;;;;;  org-babel-lob-ingest) "ob-lob" "ob-lob.el" (20535 39646))
 ;;; Generated autoloads from ob-lob.el
 
 (autoload 'org-babel-lob-ingest "ob-lob" "\
@@ -38,8 +38,8 @@ Return a Library of Babel function call as a string.
 ;;;***
 
 ;;;### (autoloads (org-babel-tangle org-babel-tangle-file org-babel-load-file
-;;;;;;  org-babel-tangle-lang-exts) "ob-tangle" "ob-tangle.el" (20494
-;;;;;;  47826))
+;;;;;;  org-babel-tangle-lang-exts) "ob-tangle" "ob-tangle.el" (20547
+;;;;;;  19019))
 ;;; Generated autoloads from ob-tangle.el
 
 (defvar org-babel-tangle-lang-exts '(("emacs-lisp" . "el")) "\
@@ -92,7 +92,7 @@ exported source code blocks by language.
 ;;;;;;  org-babel-pop-to-session-maybe org-babel-load-in-session-maybe
 ;;;;;;  org-babel-expand-src-block-maybe org-babel-view-src-block-info
 ;;;;;;  org-babel-execute-maybe org-babel-execute-safely-maybe) "ob"
-;;;;;;  "ob.el" (20494 47826))
+;;;;;;  "ob.el" (20582 38860))
 ;;; Generated autoloads from ob.el
 
 (autoload 'org-babel-execute-safely-maybe "ob" "\
@@ -180,13 +180,13 @@ session.
 Initiate session for current code block.
 If called with a prefix argument then resolve any variable
 references in the header arguments and assign these variables in
-the session. Copy the body of the code block to the kill ring.
+the session.  Copy the body of the code block to the kill ring.
 
 \(fn &optional ARG INFO)" t nil)
 
 (autoload 'org-babel-switch-to-session "ob" "\
 Switch to the session of the current code block.
-Uses `org-babel-initiate-session' to start the session. If called
+Uses `org-babel-initiate-session' to start the session.  If called
 with a prefix argument then this is passed on to
 `org-babel-initiate-session'.
 
@@ -308,7 +308,7 @@ With optional prefix argument ARG, jump backward ARG many source blocks.
 \(fn &optional ARG)" t nil)
 
 (autoload 'org-babel-mark-block "ob" "\
-Mark current src block
+Mark current src block.
 
 \(fn)" t nil)
 
@@ -318,8 +318,14 @@ Mark current src block
 ;;;;;;  org-diary org-agenda-list-stuck-projects org-tags-view org-todo-list
 ;;;;;;  org-search-view org-agenda-list org-batch-store-agenda-views
 ;;;;;;  org-store-agenda-views org-batch-agenda-csv org-batch-agenda
-;;;;;;  org-agenda) "org-agenda" "org-agenda.el" (20494 47826))
+;;;;;;  org-agenda org-toggle-sticky-agenda) "org-agenda" "org-agenda.el"
+;;;;;;  (20583 28515))
 ;;; Generated autoloads from org-agenda.el
+
+(autoload 'org-toggle-sticky-agenda "org-agenda" "\
+Toggle `org-agenda-sticky'.
+
+\(fn &optional ARG)" t nil)
 
 (autoload 'org-agenda "org-agenda" "\
 Dispatch agenda commands to collect entries to the agenda buffer.
@@ -336,6 +342,7 @@ M     Like `m', but select only TODO entries, no ordinary headlines.
 L     Create a timeline for the current buffer.
 e     Export views to associated files.
 s     Search entries for keywords.
+S     Search entries for keywords, only with TODO keywords.
 /     Multi occur across all agenda files and also files listed
       in `org-agenda-text-search-extra-files'.
 <     Restrict agenda commands to buffer, subtree, or region.
@@ -355,7 +362,7 @@ first press `<' once to indicate that the agenda should be temporarily
 Pressing `<' twice means to restrict to the current subtree or region
 \(if active).
 
-\(fn &optional ARG KEYS RESTRICTION)" t nil)
+\(fn &optional ARG ORG-KEYS RESTRICTION)" t nil)
 
 (autoload 'org-batch-agenda "org-agenda" "\
 Run an agenda command in batch mode and send the result to STDOUT.
@@ -481,7 +488,7 @@ the list to these.  When using \\[universal-argument], you will be prompted
 for a keyword.  A numeric prefix directly selects the Nth keyword in
 `org-todo-keywords-1'.
 
-\(fn ARG)" t nil)
+\(fn &optional ARG)" t nil)
 
 (autoload 'org-tags-view "org-agenda" "\
 Show all headlines for all `org-agenda-files' matching a TAGS criterion.
@@ -498,7 +505,7 @@ of what a project is and how to check if it stuck, customize the variable
 \(fn &rest IGNORE)" t nil)
 
 (autoload 'org-diary "org-agenda" "\
-Return diary information from org-files.
+Return diary information from org files.
 This function can be used in a \"sexp\" diary entry in the Emacs calendar.
 It accesses org files and extracts information from those files to be
 listed in the diary.  The function accepts arguments specifying what
@@ -566,13 +573,16 @@ By default `org-agenda-to-appt' will use :deadline, :scheduled
 and :timestamp entries.  See the docstring of `org-diary' for
 details and examples.
 
+If an entry as a APPT_WARNTIME property, its value will be used
+to override `appt-message-warning-time'.
+
 \(fn &optional REFRESH FILTER &rest ARGS)" t nil)
 
 ;;;***
 
 ;;;### (autoloads (org-archive-subtree-default-with-confirmation
 ;;;;;;  org-archive-subtree-default) "org-archive" "org-archive.el"
-;;;;;;  (20494 47826))
+;;;;;;  (20535 39591))
 ;;; Generated autoloads from org-archive.el
 
 (autoload 'org-archive-subtree-default "org-archive" "\
@@ -592,7 +602,7 @@ This command is set with the variable `org-archive-default-command'.
 ;;;### (autoloads (org-export-as-ascii org-export-region-as-ascii
 ;;;;;;  org-replace-region-by-ascii org-export-as-ascii-to-buffer
 ;;;;;;  org-export-as-utf8-to-buffer org-export-as-utf8 org-export-as-latin1-to-buffer
-;;;;;;  org-export-as-latin1) "org-ascii" "org-ascii.el" (20494 47826))
+;;;;;;  org-export-as-latin1) "org-ascii" "org-ascii.el" (20535 39591))
 ;;; Generated autoloads from org-ascii.el
 
 (autoload 'org-export-as-latin1 "org-ascii" "\
@@ -665,8 +675,8 @@ publishing directory.
 
 ;;;***
 
-;;;### (autoloads (org-attach) "org-attach" "org-attach.el" (20494
-;;;;;;  47826))
+;;;### (autoloads (org-attach) "org-attach" "org-attach.el" (20535
+;;;;;;  39591))
 ;;; Generated autoloads from org-attach.el
 
 (autoload 'org-attach "org-attach" "\
@@ -678,7 +688,7 @@ Shows a list of commands and prompts for another key to execute a command.
 ;;;***
 
 ;;;### (autoloads (org-bbdb-anniversaries) "org-bbdb" "org-bbdb.el"
-;;;;;;  (20494 47826))
+;;;;;;  (20535 39591))
 ;;; Generated autoloads from org-bbdb.el
 
 (autoload 'org-bbdb-anniversaries "org-bbdb" "\
@@ -689,8 +699,10 @@ Extract anniversaries from BBDB for display in the agenda.
 ;;;***
 
 ;;;### (autoloads (org-capture-import-remember-templates org-capture-insert-template-here
-;;;;;;  org-capture) "org-capture" "org-capture.el" (20494 47826))
+;;;;;;  org-capture) "org-capture" "org-capture.el" (20583 28515))
 ;;; Generated autoloads from org-capture.el
+
+(defvar org-capture-initial nil)
 
 (autoload 'org-capture "org-capture" "\
 Capture something.
@@ -708,9 +720,12 @@ stored.
 
 When called with a `C-0' (zero) prefix, insert a template at point.
 
-Lisp programs can set KEYS to a string associated with a template in
-`org-capture-templates'.  In this case, interactive selection will be
-bypassed.
+Lisp programs can set KEYS to a string associated with a template
+in `org-capture-templates'.  In this case, interactive selection
+will be bypassed.
+
+If `org-capture-use-agenda-date' is non-nil, capturing from the
+agenda will use the date at point as the default date.
 
 \(fn &optional GOTO KEYS)" t nil)
 
@@ -727,7 +742,7 @@ Set org-capture-templates to be similar to `org-remember-templates'.
 ;;;***
 
 ;;;### (autoloads (org-clock-persistence-insinuate org-get-clocktable
-;;;;;;  org-clock-in-last) "org-clock" "org-clock.el" (20494 47826))
+;;;;;;  org-clock-in-last) "org-clock" "org-clock.el" (20581 51586))
 ;;; Generated autoloads from org-clock.el
 
 (autoload 'org-clock-in-last "org-clock" "\
@@ -737,6 +752,9 @@ With a universal prefix argument, select the task you want to
 clock in from the last clocked in tasks.
 With two universal prefix arguments, start clocking using the
 last clock-out time, if any.
+With three universal prefix arguments, interactively prompt
+for a todo state to switch to, overriding the existing value
+`org-clock-in-switch-to-state'.
 
 \(fn &optional ARG)" t nil)
 
@@ -754,8 +772,19 @@ Set up hooks for clock persistence.
 
 ;;;***
 
+;;;### (autoloads (org-check-version) "org-compat" "org-compat.el"
+;;;;;;  (20559 38989))
+;;; Generated autoloads from org-compat.el
+
+(autoload 'org-check-version "org-compat" "\
+Try very hard to provide sensible version strings.
+
+\(fn)" nil (quote macro))
+
+;;;***
+
 ;;;### (autoloads (org-datetree-find-date-create) "org-datetree"
-;;;;;;  "org-datetree.el" (20494 47826))
+;;;;;;  "org-datetree.el" (20583 28515))
 ;;; Generated autoloads from org-datetree.el
 
 (autoload 'org-datetree-find-date-create "org-datetree" "\
@@ -771,7 +800,7 @@ tree can be found.
 ;;;### (autoloads (org-export-as-docbook org-export-as-docbook-pdf-and-open
 ;;;;;;  org-export-as-docbook-pdf org-export-region-as-docbook org-replace-region-by-docbook
 ;;;;;;  org-export-as-docbook-to-buffer org-export-as-docbook-batch)
-;;;;;;  "org-docbook" "org-docbook.el" (20494 47826))
+;;;;;;  "org-docbook" "org-docbook.el" (20535 39591))
 ;;; Generated autoloads from org-docbook.el
 
 (autoload 'org-export-as-docbook-batch "org-docbook" "\
@@ -846,9 +875,67 @@ publishing directory.
 
 ;;;***
 
+;;;### (autoloads (org-element-context org-element-at-point org-element-interpret-data)
+;;;;;;  "org-element" "org-element.el" (20582 46050))
+;;; Generated autoloads from org-element.el
+
+(autoload 'org-element-interpret-data "org-element" "\
+Interpret DATA as Org syntax.
+
+DATA is a parse tree, an element, an object or a secondary string
+to interpret.
+
+Optional argument PARENT is used for recursive calls.  It contains
+the element or object containing data, or nil.
+
+Return Org syntax as a string.
+
+\(fn DATA &optional PARENT)" nil nil)
+
+(autoload 'org-element-at-point "org-element" "\
+Determine closest element around point.
+
+Return value is a list like (TYPE PROPS) where TYPE is the type
+of the element and PROPS a plist of properties associated to the
+element.
+
+Possible types are defined in `org-element-all-elements'.
+Properties depend on element or object type, but always
+include :begin, :end, :parent and :post-blank properties.
+
+As a special case, if point is at the very beginning of a list or
+sub-list, returned element will be that list instead of the first
+item.  In the same way, if point is at the beginning of the first
+row of a table, returned element will be the table instead of the
+first row.
+
+If optional argument KEEP-TRAIL is non-nil, the function returns
+a list of of elements leading to element at point.  The list's
+CAR is always the element at point.  Following positions contain
+element's siblings, then parents, siblings of parents, until the
+first element of current section.
+
+\(fn &optional KEEP-TRAIL)" nil nil)
+
+(autoload 'org-element-context "org-element" "\
+Return closest element or object around point.
+
+Return value is a list like (TYPE PROPS) where TYPE is the type
+of the element or object and PROPS a plist of properties
+associated to it.
+
+Possible types are defined in `org-element-all-elements' and
+`org-element-all-objects'.  Properties depend on element or
+object type, but always include :begin, :end, :parent
+and :post-blank properties.
+
+\(fn)" nil nil)
+
+;;;***
+
 ;;;### (autoloads (org-insert-export-options-template org-export-as-org
-;;;;;;  org-export-visible org-export) "org-exp" "org-exp.el" (20494
-;;;;;;  47826))
+;;;;;;  org-export-visible org-export) "org-exp" "org-exp.el" (20568
+;;;;;;  20361))
 ;;; Generated autoloads from org-exp.el
 
 (autoload 'org-export "org-exp" "\
@@ -909,7 +996,7 @@ Insert into the buffer a template with information for exporting.
 ;;;***
 
 ;;;### (autoloads (org-feed-show-raw-feed org-feed-goto-inbox org-feed-update
-;;;;;;  org-feed-update-all) "org-feed" "org-feed.el" (20494 47826))
+;;;;;;  org-feed-update-all) "org-feed" "org-feed.el" (20535 39591))
 ;;; Generated autoloads from org-feed.el
 
 (autoload 'org-feed-update-all "org-feed" "\
@@ -937,7 +1024,7 @@ Show the raw feed buffer of a feed.
 ;;;***
 
 ;;;### (autoloads (org-footnote-normalize org-footnote-action) "org-footnote"
-;;;;;;  "org-footnote.el" (20494 47826))
+;;;;;;  "org-footnote.el" (20535 39591))
 ;;; Generated autoloads from org-footnote.el
 
 (autoload 'org-footnote-action "org-footnote" "\
@@ -988,7 +1075,7 @@ Additional note on `org-footnote-insert-pos-for-preprocessor':
 ;;;### (autoloads (org-freemind-to-org-mode org-freemind-from-org-sparse-tree
 ;;;;;;  org-freemind-from-org-mode org-freemind-from-org-mode-node
 ;;;;;;  org-freemind-show org-export-as-freemind) "org-freemind"
-;;;;;;  "org-freemind.el" (20494 47826))
+;;;;;;  "org-freemind.el" (20569 35225))
 ;;; Generated autoloads from org-freemind.el
 
 (autoload 'org-export-as-freemind "org-freemind" "\
@@ -1049,7 +1136,7 @@ Convert FreeMind file MM-FILE to `org-mode' file ORG-FILE.
 ;;;### (autoloads (org-export-htmlize-generate-css org-export-as-html
 ;;;;;;  org-export-region-as-html org-replace-region-by-html org-export-as-html-to-buffer
 ;;;;;;  org-export-as-html-batch org-export-as-html-and-open) "org-html"
-;;;;;;  "org-html.el" (20494 47826))
+;;;;;;  "org-html.el" (20562 57177))
 ;;; Generated autoloads from org-html.el
 
 (put 'org-export-html-style-include-default 'safe-local-variable 'booleanp)
@@ -1143,7 +1230,7 @@ that uses these same face definitions.
 
 ;;;### (autoloads (org-export-icalendar-combine-agenda-files org-export-icalendar-all-agenda-files
 ;;;;;;  org-export-icalendar-this-file) "org-icalendar" "org-icalendar.el"
-;;;;;;  (20494 47826))
+;;;;;;  (20540 44570))
 ;;; Generated autoloads from org-icalendar.el
 
 (autoload 'org-export-icalendar-this-file "org-icalendar" "\
@@ -1171,7 +1258,7 @@ The file is stored under the name `org-combined-agenda-icalendar-file'.
 ;;;### (autoloads (org-id-store-link org-id-find-id-file org-id-find
 ;;;;;;  org-id-goto org-id-get-with-outline-drilling org-id-get-with-outline-path-completion
 ;;;;;;  org-id-get org-id-copy org-id-get-create) "org-id" "org-id.el"
-;;;;;;  (20494 47826))
+;;;;;;  (20583 28515))
 ;;; Generated autoloads from org-id.el
 
 (autoload 'org-id-get-create "org-id" "\
@@ -1240,7 +1327,7 @@ Store a link to the current entry, using its ID.
 ;;;***
 
 ;;;### (autoloads (org-indent-mode) "org-indent" "org-indent.el"
-;;;;;;  (20494 47826))
+;;;;;;  (20535 39591))
 ;;; Generated autoloads from org-indent.el
 
 (autoload 'org-indent-mode "org-indent" "\
@@ -1257,8 +1344,8 @@ during idle time.
 
 ;;;***
 
-;;;### (autoloads (org-irc-store-link) "org-irc" "org-irc.el" (20494
-;;;;;;  47826))
+;;;### (autoloads (org-irc-store-link) "org-irc" "org-irc.el" (20535
+;;;;;;  39646))
 ;;; Generated autoloads from org-irc.el
 
 (autoload 'org-irc-store-link "org-irc" "\
@@ -1270,8 +1357,8 @@ Dispatch to the appropriate function to store a link to an IRC session.
 
 ;;;### (autoloads (org-export-as-pdf-and-open org-export-as-pdf org-export-as-latex
 ;;;;;;  org-export-region-as-latex org-replace-region-by-latex org-export-as-latex-to-buffer
-;;;;;;  org-export-as-latex-batch) "org-latex" "org-latex.el" (20494
-;;;;;;  47826))
+;;;;;;  org-export-as-latex-batch) "org-latex" "org-latex.el" (20583
+;;;;;;  28515))
 ;;; Generated autoloads from org-latex.el
 
 (autoload 'org-export-as-latex-batch "org-latex" "\
@@ -1352,7 +1439,7 @@ Export as LaTeX, then process through to PDF, and open.
 
 ;;;### (autoloads (org-lparse-region org-replace-region-by org-lparse-to-buffer
 ;;;;;;  org-lparse-batch org-lparse-and-open) "org-lparse" "org-lparse.el"
-;;;;;;  (20494 47826))
+;;;;;;  (20580 53523))
 ;;; Generated autoloads from org-lparse.el
 
 (autoload 'org-lparse-and-open "org-lparse" "\
@@ -1409,7 +1496,7 @@ in a window.  A non-interactive call will only return the buffer.
 ;;;***
 
 ;;;### (autoloads (org-mobile-create-sumo-agenda org-mobile-pull
-;;;;;;  org-mobile-push) "org-mobile" "org-mobile.el" (20494 47826))
+;;;;;;  org-mobile-push) "org-mobile" "org-mobile.el" (20540 44570))
 ;;; Generated autoloads from org-mobile.el
 
 (autoload 'org-mobile-push "org-mobile" "\
@@ -1435,8 +1522,10 @@ Create a file that contains all custom agenda views.
 
 ;;;### (autoloads (org-export-as-odf-and-open org-export-as-odf org-export-odt-convert
 ;;;;;;  org-export-as-odt org-export-as-odt-batch org-export-as-odt-and-open)
-;;;;;;  "org-odt" "org-odt.el" (20494 47826))
+;;;;;;  "org-odt" "org-odt.el" (20581 51586))
 ;;; Generated autoloads from org-odt.el
+
+(put 'org-export-odt-preferred-output-format 'safe-local-variable 'stringp)
 
 (autoload 'org-export-as-odt-and-open "org-odt" "\
 Export the outline as ODT and immediately open it with a browser.
@@ -1504,8 +1593,8 @@ formula file.
 
 ;;;***
 
-;;;### (autoloads (org-plot/gnuplot) "org-plot" "org-plot.el" (20494
-;;;;;;  47826))
+;;;### (autoloads (org-plot/gnuplot) "org-plot" "org-plot.el" (20535
+;;;;;;  39591))
 ;;; Generated autoloads from org-plot.el
 
 (autoload 'org-plot/gnuplot "org-plot" "\
@@ -1519,7 +1608,7 @@ line directly before or after the table.
 
 ;;;### (autoloads (org-publish-current-project org-publish-current-file
 ;;;;;;  org-publish-all org-publish) "org-publish" "org-publish.el"
-;;;;;;  (20494 47826))
+;;;;;;  (20581 49187))
 ;;; Generated autoloads from org-publish.el
 
 (defalias 'org-publish-project 'org-publish)
@@ -1553,7 +1642,7 @@ the project.
 
 ;;;### (autoloads (org-remember-handler org-remember org-remember-apply-template
 ;;;;;;  org-remember-annotation org-remember-insinuate) "org-remember"
-;;;;;;  "org-remember.el" (20494 47826))
+;;;;;;  "org-remember.el" (20535 39646))
 ;;; Generated autoloads from org-remember.el
 
 (autoload 'org-remember-insinuate "org-remember" "\
@@ -1630,7 +1719,7 @@ See also the variable `org-reverse-note-order'.
 
 ;;;### (autoloads (org-table-to-lisp orgtbl-mode turn-on-orgtbl org-table-iterate-buffer-tables
 ;;;;;;  org-table-recalculate-buffer-tables) "org-table" "org-table.el"
-;;;;;;  (20494 47826))
+;;;;;;  (20581 53986))
 ;;; Generated autoloads from org-table.el
 
 (autoload 'org-table-recalculate-buffer-tables "org-table" "\
@@ -1664,19 +1753,19 @@ The table is taken from the parameter TXT, or from the buffer at point.
 ;;;***
 
 ;;;### (autoloads (org-export-as-taskjuggler-and-open org-export-as-taskjuggler)
-;;;;;;  "org-taskjuggler" "org-taskjuggler.el" (20494 47826))
+;;;;;;  "org-taskjuggler" "org-taskjuggler.el" (20538 30195))
 ;;; Generated autoloads from org-taskjuggler.el
 
 (autoload 'org-export-as-taskjuggler "org-taskjuggler" "\
 Export parts of the current buffer as a TaskJuggler file.
 The exporter looks for a tree with tag, property or todo that
 matches `org-export-taskjuggler-project-tag' and takes this as
-the tasks for this project. The first node of this tree defines
+the tasks for this project.  The first node of this tree defines
 the project properties such as project name and project period.
 If there is a tree with tag, property or todo that matches
 `org-export-taskjuggler-resource-tag' this three is taken as
-resources for the project. If no resources are specified, a
-default resource is created and allocated to the project. Also
+resources for the project.  If no resources are specified, a
+default resource is created and allocated to the project.  Also
 the taskjuggler project will be created with default reports as
 defined in `org-export-taskjuggler-default-reports'.
 
@@ -1691,8 +1780,8 @@ with the TaskJuggler GUI.
 ;;;***
 
 ;;;### (autoloads (org-timer-set-timer org-timer-item org-timer-change-times-in-region
-;;;;;;  org-timer org-timer-start) "org-timer" "org-timer.el" (20494
-;;;;;;  47826))
+;;;;;;  org-timer org-timer-stop org-timer-pause-or-continue org-timer-start)
+;;;;;;  "org-timer" "org-timer.el" (20542 22690))
 ;;; Generated autoloads from org-timer.el
 
 (autoload 'org-timer-start "org-timer" "\
@@ -1707,6 +1796,17 @@ the amount, with the default to make the first timer string in
 the region 0:00:00.
 
 \(fn &optional OFFSET)" t nil)
+
+(autoload 'org-timer-pause-or-continue "org-timer" "\
+Pause or continue the relative timer.
+With prefix arg STOP, stop it entirely.
+
+\(fn &optional STOP)" t nil)
+
+(autoload 'org-timer-stop "org-timer" "\
+Stop the relative timer.
+
+\(fn)" t nil)
 
 (autoload 'org-timer "org-timer" "\
 Insert a H:MM:SS string from the timer into the buffer.
@@ -1753,7 +1853,7 @@ replace any running timer.
 ;;;***
 
 ;;;### (autoloads (org-git-version org-release) "org-version" "org-version.el"
-;;;;;;  (20494 49858))
+;;;;;;  (20618 57288))
 ;;; Generated autoloads from org-version.el
 
 (autoload 'org-release "org-version" "\
@@ -1773,8 +1873,8 @@ The location of ODT styles.")
 
 ;;;***
 
-;;;### (autoloads (org-export-as-xoxo) "org-xoxo" "org-xoxo.el" (20494
-;;;;;;  47826))
+;;;### (autoloads (org-export-as-xoxo) "org-xoxo" "org-xoxo.el" (20535
+;;;;;;  39591))
 ;;; Generated autoloads from org-xoxo.el
 
 (autoload 'org-export-as-xoxo "org-xoxo" "\
@@ -1785,13 +1885,16 @@ The XOXO buffer is named *xoxo-<source buffer name>*
 
 ;;;***
 
-;;;### (autoloads (org-customize org-reload org-require-autoloaded-modules
-;;;;;;  org-submit-bug-report org-cycle-agenda-files org-switchb
-;;;;;;  org-map-entries org-update-all-dblocks org-open-link-from-string
-;;;;;;  org-open-at-point-global org-insert-link-global org-store-link
-;;;;;;  org-run-like-in-org-mode turn-on-orgstruct++ turn-on-orgstruct
-;;;;;;  orgstruct-mode org-global-cycle org-mode org-version org-babel-do-load-languages)
-;;;;;;  "org" "org.el" (20494 47826))
+;;;### (autoloads (org-unindent-buffer org-transpose-element org-narrow-to-element
+;;;;;;  org-mark-element org-drag-element-forward org-drag-element-backward
+;;;;;;  org-up-element org-backward-element org-forward-element org-customize
+;;;;;;  org-reload org-require-autoloaded-modules org-submit-bug-report
+;;;;;;  org-cycle-agenda-files org-switchb org-map-entries org-update-all-dblocks
+;;;;;;  org-open-link-from-string org-open-at-point-global org-insert-link-global
+;;;;;;  org-store-link org-run-like-in-org-mode turn-on-orgstruct++
+;;;;;;  turn-on-orgstruct orgstruct-mode org-global-cycle org-mode
+;;;;;;  org-version org-babel-do-load-languages) "org" "org.el" (20583
+;;;;;;  28515))
 ;;; Generated autoloads from org.el
 
 (autoload 'org-babel-do-load-languages "org" "\
@@ -1801,7 +1904,9 @@ Load the languages defined in `org-babel-load-languages'.
 
 (autoload 'org-version "org" "\
 Show the org-mode version in the echo area.
-With prefix arg HERE, insert it at point.
+With prefix argument HERE, insert it at point.
+When FULL is non-nil, use a verbose version string.
+When MESSAGE is non-nil, display a message with the version.
 
 \(fn &optional HERE FULL MESSAGE)" t nil)
 
@@ -2021,6 +2126,62 @@ With prefix arg UNCOMPILED, load the uncompiled versions.
 
 (autoload 'org-customize "org" "\
 Call the customize function with org as argument.
+
+\(fn)" t nil)
+
+(autoload 'org-forward-element "org" "\
+Move forward by one element.
+Move to the next element at the same level, when possible.
+
+\(fn)" t nil)
+
+(autoload 'org-backward-element "org" "\
+Move backward by one element.
+Move to the previous element at the same level, when possible.
+
+\(fn)" t nil)
+
+(autoload 'org-up-element "org" "\
+Move to upper element.
+
+\(fn)" t nil)
+
+(defvar org-element-greater-elements)
+
+(autoload 'org-drag-element-backward "org" "\
+Move backward element at point.
+
+\(fn)" t nil)
+
+(autoload 'org-drag-element-forward "org" "\
+Move forward element at point.
+
+\(fn)" t nil)
+
+(autoload 'org-mark-element "org" "\
+Put point at beginning of this element, mark at end.
+
+Interactively, if this command is repeated or (in Transient Mark
+mode) if the mark is active, it marks the next element after the
+ones already marked.
+
+\(fn)" t nil)
+
+(autoload 'org-narrow-to-element "org" "\
+Narrow buffer to current element.
+
+\(fn)" t nil)
+
+(autoload 'org-transpose-element "org" "\
+Transpose current and previous elements, keeping blank lines between.
+Point is moved after both elements.
+
+\(fn)" t nil)
+
+(autoload 'org-unindent-buffer "org" "\
+Un-indent the visible part of the buffer.
+Relative indentation (between items, inside blocks, etc.) isn't
+modified.
 
 \(fn)" t nil)
 

@@ -19,22 +19,26 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-
+;;
 ;; This library implements an ASCII back-end for Org generic exporter.
-
-;; To test it, run
 ;;
-;;   M-: (org-export-to-buffer 'e-ascii "*Test e-ASCII*") RET
+;; It provides two commands for export, depending on the desired
+;; output: `org-e-ascii-export-as-ascii' (temporary buffer) and
+;; `org-e-ascii-export-to-ascii' ("txt" file).
 ;;
-;; in an Org mode buffer then switch to that buffer to see the ASCII
-;; export.  See contrib/lisp/org-export.el for more details on how
-;; this exporter works.
+;; Output encoding is specified through `org-e-ascii-charset'
+;; variable, among `ascii', `latin1' and `utf-8' symbols.
+;;
+;; By default, horizontal rules span over the full text with, but with
+;; a given width attribute (set though #+ATTR_ASCII: :width <num>)
+;; they can be shortened and centered.
 
 ;;; Code:
 
 (eval-when-compile (require 'cl))
 (require 'org-export)
 
+(declare-function aa2u "ext:ascii-art-to-unicode" ())
 
 ;;; Define Back-End
 ;;
@@ -239,6 +243,15 @@ When nil, narrowed columns will look in ASCII export just like in
 Org mode, i.e. with \"=>\" as ellipsis."
   :group 'org-export-e-ascii
   :type 'boolean)
+
+(defcustom org-e-ascii-table-use-ascii-art nil
+  "Non-nil means table.el tables are turned into ascii-art.
+
+It only makes sense when export charset is `utf-8'.  It is nil by
+default since it requires ascii-art-to-unicode.el package.  You
+can download it here:
+
+  http://gnuvola.org/software/j/aa2u/ascii-art-to-unicode.el.")
 
 (defcustom org-e-ascii-caption-above nil
   "When non-nil, place caption string before the element.
@@ -508,7 +521,8 @@ title."
 				   (mapconcat 'identity tag-list ":"))))))
 	 (priority
 	  (and (plist-get info :with-priority)
-	       (concat (org-element-property :priority element) " ")))
+	       (let ((char (org-element-property :priority element)))
+		 (and char (format "(#%c) " char)))))
 	 (first-part (concat numbers todo priority text)))
     (concat
      first-part
@@ -1086,10 +1100,13 @@ holding contextual information."
   "Transcode an HORIZONTAL-RULE object from Org to ASCII.
 CONTENTS is nil.  INFO is a plist holding contextual
 information."
-  (let ((width (org-export-read-attribute :attr_ascii horizontal-rule :width)))
-    (make-string (or (and (wholenump width) width)
-		     (org-e-ascii--current-text-width horizontal-rule info))
-		 (if (eq (plist-get info :ascii-charset) 'utf-8) ?― ?-))))
+  (let ((text-width (org-e-ascii--current-text-width horizontal-rule info))
+	(spec-width
+	 (org-export-read-attribute :attr_ascii horizontal-rule :width)))
+    (org-e-ascii--justify-string
+     (make-string (if (wholenump spec-width) spec-width text-width)
+		  (if (eq (plist-get info :ascii-charset) 'utf-8) ?― ?-))
+     text-width 'center)))
 
 
 ;;;; Inline Babel Call
@@ -1516,8 +1533,19 @@ contextual information."
      ;; Possibly add a caption string above.
      (when (and caption org-e-ascii-caption-above) (concat caption "\n"))
      ;; Insert table.  Note: "table.el" tables are left unmodified.
-     (if (eq (org-element-property :type table) 'org) contents
-       (org-remove-indentation (org-element-property :value table)))
+     (cond ((eq (org-element-property :type table) 'org) contents)
+	   ((and org-e-ascii-table-use-ascii-art
+		 (eq (plist-get info :ascii-charset) 'utf-8)
+		 (require 'ascii-art-to-unicode nil t))
+	    (with-temp-buffer
+	      (insert (org-remove-indentation
+		       (org-element-property :value table)))
+	      (goto-char (point-min))
+	      (aa2u)
+	      (goto-char (point-max))
+	      (skip-chars-backward " \r\t\n")
+	      (buffer-substring (point-min) (point))))
+	   (t (org-remove-indentation (org-element-property :value table))))
      ;; Possible add a caption string below.
      (when (and caption (not org-e-ascii-caption-above))
        (concat "\n" caption)))))
@@ -1698,7 +1726,7 @@ This function only applies to `e-ascii' back-end.  See
 `org-e-ascii-headline-spacing' for information.
 
 For any other back-end, HEADLINE is returned as-is."
-  (if (not (and (eq back-end 'e-ascii) org-e-ascii-headline-spacing)) headline
+  (if (not org-e-ascii-headline-spacing) headline
     (let ((blanks (make-string (1+ (cdr org-e-ascii-headline-spacing)) ?\n)))
       (replace-regexp-in-string "\n\\(?:\n[ \t]*\\)*\\'" blanks headline))))
 
@@ -1730,10 +1758,9 @@ EXT-PLIST, when provided, is a property list with external
 parameters overriding Org default settings, but still inferior to
 file-local settings.
 
-When optional argument PUB-DIR is set, use it as the publishing
-directory.
-
-Return output file's name."
+Export is done in a buffer named \"*Org E-ASCII Export*\", which
+will be displayed when `org-export-show-temporary-export-buffer'
+is non-nil."
   (interactive)
   (let ((outbuf (org-export-to-buffer
 		 'e-ascii "*Org E-ASCII Export*"

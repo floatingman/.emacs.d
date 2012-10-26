@@ -2,7 +2,7 @@
 # Remove "oldorg:" to switch to "all" as the default target.
 # Change "oldorg:" to an existing target to make that target the default,
 # or define your own target here to become the default target.
-oldorg:	# do what the old Makfile did by default
+oldorg:	# do what the old Makefile did by default.
 
 ##----------------------------------------------------------------------
 ##  CHECK AND ADAPT THE FOLLOWING DEFINITIONS
@@ -25,6 +25,10 @@ infodir = $(prefix)/info
 
 # Define if you only need info documentation, the default includes html and pdf
 #ORG_MAKE_DOC = info # html pdf
+
+# Define if you want to include some (or all) files from contrib/lisp
+# just the filename please (no path prefix, no .el suffix), maybe with globbing
+#ORG_ADD_CONTRIB = org-e-* org-md org-export # e.g. the new exporter
 
 # Where to create temporary files for the testsuite
 # respect TMPDIR if it is already defined in the environment

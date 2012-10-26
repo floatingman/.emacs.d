@@ -130,7 +130,7 @@ current-window    Show edit buffer in the current window, keeping all other
                   windows.
 other-window      Use `switch-to-buffer-other-window' to display edit buffer.
 reorganize-frame  Show only two windows on the current frame, the current
-                  window and the edit buffer. When exiting the edit buffer,
+                  window and the edit buffer.  When exiting the edit buffer,
                   return to one window.
 other-frame       Use `switch-to-buffer-other-frame' to display edit buffer.
                   Also, when exiting the edit buffer, kill that frame."
@@ -272,8 +272,9 @@ buffer."
 	(setq line (org-current-line)
 	      col (current-column)))
       (if (and (setq buffer (org-edit-src-find-buffer beg end))
-	       (if org-src-ask-before-returning-to-edit-buffer
-		   (y-or-n-p "Return to existing edit buffer ([n] will revert changes)? ") t))
+	       (or (eq context 'save)
+		   (if org-src-ask-before-returning-to-edit-buffer
+		       (y-or-n-p "Return to existing edit buffer ([n] will revert changes)? ") t)))
 	  (org-src-switch-to-buffer buffer 'return)
 	(when buffer
 	  (with-current-buffer buffer
@@ -455,10 +456,10 @@ the fragment in the Org-mode buffer."
 	(overlay-put ovl 'help-echo "Click with mouse-1 to switch to buffer editing this segment")
 	(overlay-put ovl 'face 'secondary-selection)
 	(overlay-put ovl
-			 'keymap
-			 (let ((map (make-sparse-keymap)))
-			   (define-key map [mouse-1] 'org-edit-src-continue)
-			   map))
+		     'keymap
+		     (let ((map (make-sparse-keymap)))
+		       (define-key map [mouse-1] 'org-edit-src-continue)
+		       map))
 	(overlay-put ovl :read-only "Leave me alone")
 	(org-pop-to-buffer-same-window buffer)
 	(insert code)
@@ -589,6 +590,21 @@ the language, a switch telling if the content should be in a single line."
     (goto-char pos)
     (org-get-indentation)))
 
+(defun org-add-protective-commas (beg end &optional line)
+  "Add protective commas in region.
+Return the delta in size of the region."
+  (interactive "r")
+  (let ((org-re "^\\(.\\)")
+	(other-re "^\\([*]\\|[ \t]*#\\+\\)")
+	(delta 0))
+    (save-excursion
+      (goto-char beg)
+      (while (re-search-forward (if (derived-mode-p 'org-mode) org-re other-re)
+				end t)
+	(if (and line (eq (org-current-line) line)) (setq delta (1+ delta)))
+	(replace-match ",\\1")))
+    delta))
+
 (defun org-edit-src-exit (&optional context)
   "Exit special edit and protect problematic lines."
   (interactive)
@@ -598,6 +614,7 @@ the language, a switch telling if the content should be in a single line."
   (let* ((beg org-edit-src-beg-marker)
 	 (end org-edit-src-end-marker)
 	 (ovl org-edit-src-overlay)
+	 (bufstr (buffer-string))
 	 (buffer (current-buffer))
 	 (single (org-bound-and-true-p org-edit-src-force-single-line))
 	 (macro (eq single 'macro-definition))
@@ -632,11 +649,8 @@ the language, a switch telling if the content should be in a single line."
 	(goto-char (point-min))
 	(if (looking-at "\\s-*") (replace-match " ")))
       (when (org-bound-and-true-p org-edit-src-from-org-mode)
-	(goto-char (point-min))
-	(while (re-search-forward
-		(if (derived-mode-p 'org-mode) "^\\(.\\)" "^\\([*]\\|[ \t]*#\\+\\)") nil t)
-	  (if (eq (org-current-line) line) (setq delta (1+ delta)))
-	  (replace-match ",\\1")))
+	(setq delta (+ delta (org-add-protective-commas
+			      (point-min) (point-max) line))))
       (when (org-bound-and-true-p org-edit-src-picture)
 	(setq preserve-indentation nil)
 	(untabify (point-min) (point-max))
@@ -651,13 +665,18 @@ the language, a switch telling if the content should be in a single line."
       (if (org-bound-and-true-p org-edit-src-picture)
 	  (setq total-nindent (+ total-nindent 2)))
       (setq code (buffer-string))
+      (when (eq context 'save)
+	(erase-buffer)
+	(insert bufstr))
       (set-buffer-modified-p nil))
     (org-src-switch-to-buffer (marker-buffer beg) (or context 'exit))
-    (kill-buffer buffer)
+    (if (eq context 'save) (save-buffer)
+      (kill-buffer buffer))
     (goto-char beg)
     (when allow-write-back-p
-      (delete-region beg end)
+      (delete-region beg (1- end))
       (insert code)
+      (delete-char 1)
       (goto-char beg)
       (if single (just-one-space)))
     (if (memq t (mapcar (lambda (overlay)
@@ -669,8 +688,9 @@ the language, a switch telling if the content should be in a single line."
       ;; Block is visible, put point where it was in the code buffer
       (org-goto-line (1- (+ (org-current-line) line)))
       (org-move-to-column (if preserve-indentation col (+ col total-nindent delta))))
-    (move-marker beg nil)
-    (move-marker end nil))
+    (unless (eq context 'save)
+      (move-marker beg nil)
+      (move-marker end nil)))
   (unless (eq context 'save)
     (when org-edit-src-saved-temp-window-config
       (set-window-configuration org-edit-src-saved-temp-window-config)
@@ -805,13 +825,13 @@ fontification of code blocks see `org-src-fontify-block' and
 	      (get-buffer-create
 	       (concat " org-src-fontification:" (symbol-name lang-mode)))
 	    (delete-region (point-min) (point-max))
-	    (insert (concat string " ")) ;; so there's a final property change
+	    (insert string " ") ;; so there's a final property change
 	    (unless (eq major-mode lang-mode) (funcall lang-mode))
 	    (font-lock-fontify-buffer)
 	    (setq pos (point-min))
 	    (while (setq next (next-single-property-change pos 'face))
 	      (put-text-property
-	       (+ start (1- pos)) (+ start next) 'face
+	       (+ start (1- pos)) (1- (+ start next)) 'face
 	       (get-text-property pos 'face) org-buffer)
 	      (setq pos next)))
 	  (add-text-properties
