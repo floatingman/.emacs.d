@@ -4,4 +4,4 @@
   (tooltip-mode -1)
   (tool-bar-mode -1))
 
-(setq browse-url-browser-function 'browse-default-windows-browser)
+(setq browse-url-browser-function 'browse-url-default-windows-browser)
