@@ -9,7 +9,7 @@
 (add-to-list 'load-path (expand-file-name "~/.emacs.d/vendor/org-mode/lisp"))
 (add-to-list 'load-path (expand-file-name "~/.emacs.d/vendor/org-mode/contrib/lisp"))
 (add-to-list 'auto-mode-alist '("\\.\\(org\\|org_archive\\|txt\\)$" . org-mode))
-(require 'org-install)
+(require 'org)
 (require 'org-checklist)
 (require 'org-id)
 (require 'bbdb)
@@ -191,7 +191,7 @@
       (quote (("t" "todo" entry (file "~/git/org/refile.org")
                "* TODO %?\n%U\n%a\n" :clock-in t :clock-resume t)
               ("r" "respond" entry (file "~/git/org/refile.org")
-               "* TODO Respond to %:from on %:subject\n%U\n%a\n" :clock-in t :clock-resume t :immediate-finish t)
+               "* NEXT Respond to %:from on %:subject\nSCHEDULED: %t\n%U\n%a\n" :clock-in t :clock-resume t :immediate-finish t)
               ("n" "note" entry (file "~/git/org/refile.org")
                "* %? :NOTE:\n%U\n%a\n" :clock-in t :clock-resume t)
               ("j" "Journal" entry (file+datetree "~/git/org/diary.org")
@@ -487,6 +487,7 @@ A prefix arg forces clock in of the default task."
           ((org-clock-is-active) (cadr org-clock-history))
           ((equal org-clock-default-task (car org-clock-history)) (cadr org-clock-history))
           (t (car org-clock-history)))))
+    (widen)
     (org-with-point-at clock-in-to-task
       (org-clock-in nil))))
 
@@ -539,7 +540,7 @@ A prefix arg forces clock in of the default task."
                                     ("STYLE_ALL" . "habit"))))
 ;;9.3 Providing Progress Reports to Others
 ;; Agenda log mode items to display (closed and state changes by default)
-(setq org-agenda-log-mode-items (quote (state)))
+(setq org-agenda-log-mode-items (quote (closed state)))
 
 ;;10.1 Tags
 ; Tags with fast selection keys
@@ -988,16 +989,18 @@ so change the default 'F' binding in the agenda to allow both"
 
 (defun bh/narrow-to-org-subtree ()
   (widen)
-  (org-narrow-to-subtree)
-  (save-restriction
-    (org-agenda-set-restriction-lock)))
+  (org-narrow-to-subtree))
 
 (defun bh/narrow-to-subtree ()
   (interactive)
   (if (equal major-mode 'org-agenda-mode)
       (org-with-point-at (org-get-at-bol 'org-hd-marker)
-        (bh/narrow-to-org-subtree))
-    (bh/narrow-to-org-subtree)))
+        (bh/narrow-to-org-subtree)
+        (save-restriction
+          (org-agenda-set-restriction-lock)))
+    (bh/narrow-to-org-subtree)
+    (save-restriction
+      (org-agenda-set-restriction-lock))))
 
 (add-hook 'org-agenda-mode-hook
           '(lambda () (org-defkey org-agenda-mode-map "N" 'bh/narrow-to-subtree))
@@ -1036,8 +1039,12 @@ so change the default 'F' binding in the agenda to allow both"
   (interactive)
   (if (equal major-mode 'org-agenda-mode)
       (org-with-point-at (bh/get-pom-from-agenda-restriction-or-point)
-        (bh/narrow-to-org-project))
-    (bh/narrow-to-org-project)))
+        (bh/narrow-to-org-project)
+        (save-restriction
+          (org-agenda-set-restriction-lock)))
+    (bh/narrow-to-org-project)
+    (save-restriction
+      (org-agenda-set-restriction-lock))))
 
 (add-hook 'org-agenda-mode-hook
           '(lambda () (org-defkey org-agenda-mode-map "P" 'bh/narrow-to-project))
@@ -1061,9 +1068,13 @@ so change the default 'F' binding in the agenda to allow both"
     (forward-visible-line 1))
   (setq bh/current-view-project (point))
   (if (org-get-at-bol 'org-hd-marker)
-      (bh/narrow-to-project)
-    (message "All projects viewed.")
-    (ding)))
+      (progn
+        (bh/narrow-to-project)
+        (org-agenda-redo)
+        (beginning-of-buffer))
+    (beginning-of-buffer)
+    (error "All projects viewed.")))
+    
 
 (add-hook 'org-agenda-mode-hook
           '(lambda () (org-defkey org-agenda-mode-map "V" 'bh/view-next-project))
@@ -1283,7 +1294,7 @@ Late deadlines first, then scheduled, then non-late deadlines"
 (setq org-show-siblings (quote ((default))))
 
 ;;17.7.7 Editing And Special Key Handling
-(setq org-special-ctrl-a/e 'reversed)
+(setq org-special-ctrl-a/e t)
 (setq org-special-ctrl-k t)
 (setq org-yank-adjusted-subtrees t)
 
@@ -1307,7 +1318,7 @@ Late deadlines first, then scheduled, then non-late deadlines"
 
 ;;17.12 Logging Stuff
 (setq org-log-done (quote time))
-(setq org-log-into-drawer "LOGBOOK")
+(setq org-log-into-drawer nil)
 
 
 ;;17.14
@@ -1365,13 +1376,13 @@ Late deadlines first, then scheduled, then non-late deadlines"
                                       ("K" . ignore)
                                       ("L" . ignore)
                                       ("M" . ignore)
-                                      ("N" . bh/narrow-to-subtree)
-                                      ("P" . bh/narrow-to-project)
+                                      ("N" . bh/narrow-to-org-subtree)
+                                      ("P" . bh/narrow-to-org-project)
                                       ("Q" . ignore)
                                       ("R" . ignore)
                                       ("S" . ignore)
                                       ("T" . bh/org-todo)
-                                      ("U" . bh/narrow-up-one-level)
+                                      ("U" . bh/narrow-up-one-org-level)
                                       ("V" . ignore)
                                       ("W" . bh/widen)
                                       ("X" . ignore)
@@ -1402,7 +1413,7 @@ Late deadlines first, then scheduled, then non-late deadlines"
 
 (add-hook 'org-insert-heading-hook 'bh/insert-heading-inactive-timestamp 'append)
 
-(setq org-export-with-timestamps nil)
+(setq org-export-with-timestamps t)
 
 ;;17.22 Return Follows Links
 (setq org-return-follows-link t)
@@ -1431,7 +1442,7 @@ Late deadlines first, then scheduled, then non-late deadlines"
 
 
 ;;17.27 Prefer Future Dates Or Not?
-(setq org-read-date-prefer-future nil)
+(setq org-read-date-prefer-future 'time)
 
 ;;17.28 Automatically Change List Bullets
 
@@ -1512,7 +1523,7 @@ Late deadlines first, then scheduled, then non-late deadlines"
 ;;17.46 NEXT is for Tasks
 (defun bh/mark-next-parent-tasks-todo ()
   "Visit each parent task and change NEXT states to TODO"
-  (let ((mystate (or (and (fboundp 'state)
+  (let ((mystate (or (and (fboundp 'org-state)
                           state)
                      (nth 2 (org-heading-components)))))
     (when (equal mystate "NEXT")
@@ -1524,8 +1535,8 @@ Late deadlines first, then scheduled, then non-late deadlines"
 (add-hook 'org-after-todo-state-change-hook 'bh/mark-next-parent-tasks-todo 'append)
 (add-hook 'org-clock-in-hook 'bh/mark-next-parent-tasks-todo 'append)
 
-;;17.47 Startup in content view
-(setq org-startup-folded 'content)
+;;17.47 Startup in folded view
+(setq org-startup-folded t)
 
 ;;17.48 Allow Alphabetical List Entries
 (setq org-alphabetical-lists t)
@@ -1548,7 +1559,7 @@ Late deadlines first, then scheduled, then non-late deadlines"
 ;;List of disabled org-mode functions
 
 ;;17.51 Task Priorities
-(setq org-enable-priority-commands t)
+(setq org-enable-priority-commands nil)
 (setq org-default-priority ?E)
 (setq org-lowest-priority ?E)
 
