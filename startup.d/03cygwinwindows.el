@@ -41,4 +41,6 @@
         (let ((null-device "/dev/null"))
           ad-do-it))
       (ad-activate 'grep-compute-defaults)
+      (require 'w32-browser)
+      (require 'dired+)
       ))
