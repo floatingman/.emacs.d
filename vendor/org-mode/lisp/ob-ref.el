@@ -1,6 +1,6 @@
 ;;; ob-ref.el --- org-babel functions for referencing external data
 
-;; Copyright (C) 2009-2013  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2013 Free Software Foundation, Inc.
 
 ;; Authors: Eric Schulte
 ;;	 Dan Davison
@@ -40,7 +40,7 @@
 ;; So an example of a simple src block referencing table data in the
 ;; same file would be
 
-;;  #+TBLNAME: sandbox
+;;  #+NAME: sandbox
 ;;  | 1 |         2 | 3 |
 ;;  | 4 | org-babel | 6 |
 ;;
@@ -49,7 +49,7 @@
 ;;  #+end_src
 
 ;;; Code:
-(require 'ob)
+(require 'ob-core)
 (eval-when-compile
   (require 'cl))
 

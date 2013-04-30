@@ -1,0 +1,78 @@
+;; Object python/
+;; SEMANTICDB Tags save file
+(semanticdb-project-database-file "python/"
+  :tables (list 
+   (semanticdb-table "divisibleby20.py"
+    :major-mode 'python-mode
+    :tags 
+        '( ("check_list" variable nil nil [1 39])
+            ("find_solution" function (:arguments 
+              ( ("step" variable nil (reparse-symbol function_parameters) [59 63]))              ) nil [41 201])
+            ("if" code nil nil [202 374]))          
+    :file "divisibleby20.py"
+    :pointmax 374
+    :fsize 387
+    :lastmodtime '(20733 31570)
+    :unmatched-syntax 'nil
+    )
+   (semanticdb-table "diffsumsquaresum.py"
+    :major-mode 'python-mode
+    :tags 
+        '( ("sum_squares" function (:arguments 
+              ( ("numbers" variable nil (reparse-symbol function_parameters) [17 24]))              ) nil [1 124])
+            ("square_sum" function (:arguments 
+              ( ("numbers" variable nil (reparse-symbol function_parameters) [140 147]))              ) nil [125 248])
+            ("if" code nil nil [249 372]))          
+    :file "diffsumsquaresum.py"
+    :pointmax 372
+    :fsize 386
+    :lastmodtime '(20733 33057)
+    :unmatched-syntax 'nil
+    )
+   (semanticdb-table "diffsumsquaresum2.py"
+    :major-mode 'python-mode
+    :tags 
+        '( ("limit" variable nil nil [1 18])
+            ("sum" code nil nil [19 46])
+            ("sum_sq" code nil nil [47 89])
+            ("print" code nil nil [90 114]))          
+    :file "diffsumsquaresum2.py"
+    :pointmax 115
+    :fsize 118
+    :lastmodtime '(20733 34178)
+    :unmatched-syntax '(($EOI 115 . 115) ($EOI 118 . 118) (PRINT 84 . 89) ($EOI 108 . 108) (PRINT 84 . 89) ($EOI 94 . 94) (NAME 41 . 47) ($EOI 83 . 83) (NAME 41 . 47) ($EOI 82 . 82) (NAME 41 . 47) ($EOI 81 . 81) (NAME 41 . 47) ($EOI 79 . 79) (NAME 41 . 47) ($EOI 79 . 79) (NAME 41 . 47) ($EOI 73 . 73) (NAME 41 . 47) ($EOI 72 . 72) (NAME 41 . 47) ($EOI 50 . 50) (NAME 41 . 47) ($EOI 48 . 48) (NAME 13 . 16) ($EOI 40 . 40) ($EOI 39 . 39) (DIV 37 . 38) (NAME 13 . 16) (RPAREN 36 . 37) (NAME 13 . 16) (RPAREN 36 . 37) (NAME 13 . 16) ($EOI 36 . 36) (NAME 13 . 16) ($EOI 24 . 24) (NAME 13 . 16) ($EOI 19 . 19) ($EOI 12 . 12) ($EOI 5 . 5) ($EOI 6 . 6))
+    )
+   (semanticdb-table "sumoffive.py"
+    :major-mode 'python-mode
+    :tags 
+        '( ("num" variable nil nil [1 1009])
+            ("count" variable nil nil [1010 1019])
+            ("j" variable nil nil [1041 1046])
+            ("k" variable nil nil [1047 1052])
+            ("maxproduct" variable nil nil [1053 1067])
+            ("d" variable nil nil [1068 1077])
+            ("for" code nil nil [1078 1401])
+            ("print" code nil nil [1401 1408])
+            ("print" code nil nil [1409 1425]))          
+    :file "sumoffive.py"
+    :pointmax 1430
+    :fsize 1451
+    :lastmodtime '(20737 27652)
+    :unmatched-syntax 'nil
+    )
+   (semanticdb-table "pytripadd.py"
+    :major-mode 'python-mode
+    :tags 
+        '( ("sum" variable nil nil [1 11])
+            ("for" code nil nil [12 161]))          
+    :file "pytripadd.py"
+    :pointmax 176
+    :fsize 185
+    :lastmodtime '(20737 38830)
+    :unmatched-syntax 'nil
+    )
+   )
+  :file "!drive_c!home!code!python!semantic.cache"
+  :semantic-tag-version "2.0"
+  :semanticdb-version "2.0"
+  )
