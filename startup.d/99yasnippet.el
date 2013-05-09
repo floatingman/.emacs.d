@@ -2,6 +2,10 @@
 (yas/initialize)
 (yas/load-directory (expand-file-name "snippets" starter-kit-dir))
 
+;; added from
+;; http://blog.deadpansincerity.com/2011/05/setting-up-emacs-as-a-javascript-editing-environment-for-fun-and-profit/
+
+(add-to-list 'ac-sources 'ac-source-yasnippet)
 ;; make yasnippets work with org-mode
 (defun yas/org-very-safe-expand ()
       (let ((yas/fallback-behavior 'return-nil)) (yas/expand)))

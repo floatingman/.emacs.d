@@ -3,6 +3,7 @@
 /auto-save-list
 /server
 /url
+/semanticdb
 abbrev_defs
 history
 org-clock-save.el

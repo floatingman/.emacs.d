@@ -141,5 +141,5 @@
 (define-key global-map "\C-x\C-r" 'rgrep)
 
 ;;indent when you hit enter
-;;(global-set-key (kbd "RET") 'newline-and-indent)
+(global-set-key (kbd "RET") 'newline-and-indent)
 

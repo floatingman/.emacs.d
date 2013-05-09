@@ -57,4 +57,4 @@ or start a new one while killing a defunt one"
 
 (add-hook 'term-mode-hook 'term-my-hook)
 
-(global-set-key (kbd "<f2>") 'ansi-term-visit-dwim)
+;;(global-set-key (kbd "<f2>") 'ansi-term-visit-dwim)

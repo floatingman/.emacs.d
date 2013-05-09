@@ -1,10 +1,6 @@
 (icomplete-mode 1)
 
-
 (setq sentence-end-double-space nil)
-
-
-
 
 ;; Searching based on the current word
 (defun sacha/search-word-backward ()
