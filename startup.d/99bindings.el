@@ -25,8 +25,8 @@
 (global-set-key  [f4]  'goto-line)
 
 ;; moving between compilation error
-(global-set-key [f2] 'previous-error)
-(global-set-key [f3] 'next-error)
+(global-set-key (kbd "M-p") 'previous-error)
+(global-set-key (kbd "M-n") 'next-error)
 
 ;; Get a buffer menu with the right mouse button.
 (global-set-key [mouse-3] 'mouse-buffer-menu)
