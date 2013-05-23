@@ -65,7 +65,7 @@
 (require-package 'keyfreq)
 (require-package 'lorem-ipsum)
 ;; (require-package 'magit)
-(require-package 'markdown-mode+)
+;; (require-package 'markdown-mode+)
 ;; (require-package 'maxframe)
 ;; (require-package 'mo-git-blame)
 ;; (require-package 'multiple-cursors)
@@ -116,6 +116,9 @@
 
 (require 'init-darcs)
 (require 'init-git)
+
+(require 'init-markdown)
+(require 'init-csv)
 
 (require 'init-paredit)
 (require 'init-lisp)
