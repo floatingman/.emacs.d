@@ -43,7 +43,7 @@
 (require-package 'base16-theme)
 (require-package 'browse-kill-ring)
 (require-package 'clojure-mode)
-(require-package 'coffee-mode)
+;; (require-package 'coffee-mode)
 ;; (require-package 'color-theme)
 (require-package 'deft)
 ;; (require-package 'dired+)
@@ -60,8 +60,8 @@
 ;; (require-package 'ido-ubiquitous)
 (require-package 'iy-go-to-char)
 (require-package 'jedi)
-(require-package 'js-comint)
-(require-package 'js2-mode)
+;;  (require-package 'js-comint)
+;; (require-package 'js2-mode)
 (require-package 'keyfreq)
 (require-package 'lorem-ipsum)
 ;; (require-package 'magit)
@@ -71,7 +71,7 @@
 ;; (require-package 'multiple-cursors)
 (require-package 'org)
 ;; (require-package 'paredit)
-(require-package 'php-mode)
+;(require-package 'php-mode)
 (require-package 'powershell)
 (require-package 'powershell-mode)
 ;; (require-package 'pretty-mode)
@@ -110,7 +110,7 @@
 (require 'init-sessions)
 (require 'init-fonts)
 (require 'init-mmm)
-
+(require 'init-growl)
 
 (require 'init-editing-utils)
 
@@ -119,6 +119,11 @@
 
 (require 'init-markdown)
 (require 'init-csv)
+(require 'init-erlang)
+(provide 'init-javascript)
+(provide 'init-sh)
+(provide 'init-php)
+(provide 'init-nxml)
 
 (require 'init-paredit)
 (require 'init-lisp)

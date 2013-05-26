@@ -134,18 +134,19 @@
 (global-set-key (kbd "C-c c a") 'mc/edit-beginnings-of-lines)
 
 
-(defun duplicate-line ()
-  "Insert a copy of the current line after the current line."
-  (interactive)
+(defun duplicate-region (beg end)
+  "Insert a copy of the current region after the region."
+  (interactive "r")
   (save-excursion
-    (let ((line-text (buffer-substring-no-properties
-                      (line-beginning-position)
-                      (line-end-position))))
-      (move-end-of-line 1)
-      (newline)
-      (insert line-text))))
+    (goto-char end)
+    (insert (buffer-substring beg end))))
 
-(global-set-key (kbd "C-c p") 'duplicate-line)
+(defun duplicate-line-or-region (prefix)
+  "Duplicate either the current line or any current region."
+  (interactive "*p")
+  (whole-line-or-region-call-with-region 'duplicate-region prefix t))
+
+(global-set-key (kbd "C-c p") 'duplicate-line-or-region)
 
 ;; Train myself to use M-f and M-b instead
 (global-unset-key [M-left])
@@ -175,36 +176,36 @@
 ;;----------------------------------------------------------------------------
 (when (eval-when-compile (> emacs-major-version 23))
   (require-package 'fill-column-indicator)
-  (defun dn/prog-mode-fci-settings ()
+  (defun sanityinc/prog-mode-fci-settings ()
     (turn-on-fci-mode)
     (when show-trailing-whitespace
       (set (make-local-variable 'whitespace-style) '(face trailing))
       (whitespace-mode 1)))
 
-  ;;(add-hook 'prog-mode-hook 'dn/prog-mode-fci-settings)
+  ;;(add-hook 'prog-mode-hook 'sanityinc/prog-mode-fci-settings)
 
-  (defun dn/fci-enabled-p ()
+  (defun sanityinc/fci-enabled-p ()
     (and (boundp 'fci-mode) fci-mode))
 
-  (defvar dn/fci-mode-suppressed nil)
+  (defvar sanityinc/fci-mode-suppressed nil)
   (defadvice popup-create (before suppress-fci-mode activate)
     "Suspend fci-mode while popups are visible"
-    (let ((fci-enabled (dn/fci-enabled-p)))
+    (let ((fci-enabled (sanityinc/fci-enabled-p)))
       (when fci-enabled
-        (set (make-local-variable 'dn/fci-mode-suppressed) fci-enabled)
+        (set (make-local-variable 'sanityinc/fci-mode-suppressed) fci-enabled)
         (turn-off-fci-mode))))
   (defadvice popup-delete (after restore-fci-mode activate)
     "Restore fci-mode when all popups have closed"
-    (when (and dn/fci-mode-suppressed
+    (when (and sanityinc/fci-mode-suppressed
                (null popup-instances))
-      (setq dn/fci-mode-suppressed nil)
+      (setq sanityinc/fci-mode-suppressed nil)
       (turn-on-fci-mode)))
 
   ;; Regenerate fci-mode line images after switching themes
   (defadvice enable-theme (after recompute-fci-face activate)
     (dolist (buffer (buffer-list))
       (with-current-buffer buffer
-        (when (dn/fci-enabled-p)
+        (when (sanityinc/fci-enabled-p)
           (turn-on-fci-mode))))))
 
 
@@ -261,7 +262,7 @@
 
 
 
-(defun dn/open-line-with-reindent (n)
+(defun sanityinc/open-line-with-reindent (n)
   "A version of `open-line' which reindents the start and end positions.
 If there is a fill prefix and/or a `left-margin', insert them
 on the new line if the line would have been blank.
@@ -288,7 +289,7 @@ With arg N, insert N newlines."
     (end-of-line)
     (indent-according-to-mode)))
 
-(global-set-key [remap open-line] 'dn/open-line-with-reindent)
+(global-set-key [remap open-line] 'sanityinc/open-line-with-reindent)
 
 
 ;;----------------------------------------------------------------------------
