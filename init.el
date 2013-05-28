@@ -69,22 +69,22 @@
 ;; (require-package 'maxframe)
 ;; (require-package 'mo-git-blame)
 ;; (require-package 'multiple-cursors)
-(require-package 'org)
+;; (require-package 'org)
 ;; (require-package 'paredit)
-;(require-package 'php-mode)
+;; (require-package 'php-mode)
 (require-package 'powershell)
 (require-package 'powershell-mode)
 ;; (require-package 'pretty-mode)
 (require-package 'pylint)
 ;; (require-package 'rainbow-delimiters)
-(require-package 'sass-mode)
+;; (require-package 'sass-mode)
 (require-package 'smartrep)
 (require-package 'smart-operator)
 (require-package 'smart-tab)
 ;; (require-package 'smex)
 (require-package 'tfs)
 (require-package 'thesaurus)
-(require-package 'tidy)
+;; (require-package 'tidy)
 ;; (require-package 'undo-tree)
 (require-package 'yaml-mode)
 (require-package 'yasnippet)
@@ -120,17 +120,32 @@
 (require 'init-markdown)
 (require 'init-csv)
 (require 'init-erlang)
-(provide 'init-javascript)
-(provide 'init-sh)
-(provide 'init-php)
-(provide 'init-nxml)
+(require 'init-javascript)
+(require 'init-sh)
+(require 'init-php)
+(require 'init-org)
+(require 'init-nxml)
+(require 'init-css)
+(require 'init-haml)
+(require 'init-python-mode)
+(require 'init-haskell)
+(require 'init-ruby-mode)
+(require 'init-rails)
+(require 'init-sql)
 
 (require 'init-paredit)
 (require 'init-lisp)
-
+(require 'init-slime)
+(require 'init-clojure)
+(require 'init-common-lisp)
 
 (when *spell-check-support-enabled*
   (require 'init-spelling))
+
+(require 'init-marmalade)
+(require 'init-misc)
+
+;; Extra packages which don't require any configuration
 
 (require-package 'gnuplot)
 (require-package 'lua-mode)
@@ -158,6 +173,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'init-local nil t)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Locales (setting them earlier in this file doesn't work in X) ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(require 'init-locales)
 
 ;;(setq site-lisp-dir (expand-file-name "vendor" user-emacs-directory))
 

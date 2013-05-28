@@ -1,19 +1,21 @@
+;;; Set load path
+
 (eval-when-compile (require 'cl))
-(defun dn/add-subdirs-to-load-path (parent-dir)
+(defun sanityinc/add-subdirs-to-load-path (parent-dir)
   "Adds every non-hidden subdir of PARENT-DIR to `load-path'."
   (let* ((default-directory parent-dir))
     (progn
       (setq load-path
-	    (append
-	     (loop for dir in (directory-files parent-dir)
-		   unless (string-match "^\\." dir)
-		   collecting (expand-file-name dir))
-	     load-path)))))
+            (append
+             (loop for dir in (directory-files parent-dir)
+                   unless (string-match "^\\." dir)
+                   collecting (expand-file-name dir))
+             load-path)))))
 
-(dn/add-subdirs-to-load-path
+(sanityinc/add-subdirs-to-load-path
  (expand-file-name "site-lisp/" user-emacs-directory))
-(dn/add-subdirs-to-load-path
- (expand-file-name "site-lisp/" user-emacs-directory))
+
+;;; Utilities for grabbing upstream libs
 
 (defun site-lisp-dir-for (name)
   (expand-file-name (format "site-lisp/%s" name) user-emacs-directory))
@@ -36,16 +38,19 @@
     (byte-compile-file (download-site-lisp-module name url))))
 
 (defun site-lisp-library-loadable-p (name)
-  "Return whether or not the library `name' cna be loaded from a
+  "Return whether or not the library `name' can be loaded from a
 source file under ~/.emacs.d/site-lisp/name/"
   (let ((f (locate-library (symbol-name name))))
-    (and f (string-prefix-p (file-name-as-directory (site-lisp-di name)) f))))
+    (and f (string-prefix-p (file-name-as-directory (site-lisp-dir-for name)) f))))
 
-;;Download these upstream libs
+
+
+;; Download these upstream libs
 
 (unless (> emacs-major-version 23)
   (ensure-lib-from-url
    'package
    "http://repo.or.cz/w/emacs.git/blob_plain/1a0a666f941c99882093d7bd08ced15033bc3f0c:/lisp/emacs-lisp/package.el"))
+
 
 (provide 'init-site-lisp)

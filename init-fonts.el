@@ -1,12 +1,12 @@
 (require 'cl)
 
 
-(defun dn/font-name-replace-size (font-name new-size)
+(defun sanityinc/font-name-replace-size (font-name new-size)
   (let ((parts (split-string font-name "-")))
     (setcar (nthcdr 7 parts) (format "%d" new-size))
     (mapconcat 'identity parts "-")))
 
-(defun dn/increment-default-font-height (delta)
+(defun sanityinc/increment-default-font-height (delta)
   "Adjust the default font height by DELTA on every frame.
 Emacs will keep the pixel size of the frame approximately the
 same.  DELTA should be a multiple of 10, to match the units used
@@ -17,23 +17,23 @@ by the :height face attribute."
       (with-selected-frame f
         ;; Latest 'set-frame-font supports a "frames" arg, but
         ;; we cater to Emacs 23 by looping instead.
-        (set-frame-font (dn/font-name-replace-size
+        (set-frame-font (sanityinc/font-name-replace-size
                          (face-font 'default)
                          new-point-height)
                         t)))
     (set-face-attribute 'default nil :height new-height)
     (message "default font size is now %d" new-point-height)))
 
-(defun dn/increase-default-font-height ()
+(defun sanityinc/increase-default-font-height ()
   (interactive)
-  (dn/increment-default-font-height 10))
+  (sanityinc/increment-default-font-height 10))
 
-(defun dn/decrease-default-font-height ()
+(defun sanityinc/decrease-default-font-height ()
   (interactive)
-  (dn/increment-default-font-height -10))
+  (sanityinc/increment-default-font-height -10))
 
-(global-set-key (kbd "C-M-=") 'dn/increase-default-font-height)
-(global-set-key (kbd "C-M--") 'dn/decrease-default-font-height)
+(global-set-key (kbd "C-M-=") 'sanityinc/increase-default-font-height)
+(global-set-key (kbd "C-M--") 'sanityinc/decrease-default-font-height)
 
 
 

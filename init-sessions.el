@@ -6,16 +6,17 @@
     ad-do-it))
 
 (defadvice desktop-read (around time-restore activate)
-  (let ((start-time (current-time)))
-    (prog1
-        ad-do-it
-      (message "Desktop restored in %.2fms"
-               (dn/time-subtract-millis (current-time)
-                                        start-time)))))
+    (let ((start-time (current-time)))
+      (prog1
+          ad-do-it
+        (message "Desktop restored in %.2fms"
+                 (sanityinc/time-subtract-millis (current-time)
+                                                 start-time)))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Restore histories and registers after saving ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;----------------------------------------------------------------------------
+;; Restore histories and registers after saving
+;;----------------------------------------------------------------------------
 (require-package 'session)
 
 (setq session-save-file (expand-file-name ".session" user-emacs-directory))

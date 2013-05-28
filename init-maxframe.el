@@ -13,40 +13,39 @@
 
 (when *is-gui*
   (setq mf-display-padding-width 4
-	mf-offset-x 0
-	mf-offset-y 0
-	mf-display-padding-height (if (when (boundp 'ns-auto-hide-menu-bar)
-					ns-auot-hide-menu-bar)
-				      23
-				    (+ 27 23))))
+        mf-offset-x 0
+        mf-offset-y 0
+        mf-display-padding-height (if (when (boundp 'ns-auto-hide-menu-bar)
+                                        ns-auto-hide-menu-bar)
+                                      23
+                                    (+ 27 23))))
 
-(defvar dn/prev-frame nil "The selected frame before invoking `make-frame-command'.")
-(defadvice make-frame-command (before dn/note-previous-frame activate)
+(defvar sanityinc/prev-frame nil "The selected frame before invoking `make-frame-command'.")
+(defadvice make-frame-command (before sanityinc/note-previous-frame activate)
   "Record the selected frame before creating a new one interactively."
-  (setq dn/prev-frame (selected-frame)))
+  (setq sanityinc/prev-frame (selected-frame)))
 
-(defun dn/maybe-maximize-frame (&optional frame)
+(defun sanityinc/maybe-maximize-frame (&optional frame)
   (with-selected-frame (or frame (selected-frame))
     (when (and window-system
-	       dn/prev-frame
-	       (dn/maximized-p dn/prev-frame))
+               sanityinc/prev-frame
+               (sanityinc/maximized-p sanityinc/prev-frame))
       (maximize-frame))))
 
-(add-hook 'after-make-frame-functions 'dn/maybe-maximize-frame)
-(add-hook 'after-init-hook 'dn/maybe-maximize-frame)
+(add-hook 'after-make-frame-functions 'sanityinc/maybe-maximize-frame)
+(add-hook 'after-init-hook 'sanityinc/maybe-maximize-frame)
 
 (defun within-p (a b delta)
-  (<= (abs (- b a )) delta))
+  (<= (abs (- b a)) delta))
 
-(defun dn/maximized-p (&optional frame)
+(defun sanityinc/maximized-p (&optional frame)
   (or (not (with-selected-frame (or frame (selected-frame)) window-system))
       (and (within-p (mf-max-display-pixel-width)
-		     (frame-pixel-width frame)
-		     (frame-char-width frame))
-	   (within-p (mf-max-display-pixel-height)
-		     (+ mf-display-padding-height (frame-pixel-height frame))
-		     (frame-char-height frame)))))
+                     (frame-pixel-width frame)
+                     (frame-char-width frame))
+           (within-p (mf-max-display-pixel-height)
+                     (+ mf-display-padding-height (frame-pixel-height frame))
+                     (frame-char-height frame)))))
+
 
 (provide 'init-maxframe)
-
-       

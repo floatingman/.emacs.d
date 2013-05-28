@@ -9,13 +9,14 @@
 (require-package 'flymake-jslint)
 (require-package 'flymake-json)
 
+
 (defcustom preferred-javascript-mode
-  (first (remove-fi-not #'fboundp '(js2-mode js-mode)))
+  (first (remove-if-not #'fboundp '(js2-mode js-mode)))
   "Javascript mode to use for .js files."
   :type 'symbol
   :group 'programming
   :options '(js2-mode js-mode))
-(defvar preferred-javascript-ident-level 2)
+(defvar preferred-javascript-indent-level 2)
 
 ;; Need to first remove from list if present, since elpa adds entries too, which
 ;; may be in an arbitrary order
@@ -25,12 +26,14 @@
                                   unless (eq preferred-javascript-mode (cdr entry))
                                   collect entry)))
 
+
 (add-auto-mode 'js-mode "\\.json\\'")
 (add-hook 'js-mode-hook 'flymake-json-maybe-load)
 
 ;; On-the-fly syntax checking
 (eval-after-load 'js
   '(add-hook 'js-mode-hook 'flymake-jslint-load))
+
 
 ;; js2-mode
 (add-hook 'js2-mode-hook '(lambda () (setq mode-name "JS2")))
@@ -46,10 +49,12 @@
 ;; js-mode
 (setq js-indent-level preferred-javascript-indent-level)
 
-;; Standard javascript-mode
+
+;; standard javascript-mode
 (setq javascript-indent-level preferred-javascript-indent-level)
 
 (add-to-list 'interpreter-mode-alist (cons "node" preferred-javascript-mode))
+
 
 (eval-after-load 'coffee-mode
   `(setq coffee-js-mode preferred-javascript-mode
@@ -58,9 +63,10 @@
 (add-hook 'coffee-mode-hook 'flymake-coffee-load)
 (add-to-list 'auto-mode-alist '("\\.coffee\\.erb\\'" . coffee-mode))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Run and interact with an inferior JS via js-comint.el ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ---------------------------------------------------------------------------
+;; Run and interact with an inferior JS via js-comint.el
+;; ---------------------------------------------------------------------------
+
 (setq inferior-js-program-command "js")
 
 (defvar inferior-js-minor-mode-map (make-sparse-keymap))
@@ -77,11 +83,13 @@
 (dolist (hook '(js2-mode-hook js-mode-hook))
   (add-hook hook 'inferior-js-keys-mode))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Alternatively, use skewer-mode ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ---------------------------------------------------------------------------
+;; Alternatively, use skewer-mode
+;; ---------------------------------------------------------------------------
+
 (when (featurep 'js2-mode)
   (require-package 'skewer-mode)
   (add-hook 'skewer-mode-hook (lambda () (inferior-js-keys-mode -1))))
+
 
 (provide 'init-javascript)
