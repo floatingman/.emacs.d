@@ -67,7 +67,7 @@
 (add-hook 'message-mode-hook '(lambda () (local-set-key (kbd "C-c M-o") 'org-mime-htmlize))
           'append)
 
-(setq org-agenda-files (quote ("~/git/org" "~/git/org/usbank" "~/git/org/tdbank")))
+(setq org-agenda-files (quote ("~/git/org" "~/git/org/usbank" "~/git/org/mmi")))
 
 
 ;; flyspell mode for spell checking everywhere

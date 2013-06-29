@@ -110,12 +110,12 @@
 (require 'init-sessions)
 (require 'init-fonts)
 (require 'init-mmm)
-(require 'init-growl)
+;; (require 'init-growl)
 
 (require 'init-editing-utils)
 
 (require 'init-darcs)
-(require 'init-git)
+;;(require 'init-git)
 
 (require 'init-markdown)
 (require 'init-csv)
