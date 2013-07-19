@@ -9,6 +9,8 @@
 (require-package 'org)
 (require-package 'bbdb)
 (require-package 'org-fstree)
+(require-package 'deft)
+
 (when *is-a-mac*
   (require-package 'org-mac-link-grabber)
   (require-package 'org-mac-iCal))
@@ -574,6 +576,8 @@ A prefix arg forces clock in of the default task."
                             ("WAITING" . ?w)
                             ("HOLD" . ?h)
                             ("PERSONAL" . ?P)
+                            ("HOME" . ?m)
+                            ("10000Hours" . ?T)
                             ("CHURCH" . ?R)
                             ("WORK" . ?W)
                             ("ORG" . ?O)
@@ -1934,6 +1938,11 @@ Late deadlines first, then scheduled, then non-late deadlines"
 ;; This is at the end of my .emacs - so appointments are set up when Emacs starts
 (bh/org-agenda-to-appt)
 
+;; deft setup
+(setq deft-extension "org")
+(setq deft-directory "~/git/org/deft/")
+(setq deft-text-mode 'org-mode)
+(global-set-key (kbd "C-x t") 'deft)
 
 (provide 'init-org)
 
