@@ -2,11 +2,11 @@
 ;; reorganized org mode section to fit with http://doc.norang.ca/org-mode.html
 ;; in order to update it more easely
 ;;3.1 installing org-mode
+;; org-mode is installed as a submodule of .emacs.d
 ;; copy to vendor/org-mode directory
 ;; run make autoloads from org-mode directory in cygwin
 
 ;;input from sanityinc emacs config
-(require-package 'org)
 (require-package 'bbdb)
 (require-package 'org-fstree)
 (require-package 'deft)
