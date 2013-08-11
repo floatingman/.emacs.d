@@ -84,7 +84,7 @@
 
 (defconst sanityinc/lispy-modes
   (append sanityinc/elispy-modes
-          '(lisp-mode inferior-lisp-mode lisp-interaction-mode))
+          '(lisp-mode inferior-lisp-mode lisp-interaction-mode scheme-mode racket/A geiser-mode))
   "All lispy major modes.")
 
 (require 'derived)
