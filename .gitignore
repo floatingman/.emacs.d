@@ -28,6 +28,7 @@ site-lisp/package/
 /.mc-lists.el
 /var
 .thesaurus.cache
+places
 
 # Compiled source #
 ###################
