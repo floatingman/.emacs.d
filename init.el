@@ -117,6 +117,8 @@
 (require 'init-marmalade)
 (require 'init-misc)
 (require 'init-mswindows)
+(require 'init-skewer)
+(require 'init-html)
 ;; Extra packages which don't require any configuration
 
 (require-package 'gnuplot)
