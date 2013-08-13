@@ -1,19 +1,10 @@
 ;;; init.el --- dnewman's configuration file
 
-;; Turn off mouse interface early in startup to avoid momentary display
-;; (when (fboundp 'menu-bar-mode) (menu-bar-mode -1))
-;; (when (fboundp 'tool-bar-mode) (tool-bar-mode -1))
-;; (when (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
-
-;; No splash screen
-;; (setq inhibit-startup-screen t)
-
 (add-to-list 'load-path user-emacs-directory)
-(require 'init-benchmarking)
+(require 'init-benchmarking) ;; Measure startup time
 
 (defconst *spell-check-support-enabled* t)
 (defconst *is-a-mac* (eq system-type 'darwin))
-(defconst *is-carbon-emacs* (eq window-system 'mac))
 (defconst *is-cocoa-emacs* (and *is-a-mac* (eq window-system 'ns)))
 (defconst *is-windows* (eq system-type 'windows-nt))
 (defconst *is-linux* (eq system-type 'gnu/linux))
@@ -24,9 +15,9 @@
 ;;-----------------------------------------------------
 (require 'init-compat)
 (require 'init-utils)
-(require 'init-site-lisp)
-(require 'init-elpa)
-(require 'init-exec-path)
+(require 'init-site-lisp) ;; Must come before elpa, as it may provide package.el
+(require 'init-elpa)      ;; Machinery for installing required packages
+(require 'init-exec-path) ;; Set up $PATH
 
 ;;-----------------------------------------------------
 ;; Load configs for specific features and modes
@@ -41,7 +32,6 @@
 (require-package 'base16-theme)
 (require-package 'browse-kill-ring)
 (require-package 'clojure-mode)
-(require-package 'deft)
 (require-package 'dropdown-list)
 (require-package 'emms)
 (require-package 'google-maps)
@@ -72,7 +62,7 @@
 (require 'init-isearch)
 (require 'init-uniquify)
 (require 'init-ibuffer)
-(require 'init-flymake)
+(require 'init-flycheck)
 
 (require 'init-recentf)
 (require 'init-ido)
@@ -93,7 +83,6 @@
 (require 'init-csv)
 (require 'init-erlang)
 (require 'init-javascript)
-(require 'init-sh)
 (require 'init-php)
 (require 'init-org)
 (require 'init-nxml)
@@ -151,3 +140,11 @@
 ;; Locales (setting them earlier in this file doesn't work in X) ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (require 'init-locales)
+
+(message "init completed in %.2fms"
+         (sanityinc/time-subtract-millis (current-time) before-init-time))
+
+;; Local Variables:
+;; coding: utf-8
+;; no-byte-compile: t
+;; End:
