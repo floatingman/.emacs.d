@@ -2,7 +2,12 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("org-refile-last-stored"
+(("sound-of-sorting"
+ (filename . "c:/Users/dnewman.BRENTWOOD/Desktop/sound-of-sorting-0.6/src/")
+ (front-context-string . "Makefile.am\n  -r")
+ (rear-context-string . "539 05-22 15:37 ")
+ (position . 305))
+("org-refile-last-stored"
  (filename . "~/git/org/usbank/usbank.org")
  (front-context-string . "** TODO Be sure ")
  (rear-context-string . "unner scripts]]\n")
