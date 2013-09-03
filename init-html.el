@@ -57,7 +57,7 @@
      (define-key html-mode-map (kbd "M-J") 'tagedit-join-tags)
      (define-key html-mode-map (kbd "M-?") 'tagedit-convolute-tags)
 
-     ;(tagedit-add-experimental-features)
+     (tagedit-add-experimental-features)
      (add-hook 'html-mode-hook (lambda () (tagedit-mode 1)))
 
      ;; no paredit equivalents
