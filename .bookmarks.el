@@ -13,8 +13,8 @@
  (rear-context-string . "unner scripts]]\n")
  (position . 20580))
 ("org-capture-last-stored"
- (filename . "~/git/org/refile.org")
- (front-context-string . "* TODO Be sure t")
- (rear-context-string . "ILETAGS: REFILE\n")
- (position . 20))
+ (filename . "~/git/org/diary.org")
+ (front-context-string . "**** dinner\n:LOG")
+ (rear-context-string . "9-05 Thu 13:58]\n")
+ (position . 22206))
 )

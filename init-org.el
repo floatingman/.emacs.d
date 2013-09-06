@@ -877,7 +877,7 @@ When not restricted, skip project and sub-project tasks, habits, and project rel
 
 ;;16.2 Org-Babel Setup
 (setq org-ditaa-jar-path "~/java/ditaa0_6b.jar")
-(setq org-plantum1-jar-path "~/java/plantum1.jar")
+(setq org-plantuml-jar-path "~/java/plantuml.jar")
 
 (add-hook 'org-babel-after-execute-hook 'bh/display-inline-images 'append)
 ; Make babel results blocks lowercase
@@ -892,6 +892,7 @@ When not restricted, skip project and sub-project tasks, habits, and project rel
  (quote org-babel-load-languages)
  (quote ((emacs-lisp . t)
          (dot . t)
+         (ditaa . t)
          (R . t)
          (python . t)
          (ruby . t)
