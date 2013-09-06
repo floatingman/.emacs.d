@@ -82,7 +82,7 @@
 ;;----------------------------------------------------------------------------
 (require-package 'pointback)
 (global-pointback-mode)
-(eval-after-load 'skeleton
+(after-load 'skeleton
   '(defadvice skeleton-insert (before disable-pointback activate)
      "Disable pointback when using skeleton functions like `sgml-tag'."
      (when pointback-mode
@@ -316,7 +316,14 @@ With arg N, insert N newlines."
 
 
 (when (executable-find "ag")
-  (require-package 'ag))
+  (require-package 'ag)
+  (require-package 'wgrep-ag)
+  (setq-default ag-highlight-search t))
+
+
+
+(require-package 'highlight-escape-sequences)
+(hes-mode)
 
 
 (provide 'init-editing-utils)

@@ -22,8 +22,8 @@
   (when *is-cocoa-emacs*
     (global-set-key (kbd "M-`") 'ns-next-frame)
     (global-set-key (kbd "M-h") 'ns-do-hide-emacs)
-    (eval-after-load 'nxml-mode
-      '(define-key nxml-mode-map (kbd "M-h") nil))
+    (after-load 'nxml-mode
+      (define-key nxml-mode-map (kbd "M-h") nil))
     (global-set-key (kbd "M-_") 'ns-do-hide-others)
     ))
 
