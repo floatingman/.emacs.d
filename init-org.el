@@ -2,11 +2,10 @@
 ;; reorganized org mode section to fit with http://doc.norang.ca/org-mode.html
 ;; in order to update it more easely
 ;;3.1 installing org-mode
-;; org-mode is installed as a submodule of .emacs.d
-;; copy to vendor/org-mode directory
-;; run make uncompiled from org-mode directory in cygwin
 
 ;;input from sanityinc emacs config
+(require-package 'org)
+(require-package 'org-plus-contrib)
 (require-package 'bbdb)
 (require-package 'org-fstree)
 (require-package 'deft)
@@ -16,10 +15,8 @@
   (require-package 'org-mac-iCal))
 
 ;;4.2 Org-Mode Setup
-(add-to-list 'load-path (expand-file-name "~/.emacs.d/vendor/org-mode/lisp"))
-(add-to-list 'load-path (expand-file-name "~/.emacs.d/vendor/org-mode/contrib/lisp"))
 (add-to-list 'auto-mode-alist '("\\.\\(org\\|org_archive\\|txt\\)$" . org-mode))
-(require-package 'org)
+
 (require 'org-checklist)
 (require 'org-id)
 (require 'bbdb)

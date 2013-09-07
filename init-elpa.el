@@ -26,7 +26,10 @@ ARCHIVE is the string name of the package archive.")
   (when (or (null package-filter-function)
             (funcall package-filter-function
                      (car package)
-                     (package-desc-vers (cdr package))
+                     (funcall (if (fboundp 'package-desc-version)
+                                  'package--ac-desc-version
+                                'package-desc-vers)
+                              (cdr package))
                      archive))
     ad-do-it))
 
@@ -48,10 +51,8 @@ ARCHIVE is the string name of the package archive.")
 ;; But don't take Melpa versions of certain packages
 (setq package-filter-function
       (lambda (package version archive)
-        (and
-         (not (memq package '(eieio)))
-         (or (not (string-equal archive "melpa"))
-             (not (memq package '(slime)))))))
+        (or (not (string-equal archive "melpa"))
+             (not (memq package '(slime))))))
 
 
 ;;; On-demand installation of packages
