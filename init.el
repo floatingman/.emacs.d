@@ -3,7 +3,7 @@
 (add-to-list 'load-path user-emacs-directory)
 (require 'init-benchmarking) ;; Measure startup time
 
-(defconst *spell-check-support-enabled* t)
+(defconst *spell-check-support-enabled* nil)
 (defconst *is-a-mac* (eq system-type 'darwin))
 (defconst *is-cocoa-emacs* (and *is-a-mac* (eq window-system 'ns)))
 (defconst *is-windows* (eq system-type 'windows-nt))
