@@ -16,13 +16,12 @@
 
 
 (autoload 'slime-fuzzy-init "slime-fuzzy" "" nil)
-(eval-after-load 'slime-fuzzy
-  '(require 'slime-repl))
+(after-load 'slime-fuzzy
+  (require 'slime-repl))
 
 (defun sanityinc/set-up-slime-repl-auto-complete ()
   "Bind TAB to `indent-for-tab-command', as in regular Slime buffers."
   (local-set-key (kbd "TAB") 'indent-for-tab-command))
-
 
 (after-load 'slime
   (setq slime-protocol-version 'ignore)

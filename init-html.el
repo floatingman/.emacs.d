@@ -35,34 +35,33 @@
 
 (add-hook 'sgml-mode-hook '--setup-simplezen)
 
-(eval-after-load "sgml-mode"
-  '(progn
-     (define-key html-mode-map [remap forward-paragraph] 'skip-to-next-blank-line)
-     (define-key html-mode-map [remap backward-paragraph] 'skip-to-previous-blank-line)
-     (define-key html-mode-map (kbd "C-c C-w") 'html-wrap-in-tag)
-     (define-key html-mode-map (kbd "/") nil) ;; no buggy matching of slashes
+(after-load 'sgml-mode
+  (define-key html-mode-map [remap forward-paragraph] 'skip-to-next-blank-line)
+  (define-key html-mode-map [remap backward-paragraph] 'skip-to-previous-blank-line)
+  (define-key html-mode-map (kbd "C-c C-w") 'html-wrap-in-tag)
+  (define-key html-mode-map (kbd "/") nil) ;; no buggy matching of slashes
+  
+  (define-key html-mode-map (kbd "C-c C-d") 'ng-snip-show-docs-at-point)
+  
 
-     (define-key html-mode-map (kbd "C-c C-d") 'ng-snip-show-docs-at-point)
 
+  ;; paredit lookalikes
+  (define-key html-mode-map (kbd "s-<right>") 'tagedit-forward-slurp-tag)
+  (define-key html-mode-map (kbd "C-)") 'tagedit-forward-slurp-tag)
+  (define-key html-mode-map (kbd "s-<left>") 'tagedit-forward-barf-tag)
+  (define-key html-mode-map (kbd "C-}") 'tagedit-forward-barf-tag)
+  (define-key html-mode-map (kbd "M-r") 'tagedit-raise-tag)
+  (define-key html-mode-map (kbd "s-s") 'tagedit-splice-tag)
+  (define-key html-mode-map (kbd "M-S") 'tagedit-split-tag)
+  (define-key html-mode-map (kbd "M-J") 'tagedit-join-tags)
+  (define-key html-mode-map (kbd "M-?") 'tagedit-convolute-tags)
 
-
-     ;; paredit lookalikes
-     (define-key html-mode-map (kbd "s-<right>") 'tagedit-forward-slurp-tag)
-     (define-key html-mode-map (kbd "C-)") 'tagedit-forward-slurp-tag)
-     (define-key html-mode-map (kbd "s-<left>") 'tagedit-forward-barf-tag)
-     (define-key html-mode-map (kbd "C-}") 'tagedit-forward-barf-tag)
-     (define-key html-mode-map (kbd "M-r") 'tagedit-raise-tag)
-     (define-key html-mode-map (kbd "s-s") 'tagedit-splice-tag)
-     (define-key html-mode-map (kbd "M-S") 'tagedit-split-tag)
-     (define-key html-mode-map (kbd "M-J") 'tagedit-join-tags)
-     (define-key html-mode-map (kbd "M-?") 'tagedit-convolute-tags)
-
-     (tagedit-add-experimental-features)
-     (add-hook 'html-mode-hook (lambda () (tagedit-mode 1)))
-
-     ;; no paredit equivalents
-     (define-key html-mode-map (kbd "s-k") 'tagedit-kill-attribute)
-     (define-key html-mode-map (kbd "s-<return>") 'tagedit-toggle-multiline-tag)))
+  (tagedit-add-experimental-features)
+  (add-hook 'html-mode-hook (lambda () (tagedit-mode 1)))
+  
+  ;; no paredit equivalents
+  (define-key html-mode-map (kbd "s-k") 'tagedit-kill-attribute)
+  (define-key html-mode-map (kbd "s-<return>") 'tagedit-toggle-multiline-tag))
 
 ;; after deleting a tag, indent properly
 (defadvice sgml-delete-tag (after reindent activate)

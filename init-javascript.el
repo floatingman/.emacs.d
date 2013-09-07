@@ -5,9 +5,6 @@
 (require-package 'js-comint)
 (require-package 'rainbow-delimiters)
 (require-package 'coffee-mode)
-(require-package 'flymake-coffee)
-(require-package 'flymake-jslint)
-(require-package 'flymake-json)
 
 
 (defcustom preferred-javascript-mode
@@ -28,15 +25,12 @@
 
 
 (add-auto-mode 'js-mode "\\.json\\'")
-(add-hook 'js-mode-hook 'flymake-json-maybe-load)
-
-;; On-the-fly syntax checking
-(eval-after-load 'js
-  '(add-hook 'js-mode-hook 'flymake-jslint-load))
 
 
 ;; js2-mode
-(add-hook 'js2-mode-hook '(lambda () (setq mode-name "JS2")))
+(after-load 'js2-mode
+  (add-hook 'js2-mode-hook '(lambda () (setq mode-name "JS2"))))
+
 (setq js2-use-font-lock-faces t
       js2-mode-must-byte-compile nil
       js2-basic-offset preferred-javascript-indent-level
@@ -44,7 +38,8 @@
       js2-auto-indent-p t
       js2-bounce-indent-p nil)
 
-(eval-after-load 'js2-mode '(js2-imenu-extras-setup))
+(after-load 'js2-mode
+  (js2-imenu-extras-setup))
 
 ;; js-mode
 (setq js-indent-level preferred-javascript-indent-level)
@@ -56,11 +51,12 @@
 (add-to-list 'interpreter-mode-alist (cons "node" preferred-javascript-mode))
 
 
-(eval-after-load 'coffee-mode
-  `(setq coffee-js-mode preferred-javascript-mode
-         coffee-tab-width preferred-javascript-indent-level))
+;;; Coffeescript
 
-(add-hook 'coffee-mode-hook 'flymake-coffee-load)
+(after-load 'coffee-mode
+  (setq coffee-js-mode preferred-javascript-mode
+        coffee-tab-width preferred-javascript-indent-level))
+
 (add-to-list 'auto-mode-alist '("\\.coffee\\.erb\\'" . coffee-mode))
 
 ;; ---------------------------------------------------------------------------
@@ -89,7 +85,9 @@
 
 (when (featurep 'js2-mode)
   (require-package 'skewer-mode)
-  (add-hook 'skewer-mode-hook (lambda () (inferior-js-keys-mode -1))))
+  (after-load 'skewer-mode
+    (add-hook 'skewer-mode-hook
+              (lambda () (inferior-js-keys-mode -1)))))
 
 
 (provide 'init-javascript)

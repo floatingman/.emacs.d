@@ -9,10 +9,9 @@
 
 (setq ruby-use-encoding-map nil)
 
-(eval-after-load 'ruby-mode
-  '(progn
-     (define-key ruby-mode-map (kbd "RET") 'reindent-then-newline-and-indent)
-     (define-key ruby-mode-map (kbd "TAB") 'indent-for-tab-command)))
+(after-load 'ruby-mode
+  (define-key ruby-mode-map (kbd "RET") 'reindent-then-newline-and-indent)
+  (define-key ruby-mode-map (kbd "TAB") 'indent-for-tab-command))
 
 ;; Stupidly the non-bundled ruby-mode isn't a derived mode of
 ;; prog-mode: we run the latter's hooks anyway in that case.
@@ -31,27 +30,23 @@
 ;;; Ruby compilation
 (require-package 'ruby-compilation)
 
-(eval-after-load 'ruby-mode
- '(let ((m ruby-mode-map))
+(after-load 'ruby-mode
+  (let ((m ruby-mode-map))
     (define-key m [S-f7] 'ruby-compilation-this-buffer)
     (define-key m [f7] 'ruby-compilation-this-test)
     (define-key m [f6] 'recompile)))
 
 
 
-;;; Ruby flymake
-(require-package 'flymake-ruby)
-(add-hook 'ruby-mode-hook 'flymake-ruby-load)
-
-
-
 ;;; Robe
 (require-package 'robe)
-(add-hook 'ruby-mode-hook 'robe-mode)
-(add-hook 'robe-mode-hook
-          (lambda ()
-            (add-to-list 'ac-sources 'ac-source-robe)
-            (set-auto-complete-as-completion-at-point-function)))
+(after-load 'ruby-mode
+  (add-hook 'ruby-mode-hook 'robe-mode))
+(after-load 'robe
+  (add-hook 'robe-mode-hook
+            (lambda ()
+              (add-to-list 'ac-sources 'ac-source-robe)
+              (set-auto-complete-as-completion-at-point-function))))
 
 
 
@@ -64,8 +59,6 @@
 ;;; YAML
 
 (require-package 'yaml-mode)
-(require-package 'flymake-yaml)
-(add-hook 'yaml-mode-hook 'flymake-yaml-load)
 
 
 
@@ -90,9 +83,8 @@
       '(coffee-mode js-mode js2-mode js3-mode markdown-mode textile-mode))
 
 (require-package 'tagedit)
-(eval-after-load "sgml-mode"
-  '(progn
-     (tagedit-add-paredit-like-keybindings)))
+(after-load 'sgml-mode
+  (tagedit-add-paredit-like-keybindings))
 
 (mmm-add-mode-ext-class 'html-erb-mode "\\.jst\\.ejs\\'" 'ejs)
 
