@@ -2028,7 +2028,7 @@ Late deadlines first, then scheduled, then non-late deadlines"
 
 ;;17.1 Reminder Setup
 ;; This is at the end of my .emacs - so appointments are set up when Emacs starts
-;(bh/org-agenda-to-appt)
+(bh/org-agenda-to-appt)
 
 ;; deft setup
 (setq deft-extension "org")
