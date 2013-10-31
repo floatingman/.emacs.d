@@ -326,7 +326,7 @@
                ((org-agenda-overriding-header "Next Tasks")
                 (org-agenda-skip-function 'bh/skip-projects-and-habits-and-single-tasks)
                 (org-agenda-todo-ignore-scheduled bh/hide-scheduled-and-waiting-next-tasks)
-                (org-agenda-todo-ignore-deadlines bh/hide-scheduled-and-waiting-next-task)
+                (org-agenda-todo-ignore-deadlines bh/hide-scheduled-and-waiting-next-tasks)
                 (org-agenda-todo-ignore-with-date bh/hide-scheduled-and-waiting-next-tasks)
                 (org-tags-match-list-sublevels t)
                 (org-agenda-sorting-strategy
