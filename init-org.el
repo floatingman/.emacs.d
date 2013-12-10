@@ -315,40 +315,7 @@
                       ((org-agenda-overriding-header "Tasks to Archive")
                        (org-agenda-skip-function 'bh/skip-non-archivable-tasks)
                        (org-tags-match-list-sublevels nil))))
-               nil)
-              ("r" "Tasks to Refile" tags "REFILE"
-               ((org-agenda-overriding-header "Tasks to Refile")
-                (org-tags-match-list-sublevels nil)))
-              ("#" "Stuck Projects" tags-todo "-CANCELLED/!"
-               ((org-agenda-overriding-header "Stuck Projects")
-                (org-agenda-skip-function 'bh/skip-non-stuck-projects)))
-              ("n" "Next Tasks" tags-todo "-WAITING-CANCELLED/!NEXT"
-               ((org-agenda-overriding-header "Next Tasks")
-                (org-agenda-skip-function 'bh/skip-projects-and-habits-and-single-tasks)
-                (org-agenda-todo-ignore-scheduled bh/hide-scheduled-and-waiting-next-tasks)
-                (org-agenda-todo-ignore-deadlines bh/hide-scheduled-and-waiting-next-tasks)
-                (org-agenda-todo-ignore-with-date bh/hide-scheduled-and-waiting-next-tasks)
-                (org-tags-match-list-sublevels t)
-                (org-agenda-sorting-strategy
-                 '(todo-state-down effort-up category-keep))))
-              ("R" "Tasks" tags-todo "-REFILE-CANCELLED/!-HOLD-WAITING"
-               ((org-agenda-overriding-header "Tasks")
-                (org-agenda-skip-function 'bh/skip-project-tasks-maybe)
-                (org-agenda-sorting-strategy
-                 '(category-keep))))
-              ("p" "Projects" tags-todo "-HOLD-CANCELLED/!"
-               ((org-agenda-overriding-header "Projects")
-                (org-agenda-skip-function 'bh/skip-non-projects)
-                (org-agenda-sorting-strategy
-                 '(category-keep))))
-              ("w" "Waiting Tasks" tags-todo "-CANCELLED+WAITING/!"
-               ((org-agenda-overriding-header "Waiting and Postponed tasks"))
-               (org-tags-match-list-sublevels nil))
-              ("A" "Tasks to Archive" tags "-REFILE/"
-               ((org-agenda-overriding-header "Tasks to Archive")
-                (org-agenda-skip-function 'bh/skip-non-archivable-tasks)
-                (org-tags-match-list-sublevels nil))))))
-
+               nil))))
 ;;8.4.1 Automatically removing context based tasks with / RET
 
 (defun bh/org-auto-exclude-function (tag)
@@ -2039,4 +2006,4 @@ Late deadlines first, then scheduled, then non-late deadlines"
 (provide 'init-org)
 
 
-;;v2.2 last updated 9/3/2013
+;;v2.2 last updated 12/4/2013
