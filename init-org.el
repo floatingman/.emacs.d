@@ -64,7 +64,7 @@
 (add-hook 'message-mode-hook '(lambda () (setq fill-column 72))
           'append)
 
-(setq org-agenda-files (quote ("~/git/org" "~/git/org/usbank" "~/git/org/mmi")))
+(setq org-agenda-files (quote ("~/Dropbox/git/org" "~/Dropbox/git/org/usbank" "~/Dropbox/git/org/mmi")))
 
 
 ;; flyspell mode for spell checking everywhere
