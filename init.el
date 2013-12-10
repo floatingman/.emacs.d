@@ -110,6 +110,7 @@
 (require 'init-skewer)
 (require 'init-html)
 (require 'init-key-bindings)
+(require 'init-octave)
 ;; Extra packages which don't require any configuration,
 
 (require-package 'gnuplot)
