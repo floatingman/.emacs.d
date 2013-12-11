@@ -11,7 +11,7 @@
 (require-package 'deft)
 
 (when *is-a-mac*
-  (require-package 'org-mac-link-grabber)
+  (require-package 'org-mac-link)
   (require-package 'org-mac-iCal))
 
 ;;4.2 Org-Mode Setup

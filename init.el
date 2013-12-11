@@ -1,27 +1,27 @@
 ;;; init.el --- dnewman's configuration file
+;;;
 
 (add-to-list 'load-path user-emacs-directory)
 (require 'init-benchmarking) ;; Measure startup time
 
-(defconst *spell-check-support-enabled* t)
+(defconst *spell-check-support-enabled* t) ;; Enable with t if you prefer
 (defconst *is-a-mac* (eq system-type 'darwin))
-(defconst *is-cocoa-emacs* (and *is-a-mac* (eq window-system 'ns)))
 (defconst *is-windows* (eq system-type 'windows-nt))
 (defconst *is-linux* (eq system-type 'gnu/linux))
 (defconst *is-gui* (not (eq window-system nil)))
 
-;;-----------------------------------------------------
-;; initial libraries to load
-;;-----------------------------------------------------
+;;----------------------------------------------------------------------------
+;; Bootstrap config
+;;----------------------------------------------------------------------------
 (require 'init-compat)
 (require 'init-utils)
 (require 'init-site-lisp) ;; Must come before elpa, as it may provide package.el
 (require 'init-elpa)      ;; Machinery for installing required packages
 (require 'init-exec-path) ;; Set up $PATH
 
-;;-----------------------------------------------------
+;;----------------------------------------------------------------------------
 ;; Load configs for specific features and modes
-;;-----------------------------------------------------
+;;----------------------------------------------------------------------------
 
 (require-package 'wgrep)
 (require-package 'project-local-variables)
@@ -29,35 +29,13 @@
 (require-package 'scratch)
 (require-package 'mwe-log-commands)
 
-(require-package 'base16-theme)
-(require-package 'browse-kill-ring)
-(require-package 'clojure-mode)
-(require-package 'dropdown-list)
-(require-package 'emms)
-(require-package 'google-maps)
-(require-package 'highlight-cl)
-(require-package 'iy-go-to-char)
-(require-package 'jedi)
-(require-package 'keyfreq)
-(require-package 'lorem-ipsum)
-(require-package 'powershell)
-(require-package 'powershell-mode)
-(require-package 'pylint)
-(require-package 'smartrep)
-(require-package 'smart-operator)
-(require-package 'smart-tab)
-(require-package 'tfs)
-(require-package 'thesaurus)
-(require-package 'yaml-mode)
-(require-package 'yasnippet)
-
-
 (require 'init-frame-hooks)
 (require 'init-xterm)
 (require 'init-themes)
-(require 'init-os-keys)
+(require 'init-osx-keys)
 (require 'init-gui-frames)
 (require 'init-maxframe)
+(require 'init-proxies)
 (require 'init-dired)
 (require 'init-isearch)
 (require 'init-uniquify)
@@ -72,15 +50,15 @@
 (require 'init-sessions)
 (require 'init-fonts)
 (require 'init-mmm)
-;; (require 'init-growl)
 
 (require 'init-editing-utils)
 
 (require 'init-darcs)
 (require 'init-git)
 
-(require 'init-markdown)
 (require 'init-crontab)
+(require 'init-textile)
+(require 'init-markdown)
 (require 'init-csv)
 (require 'init-erlang)
 (require 'init-javascript)
@@ -106,46 +84,49 @@
 
 (require 'init-marmalade)
 (require 'init-misc)
-(require 'init-mswindows)
-(require 'init-skewer)
-(require 'init-html)
-(require 'init-key-bindings)
-(require 'init-octave)
-;; Extra packages which don't require any configuration,
+
+;; Extra packages which don't require any configuration
 
 (require-package 'gnuplot)
 (require-package 'lua-mode)
 (require-package 'htmlize)
 (require-package 'dsvn)
+(when *is-a-mac*
+  (require-package 'osx-location))
 (require-package 'regex-tool)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Allow access from emacsclient ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;----------------------------------------------------------------------------
+;; Allow access from emacsclient
+;;----------------------------------------------------------------------------
 (require 'server)
 (unless (server-running-p)
   (server-start))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Variables configured via the interactive 'customize' interface ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;----------------------------------------------------------------------------
+;; Variables configured via the interactive 'customize' interface
+;;----------------------------------------------------------------------------
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (when (file-exists-p custom-file)
   (load custom-file))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Allow users to provide an optional "init-local" containing personal settings ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;----------------------------------------------------------------------------
+;; Allow users to provide an optional "init-local" containing personal settings
+;;----------------------------------------------------------------------------
 (require 'init-local nil t)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Locales (setting them earlier in this file doesn't work in X) ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;----------------------------------------------------------------------------
+;; Locales (setting them earlier in this file doesn't work in X)
+;;----------------------------------------------------------------------------
 (require 'init-locales)
 
 (message "init completed in %.2fms"
          (sanityinc/time-subtract-millis (current-time) before-init-time))
+
+
+(provide 'init)
 
 ;; Local Variables:
 ;; coding: utf-8

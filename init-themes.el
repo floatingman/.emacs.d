@@ -4,12 +4,12 @@
 (require-package 'color-theme-sanityinc-solarized)
 (require-package 'color-theme-sanityinc-tomorrow)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Old-style color themeing support (via color-theme.el) ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;------------------------------------------------------------------------------
+;; Old-style color theming support (via color-theme.el)
+;;------------------------------------------------------------------------------
 (defcustom window-system-color-theme 'color-theme-sanityinc-solarized-dark
-  "Color theme to use in window-system-frames.
-If Emacs' native them support is available, this setting is
+  "Color theme to use in window-system frames.
+If Emacs' native theme support is available, this setting is
 ignored: use `custom-enabled-themes' instead."
   :type 'symbol)
 
@@ -23,11 +23,12 @@ ignored: use `custom-enabled-themes' instead."
   (defun color-theme-terminal ()
     (interactive)
     (color-theme-sanityinc-solarized-dark))
+
   (defun apply-best-color-theme-for-frame-type (frame)
     (with-selected-frame frame
       (funcall (if window-system
-		   window-system-color-theme
-		 tty-color-theme))))
+                   window-system-color-theme
+                 tty-color-theme))))
 
   (defun reapply-color-themes ()
     (interactive)
@@ -38,10 +39,10 @@ ignored: use `custom-enabled-themes' instead."
   (add-hook 'after-init-hook 'reapply-color-themes)
   (apply-best-color-theme-for-frame-type (selected-frame)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; New-style theme support, in which per-frame theming is not possible ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;------------------------------------------------------------------------------
+;; New-style theme support, in which per-frame theming is not possible
+;;------------------------------------------------------------------------------
 
 ;; If you don't customize it, this is the theme you get.
 (setq-default custom-enabled-themes '(sanityinc-solarized-light))
@@ -57,9 +58,9 @@ ignored: use `custom-enabled-themes' instead."
 (add-hook 'after-init-hook 'reapply-themes)
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Toggle between light and dark ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;------------------------------------------------------------------------------
+;; Toggle between light and dark
+;;------------------------------------------------------------------------------
 (defun light ()
   "Activate a light color theme."
   (interactive)
@@ -69,5 +70,6 @@ ignored: use `custom-enabled-themes' instead."
   "Activate a dark color theme."
   (interactive)
   (color-theme-sanityinc-solarized-dark))
+
 
 (provide 'init-themes)

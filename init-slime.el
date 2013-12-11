@@ -1,9 +1,7 @@
 (require-package 'slime)
-
-;; There are 2 versions of Slime available as packages. The 2010* version
-;; is for Clojure compatibility, and uses separate packages for slime-fuzzy
-;; and slime-repl. The other version is the latest available, which
-;; contains a complete "contrib" dir.
+;; package.el compiles the contrib subdir, but the compilation order
+;; causes problems, so we remove the .elc files there. See
+;; http://lists.common-lisp.net/pipermail/slime-devel/2012-February/018470.html
 (mapc #'delete-file
       (file-expand-wildcards (concat user-emacs-directory "elpa/slime-2*/contrib/*.elc")))
 
@@ -23,8 +21,7 @@
   (slime-setup '(slime-repl slime-fuzzy))
   (setq slime-complete-symbol*-fancy t)
   (setq slime-complete-symbol-function 'slime-fuzzy-complete-symbol)
-  (add-hook 'slime-mode-hook 'sanity/slime-setup))
-
+  (add-hook 'slime-mode-hook 'sanityinc/slime-setup))
 
 ;;; REPL
 
@@ -46,5 +43,6 @@
 
 (after-load 'auto-complete
   (add-to-list 'ac-modes 'slime-repl-mode))
+
 
 (provide 'init-slime)
