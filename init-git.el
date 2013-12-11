@@ -2,6 +2,7 @@
 (require-package 'git-gutter-fringe)
 (require-package 'git-blame)
 (require-package 'git-commit-mode)
+(require-package 'git-rebase-mode)
 (require-package 'gitignore-mode)
 (require-package 'gitconfig-mode)
 
@@ -11,45 +12,41 @@
  magit-diff-refine-hunk t
  magit-completing-read-function 'magit-ido-completing-read)
 
+;; Hint: customize `magit-repo-dirs' so that you can use C-u M-F12 to
+;; quickly open magit on any one of your projects.
 (global-set-key [(meta f12)] 'magit-status)
 
-(after-load 'magit
-  ;; Don't let magit-status mess up window configurations
-  ;; http://whattheemacsd.com/setup-magit.el-01.html
-  (defadvice magit-status (around magit-fullscreen activate)
-    (window-configuration-to-register :magit-fullscreen)
-    ad-do-it
-    (delete-other-windows))
+(require-package 'fullframe)
+(fullframe magit-status magit-mode-quit-window :magit-fullscreen nil)
 
-  (defun magit-quit-session ()
-    "Restores the previous window configuration and kills the magit buffer"
-    (interactive)
-    (kill-buffer)
-    (when (get-register :magit-fullscreen)
-      (ignore-errors
-        (jump-to-register :magit-fullscreen))))
-
-  (define-key magit-status-mode-map (kbd "q") 'magit-quit-session))
-
+
 ;;; When we start working on git-backed files, use git-wip if available
 
 (after-load 'vc-git
   (global-magit-wip-save-mode)
   (diminish 'magit-wip-save-mode))
 
+
 ;;; Use the fringe version of git-gutter
+
 (after-load 'git-gutter
   (require 'git-gutter-fringe))
 
+
 (when *is-a-mac*
   (after-load 'magit
     (add-hook 'magit-mode-hook (lambda () (local-unset-key [(meta h)])))))
 
 
+
 ;; Convenient binding for vc-git-grep
 (global-set-key (kbd "C-x v f") 'vc-git-grep)
 
+
+
 ;;; git-svn support
+
+(require-package 'magit-svn)
 (after-load 'magit-key-mode
   (require 'magit-svn))
 
@@ -66,19 +63,26 @@
   (interactive "DSelect directory: ")
   (unless git-svn--available-commands
     (setq git-svn--available-commands
-          (string-all-matches "^ \\([a-z\\-]+\\) +" (shell-command-to-string "git svn help") 1)))
+          (sanityinc/string-all-matches
+           "^  \\([a-z\\-]+\\) +"
+           (shell-command-to-string "git svn help") 1)))
   (let* ((default-directory (vc-git-root dir))
          (compilation-buffer-name-function (lambda (major-mode-name) "*git-svn*")))
     (compile (concat "git svn "
                      (ido-completing-read "git-svn command: " git-svn--available-commands nil t)))))
 
+
 (require-package 'git-messenger)
 (global-set-key (kbd "C-x v p") #'git-messenger:popup-message)
 
+
 ;;; github
+
 (require-package 'yagist)
 (require-package 'github-browse-file)
-;(require-package 'bug-reference-github)
-;(add-hook 'prog-mode 'bug-reference-prog-mode)
+(require-package 'bug-reference-github)
+(add-hook 'prog-mode-hook 'bug-reference-prog-mode)
+
+
 
 (provide 'init-git)

@@ -13,6 +13,8 @@
 
 (setq-default regex-tool-backend 'perl)
 
+(add-auto-mode 'conf-mode "Procfile")
+
 (defun view-url ()
   "Open a new buffer containing the contents of URL."
   (interactive)

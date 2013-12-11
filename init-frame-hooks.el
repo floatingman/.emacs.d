@@ -9,9 +9,10 @@ Selectively runs either `after-make-console-frame-hooks' or
 `after-make-window-system-frame-hooks'"
   (with-selected-frame frame
     (run-hooks (if window-system
-		   'after-make-window-system-frame-hooks
-		 'after-make-console-frame-hooks))))
+                   'after-make-window-system-frame-hooks
+                 'after-make-console-frame-hooks))))
 
 (add-hook 'after-make-frame-functions 'run-after-make-frame-hooks)
+
 
 (provide 'init-frame-hooks)

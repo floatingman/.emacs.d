@@ -4,13 +4,14 @@
 (let ((package-el-site-lisp-dir
        (expand-file-name "site-lisp/package" user-emacs-directory)))
   (when (and (file-directory-p package-el-site-lisp-dir)
-	     (> emacs-major-version 23))
+             (> emacs-major-version 23))
     (message "Removing local package.el from load-path to avoid shadowing bundled version")
     (setq load-path (remove package-el-site-lisp-dir load-path))))
 
 (require 'package)
 
 
+
 ;;; Add support to package.el for pre-filtering available packages
 
 (defvar package-filter-function nil
@@ -24,16 +25,17 @@ ARCHIVE is the string name of the package archive.")
   (around filter-packages (package archive) activate)
   "Add filtering of available packages using `package-filter-function', if non-nil."
   (when (or (null package-filter-function)
-            (funcall package-filter-function
-                     (car package)
-                     (funcall (if (fboundp 'package-desc-version)
-                                  'package--ac-desc-version
-                                'package-desc-vers)
-                              (cdr package))
-                     archive))
+	    (funcall package-filter-function
+		     (car package)
+		     (funcall (if (fboundp 'package-desc-version)
+				  'package--ac-desc-version
+				'package-desc-vers)
+			      (cdr package))
+		     archive))
     ad-do-it))
 
 
+
 ;;; Standard package repositories
 
 (add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
@@ -52,9 +54,10 @@ ARCHIVE is the string name of the package archive.")
 (setq package-filter-function
       (lambda (package version archive)
         (or (not (string-equal archive "melpa"))
-             (not (memq package '(slime))))))
+            (not (memq package '())))))
 
 
+
 ;;; On-demand installation of packages
 
 (defun require-package (package &optional min-version no-refresh)
@@ -70,6 +73,7 @@ re-downloaded in order to locate PACKAGE."
         (require-package package min-version t)))))
 
 
+
 ;;; Fire up package.el
 
 (package-initialize)
