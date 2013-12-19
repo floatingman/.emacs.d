@@ -30,6 +30,9 @@ site-lisp/package/
 .thesaurus.cache
 places
 flycheck*
+/.bookmarks.el
+/frame-restore-parameters
+/.sqli_history
 
 # Compiled source #
 ###################
