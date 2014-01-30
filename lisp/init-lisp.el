@@ -19,7 +19,9 @@
   (interactive "r\nP")
   (if (use-region-p)
       (eval-region beg end)
-    (eval-last-sexp prefix)))
+    (pp-eval-last-sexp prefix)))
+
+(global-set-key (kbd "M-:") 'pp-eval-expression)
 
 (after-load 'lisp-mode
   (define-key emacs-lisp-mode-map (kbd "C-x C-e") 'sanityinc/eval-last-sexp-or-region))
@@ -100,7 +102,7 @@
 
 (defconst sanityinc/lispy-modes
   (append sanityinc/elispy-modes
-          '(lisp-mode inferior-lisp-mode lisp-interaction-mode scheme-mode racket/A geiser-mode))
+          '(lisp-mode inferior-lisp-mode lisp-interaction-mode))
   "All lispy major modes.")
 
 (require 'derived)
@@ -124,11 +126,12 @@
 (add-to-list 'auto-mode-alist '("\\.emacs-project\\'" . emacs-lisp-mode))
 (add-to-list 'auto-mode-alist '("archive-contents\\'" . emacs-lisp-mode))
 
-(define-key emacs-lisp-mode-map (kbd "C-x C-a") 'pp-macroexpand-last-sexp)
-(define-key emacs-lisp-mode-map (kbd "C-x C-e") 'pp-eval-last-sexp)
+(after-load 'lisp-mode
+  (define-key emacs-lisp-mode-map (kbd "C-x C-a") 'pp-macroexpand-last-sexp))
 
 (require-package 'cl-lib-highlight)
-(cl-lib-highlight-initialize)
+(after-load 'lisp-mode
+  (cl-lib-highlight-initialize))
 
 ;; ----------------------------------------------------------------------------
 ;; Delete .elc files when reverting the .el from VC or magit

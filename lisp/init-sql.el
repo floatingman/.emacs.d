@@ -28,8 +28,6 @@
 
 (setq-default sql-input-ring-file-name
               (expand-file-name ".sqli_history" user-emacs-directory))
-(after-load 'page-break-lines
-  (push 'sql-mode page-break-lines-mode))
 
 (after-load 'page-break-lines
   (push 'sql-mode page-break-lines-modes))
