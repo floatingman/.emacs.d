@@ -1,3 +1,4 @@
+
 (require-package 'magit)
 (require-package 'git-blame)
 (require-package 'git-commit-mode)
@@ -84,3 +85,4 @@
 
 
 (provide 'init-git)
+>>>>>>> chenged fullframe
