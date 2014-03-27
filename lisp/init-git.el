@@ -85,4 +85,3 @@
 
 
 (provide 'init-git)
->>>>>>> chenged fullframe
