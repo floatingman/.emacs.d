@@ -25,6 +25,11 @@
 (require 'init-exec-path) ;; Set up $PATH
 
 ;;----------------------------------------------------------------------------
+;; Allow users to provide an optional "init-preload-local.el"
+;;----------------------------------------------------------------------------
+(require 'init-preload-local nil t)
+
+;;----------------------------------------------------------------------------
 ;; Load configs for specific features and modes
 ;;----------------------------------------------------------------------------
 
@@ -57,8 +62,10 @@
 
 (require 'init-editing-utils)
 
+(require 'init-vc)
 (require 'init-darcs)
 (require 'init-git)
+(require 'init-github)
 
 (require 'init-crontab)
 (require 'init-textile)
@@ -69,6 +76,7 @@
 (require 'init-php)
 (require 'init-org)
 (require 'init-nxml)
+(require 'init-html)
 (require 'init-css)
 (require 'init-haml)
 (require 'init-python-mode)
@@ -81,6 +89,8 @@
 (require 'init-lisp)
 (require 'init-slime)
 (require 'init-clojure)
+(when (>= emacs-major-version 24)
+  (require 'init-clojure-cider))
 (require 'init-common-lisp)
 
 (when *spell-check-support-enabled*
