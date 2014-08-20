@@ -5,7 +5,7 @@
 (require 'init-os-keys)
 
 ;for editing jekyll blogs
-(require 'jekyll)
+;(require 'jekyll)
 
 (defun sudo-edit (&optional arg)
   (interactive "p")
