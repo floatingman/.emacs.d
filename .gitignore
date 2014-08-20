@@ -33,7 +33,7 @@ flycheck*
 /.bookmarks.el
 /frame-restore-parameters
 /.sqli_history
-
+.smex-items
 # Compiled source #
 ###################
 *.com
