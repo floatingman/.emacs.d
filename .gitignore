@@ -68,3 +68,7 @@ flycheck*
 ehthumbs.db
 Icon?
 Thumbs.db
+
+# Misc Files #
+##############
+dnewman.el

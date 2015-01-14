@@ -1,0 +1,44 @@
+#+TITLE: Daniel Newman's Emacs configuration
+#+OPTIONS: toc:4 h:4
+
+
+* Configuration
+** About this file
+I've decided to try my hand at using a literate format for my emacs config
+with inspiration from [[https://github.com/sachac/.emacs.d][Sacha Chua]] and [[http://eschulte.github.io/emacs24-starter-kit/][eschulte]]
+** Personal Information
+
+#+begin_src emacs-lisp
+(setq user-full-name "Daniel Newman"
+      user-mail-address "dnewman@danlovesprogramming.com")
+#+end_src
+
+** Emacs initialization
+*** Add package sources
+
+#+begin_src emacs-lisp
+    (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t)
+    (unless (assoc-default "melpa" package-archives)
+      (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/") t)
+      (package-refresh-contents))
+#+end_src
+
+
+Use =M-x package-refresh-contents= to reload the list of packages
+after adding these for the first time.
+
+*** Add my elisp directory and other files
+
+Sometimes I load files outside the package system. As long as they're
+in a directory in my =load-path=, Emacs can find them.
+
+#+begin_src emacs-lisp
+(add-to-list 'load-path "~/elisp")
+(add-to-list 'load-path "~/elisp/artbollocks-mode")
+(unless (package-installed-p 'use-package)
+  (package-install 'use-package))
+(require 'use-package)
+(use-package auto-compile
+  :ensure t
+  :init (auto-compile-on-load-mode))
+#+end_src
