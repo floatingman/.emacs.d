@@ -86,5 +86,96 @@ From http://www.wisdomandwonder.com/wordpress/wp-content/uploads/2014/03/C3F.htm
 	regexp-search-ring))
 #+end_src
 
+*** Windows configuration
 
+When you're starting out, tooltips, menus, and the tool bar can be very helpful. [[http://sachachua.com/blog/2014/03/emacs-basics-using-mouse/][(Emacs Basics: Using the Mouse]]). Eventually, you may want to reclaim that extra little bit of screenspace. The following code turns those things off when using a graphical Emacs.
 
+#+begin_src emacs-lisp
+(when window-system
+  (tooltip-mode -1)
+  (tool-bar-mode -1)
+  (menu-bar-mode -1)
+  (scroll-bar-mode -1))
+#+end_src
+
+*** Winner mode - undo and redo window configuration
+
+=winner-mode= lets you use =C-c <left>= and =C-c <right>= to switch between window configurations. This is handy when something has popped up a buffer that you want to look at briefly before returning to whatever you were working on. When you're done, press =C-c <left>=.
+
+#+begin_src emacs-lisp
+  (use-package winner
+    :ensure winner
+    :init (winner-mode 1))
+#+end_src
+*** Sentences end with a single space
+
+In my world, sentences end with a single space. This makes
+sentence navigation commands work for me.
+
+#+begin_src emacs-lisp
+  (setq sentence-end-double-space nil)
+#+end_src
+
+*** Helm - interactive completion
+
+Helm makes it easy to complete various things. I find it to be easier
+to configure than ido in order to get completion in as many places as
+possible, although I prefer ido's way of switching buffers.
+
+#+begin_src emacs-lisp
+    (use-package helm
+      :ensure helm
+      :diminish helm-mode
+      :init
+      (progn 
+        (require 'helm-config) 
+        (setq helm-candidate-number-limit 100)
+        ;; From https://gist.github.com/antifuchs/9238468
+        (setq helm-idle-delay 0.0 ; update fast sources immediately (doesn't).
+              helm-input-idle-delay 0.01  ; this actually updates things
+                                            ; reeeelatively quickly.
+              helm-quick-update t
+              helm-M-x-requires-pattern nil
+              helm-ff-skip-boring-files t)
+        (helm-mode))
+      :config
+      (progn
+        ;; I don't like the way switch-to-buffer uses history, since
+        ;; that confuses me when it comes to buffers I've already
+        ;; killed. Let's use ido instead.
+        (add-to-list 'helm-completing-read-handlers-alist 
+                     '(switch-to-buffer . ido))
+        (add-to-list 'helm-completing-read-handlers-alist 
+                     '(rename-file . ido))
+        (add-to-list 'helm-completing-read-handlers-alist 
+                     '(dired-rename-file . ido))
+        ;; Unicode
+        (add-to-list 'helm-completing-read-handlers-alist 
+                     '(insert-char . ido)))
+      :bind (("C-c h" . helm-mini) 
+             ("C-h a" . helm-apropos)
+             ("M-y" . helm-show-kill-ring)
+             ("M-x" . helm-M-x)
+             ("C-x c o" . helm-occur)
+             ("C-x c s" . helm-swoop)
+             ("C-x c b" . sacha/helm-do-grep-book-notes)
+             ("C-x c SPC" . helm-all-mark-rings)))
+    (ido-mode -1) ;; Turn off ido mode in case I enabled it accidentally
+#+end_src
+
+Great for describing bindings. I'll replace the binding for =where-is= too.
+
+#+begin_src emacs-lisp
+(use-package helm-descbinds
+  :bind (("C-h b" . helm-descbinds)
+         ("C-h w" . helm-descbinds)))
+#+end_src
+
+helm-grep? Bit slow and hard to read, though.
+#+begin_src emacs-lisp
+(defvar sacha/book-notes-directory "~/Dropbox/books")
+(defun sacha/helm-do-grep-book-notes ()
+  "Search my book notes."
+  (interactive)
+  (helm-do-grep-1 (list sacha/book-notes-directory)))
+#+end_src
