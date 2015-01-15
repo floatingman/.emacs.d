@@ -158,7 +158,7 @@ possible, although I prefer ido's way of switching buffers.
              ("M-x" . helm-M-x)
              ("C-x c o" . helm-occur)
              ("C-x c s" . helm-swoop)
-             ("C-x c b" . sacha/helm-do-grep-book-notes)
+             ("C-x c b" . dnewman/helm-do-grep-book-notes)
              ("C-x c SPC" . helm-all-mark-rings)))
     (ido-mode -1) ;; Turn off ido mode in case I enabled it accidentally
 #+end_src
@@ -173,9 +173,43 @@ Great for describing bindings. I'll replace the binding for =where-is= too.
 
 helm-grep? Bit slow and hard to read, though.
 #+begin_src emacs-lisp
-(defvar sacha/book-notes-directory "~/Dropbox/books")
-(defun sacha/helm-do-grep-book-notes ()
+(defvar dnewman/book-notes-directory "~/Dropbox/books")
+(defun dnewman/helm-do-grep-book-notes ()
   "Search my book notes."
   (interactive)
-  (helm-do-grep-1 (list sacha/book-notes-directory)))
+  (helm-do-grep-1 (list dnewman/book-notes-directory)))
+#+end_src
+*** Mode line format
+
+Display a more compact mode line
+
+#+begin_src emacs-lisp
+(use-package smart-mode-line
+  :init
+  (progn
+  (setq-default
+   mode-line-format 
+   '("%e"
+     mode-line-front-space
+     mode-line-mule-info
+     mode-line-client
+     mode-line-modified
+     mode-line-remote
+     mode-line-frame-identification
+     mode-line-buffer-identification
+     "   "
+     mode-line-position
+     (vc-mode vc-mode)
+     "  "
+     mode-line-modes
+     mode-line-misc-info
+     mode-line-end-spaces))))
+#+end_src
+
+*** Change "yes or no" to "y or n"
+
+Lazy people like me never want to type "yes" when "y" will suffice.
+
+#+begin_src emacs-lisp
+(fset 'yes-or-no-p 'y-or-n-p)   
 #+end_src
