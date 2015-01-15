@@ -4,6 +4,8 @@
 
 * Configuration
 ** About this file
+<<babel-init>>
+
 I've decided to try my hand at using a literate format for my emacs config
 with inspiration from [[https://github.com/sachac/.emacs.d][Sacha Chua]] and [[http://eschulte.github.io/emacs24-starter-kit/][eschulte]]
 ** Personal Information
@@ -42,3 +44,47 @@ in a directory in my =load-path=, Emacs can find them.
   :ensure t
   :init (auto-compile-on-load-mode))
 #+end_src
+
+*** Load Secrets
+
+It's best to keep sensitive information in a separate file so you can publish your config but save private information.
+
+#+begin_src emacs-lisp
+(load "~/.emacs.secrets" t)
+#+end_src
+
+** General configuration
+*** Backups
+
+By default, Emacs saves backup files in the current directory, but I like to save everything in one single directory
+
+#+begin_src emacs-lisp
+(setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
+#+end_src
+
+Save all the things
+
+#+begin_src emacs-lisp
+(setq delete-old-versions -1)
+(setq version-control t)
+(setq vc-make-backup-files t)
+(setq auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t)))
+#+end_src
+
+*** History
+
+From http://www.wisdomandwonder.com/wordpress/wp-content/uploads/2014/03/C3F.html
+#+begin_src emacs-lisp
+(setq savehist-file "~/.emacs.d/savehist")
+(savehist-mode 1)
+(setq history-length t)
+(setq history-delete-duplicates t)
+(setq savehist-save-minibuffer-history 1)
+(setq savehist-additional-variables
+      '(kill-ring
+        search-ring
+	regexp-search-ring))
+#+end_src
+
+
+
