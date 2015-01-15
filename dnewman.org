@@ -213,3 +213,339 @@ Lazy people like me never want to type "yes" when "y" will suffice.
 #+begin_src emacs-lisp
 (fset 'yes-or-no-p 'y-or-n-p)   
 #+end_src
+
+
+*** Minibuffer editing - more space!
+
+    Sometimes you want to be able to do fancy things with the text
+    that you're entering into the minibuffer. Sometimes you just want
+    to be able to read it, especially when it comes to lots of text.
+    This binds =C-M-e= in a minibuffer) so that you can edit the
+    contents of the minibuffer before submitting it.
+
+#+begin_src emacs-lisp
+  (use-package miniedit
+    :ensure miniedit
+    :commands minibuffer-edit
+    :init (miniedit-install))
+#+end_src
+
+*** Set up a light-on-dark color scheme
+
+I like light on dark because I find it to be more restful. The
+color-theme in ELPA was a little odd, though, so we define some advice to make
+it work. Some things still aren't quite right.
+
+#+begin_src emacs-lisp
+  (defadvice color-theme-alist (around dnewman activate)
+    (if (ad-get-arg 0)
+        ad-do-it
+      nil))
+  (use-package color-theme :ensure t)
+  (use-package color-theme-solarized :ensure t)
+  (defun dnewman/setup-color-theme ()
+    (interactive)
+    (color-theme-solarized-dark)
+    (set-face-foreground 'secondary-selection "darkblue")
+    (set-face-background 'secondary-selection "lightblue")
+    (set-face-background 'font-lock-doc-face "black")
+    (set-face-foreground 'font-lock-doc-face "wheat")
+    (set-face-background 'font-lock-string-face "black")
+    (set-face-foreground 'org-todo "green")
+    (set-face-background 'org-todo "black"))
+ 
+  (use-package color-theme
+    :init
+    (when window-system
+      (dnewman/setup-color-theme)))
+#+end_src
+
+I sometimes need to switch to a lighter background for screenshots.
+For that, I use =color-theme-vim=.
+
+Some more tweaks to solarized:
+#+begin_src emacs-lisp
+(when window-system
+  (custom-set-faces
+   '(erc-input-face ((t (:foreground "antique white"))))
+   '(helm-selection ((t (:background "ForestGreen" :foreground "black"))))
+   '(org-agenda-clocking ((t (:inherit secondary-selection :foreground "black"))) t)
+   '(org-agenda-done ((t (:foreground "dim gray" :strike-through nil))))
+   '(org-done ((t (:foreground "PaleGreen" :weight normal :strike-through t))))
+   '(org-clock-overlay ((t (:background "SkyBlue4" :foreground "black"))))
+   '(org-headline-done ((((class color) (min-colors 16) (background dark)) (:foreground "LightSalmon" :strike-through t))))
+   '(outline-1 ((t (:inherit font-lock-function-name-face :foreground "cornflower blue"))))))
+
+#+end_src
+
+*** Undo tree mode - visualize your undos and branches
+
+People often struggle with the Emacs undo model, where there's really no concept of "redo" - you simply undo the undo. 
+# 
+This lets you use =C-x u= (=undo-tree-visualize=) to visually walk through the changes you've made, undo back to a certain point (or redo), and go down different branches.
+
+#+begin_src emacs-lisp
+  (use-package undo-tree
+    :ensure undo-tree
+    :diminish undo-tree-mode
+    :init
+    (progn
+      (global-undo-tree-mode)
+      (setq undo-tree-visualizer-timestamps t)
+      (setq undo-tree-visualizer-diff t)))
+#+end_src
+
+*** Help - guide-key
+
+It's hard to remember keyboard shortcuts. The =guide-key= package pops up help after a short delay.
+
+#+begin_src emacs-lisp
+(use-package guide-key
+  :diminish guide-key-mode
+  :init
+  (progn
+  (setq guide-key/guide-key-sequence '("C-x r" "C-x 4" "C-c"))
+  (guide-key-mode 1)))  ; Enable guide-key-mode
+#+end_src
+
+
+*** UTF-8
+
+From http://www.wisdomandwonder.com/wordpress/wp-content/uploads/2014/03/C3F.html
+#+begin_src emacs-lisp
+(prefer-coding-system 'utf-8)
+(when (display-graphic-p)
+  (setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING)))
+#+end_src
+*** Killing text
+
+From https://github.com/itsjeyd/emacs-config/blob/emacs24/init.el
+
+#+begin_src emacs-lisp
+  (defadvice kill-region (before slick-cut activate compile)
+    "When called interactively with no active region, kill a single line instead."
+    (interactive
+      (if mark-active (list (region-beginning) (region-end))
+        (list (line-beginning-position)
+          (line-beginning-position 2)))))
+#+end_src
+
+** Navigation
+*** Pop to mark
+
+Handy way of getting back to previous places.
+
+#+begin_src emacs-lisp
+(bind-key "C-x p" 'pop-to-mark-command)
+(setq set-mark-command-repeat-pop t)
+#+end_src
+*** Text size
+
+#+begin_src emacs-lisp
+(bind-key "C-+" 'text-scale-increase)
+(bind-key "C--" 'text-scale-decrease)
+#+end_src
+
+*** Helm-swoop - quickly finding lines
+
+This promises to be a fast way to find things. Let's bind it to =Ctrl-Shift-S= to see if I can get used to that...
+
+#+begin_src emacs-lisp
+  (use-package helm-swoop
+   :bind
+   (("C-S-s" . helm-swoop)
+    ("M-i" . helm-swoop)
+    ("M-s s" . helm-swoop)
+    ("M-s M-s" . helm-swoop)
+    ("M-I" . helm-swoop-back-to-last-point)
+    ("C-c M-i" . helm-multi-swoop)
+    ("C-x M-i" . helm-multi-swoop-all)
+    )
+   :config
+   (progn
+     (define-key isearch-mode-map (kbd "M-i") 'helm-swoop-from-isearch)
+     (define-key helm-swoop-map (kbd "M-i") 'helm-multi-swoop-all-from-helm-swoop))
+  )
+#+end_src
+
+*** Windmove - switching between windows
+
+Windmove lets you move between windows with something more natural than cycling through =C-x o= (=other-window=).
+Windmove doesn't behave well with Org, so we need to use different keybindings.
+
+#+begin_src emacs-lisp
+  (use-package windmove
+    :bind
+    (("<f2> <right>" . windmove-right)
+     ("<f2> <left>" . windmove-left)
+     ("<f2> <up>" . windmove-up)
+     ("<f2> <down>" . windmove-down)
+     ))
+#+end_src
+*** Make window splitting more useful
+
+Copied from http://www.reddit.com/r/emacs/comments/25v0eo/you_emacs_tips_and_tricks/chldury
+#+begin_src emacs-lisp
+(defun dnewman/vsplit-last-buffer (prefix)
+  "Split the window vertically and display the previous buffer."
+  (interactive "p")
+  (split-window-vertically)
+  (other-window 1 nil)
+  (unless prefix
+    (switch-to-next-buffer)))
+(defun dnewman/hsplit-last-buffer (prefix)
+  "Split the window horizontally and display the previous buffer."
+  (interactive "p")
+  (split-window-horizontally)
+  (other-window 1 nil)
+  (unless prefix (switch-to-next-buffer)))
+(bind-key "C-x 2" 'dnewman/vsplit-last-buffer)
+(bind-key "C-x 3" 'dnewman/hsplit-last-buffer)
+
+#+end_src
+*** Searching based on the current word
+
+This lets me search up and down. I don't use this often, though.
+
+#+begin_src emacs-lisp
+  (defun sacha/search-word-backward ()
+    "Find the previous occurrence of the current word."
+    (interactive)
+    (let ((cur (point)))
+      (skip-syntax-backward "w_")
+      (goto-char
+       (if (re-search-backward (concat "\\_<" (current-word) "\\_>") nil t)
+           (match-beginning 0)
+         cur))))
+  
+  (defun sacha/search-word-forward ()
+    "Find the next occurrence of the current word."
+    (interactive)
+    (let ((cur (point)))
+      (skip-syntax-forward "w_")
+      (goto-char
+       (if (re-search-forward (concat "\\_<" (current-word) "\\_>") nil t)
+           (match-beginning 0)
+         cur))))
+  (defadvice search-for-keyword (around sacha activate)
+    "Match in a case-insensitive way."
+    (let ((case-fold-search t))
+      ad-do-it))
+  (global-set-key '[M-up] 'sacha/search-word-backward)
+  (global-set-key '[M-down] 'sacha/search-word-forward)
+#+end_src
+
+*** Frequently-accessed files
+Registers allow you to jump to a file or other location quickly. To
+jump to a register, use =C-x r j= followed by the letter of the
+register. Using registers for all these file shortcuts is probably a bit of a waste since I can easily define my own keymap, but since I rarely go beyond register A anyway...
+
+#+begin_src emacs-lisp :results silent
+  (mapcar
+   (lambda (r)
+     (set-register (car r) (cons 'file (cdr r))))
+   '((?i . "~/.emacs.d/dnewman.org")
+     (?o . "~/personal/organizer.org")
+     (?b . "~/personal/business.org")
+     (?B . "~/Dropbox/books")
+     (?e . "~/code/dev/emacs-notes/tasks.org")
+     (?w . "~/Dropbox/public/sharing/index.org")
+     (?W . "~/Dropbox/public/sharing/blog.org")
+     (?j . "~/personal/journal.org")
+     (?I . "~/Dropbox/Inbox")
+     (?g . "~/sachac.github.io/evil-plans/index.org")
+     (?c . "~/code/dev/elisp-course.org")
+     (?l . "~/dropbox/public/sharing/learning.org")))
+#+end_src
+
+*** Key chords 
+I'm on a Dvorak keyboard, so these might not work for you.
+Experimenting with this. =key-chord= lets you define keyboard
+shortcuts that use ordinary keys.
+
+Some code from http://emacsredux.com/blog/2013/04/28/switch-to-previous-buffer/
+#+begin_src emacs-lisp
+    (defun sacha/key-chord-define (keymap keys command)
+      "Define in KEYMAP, a key-chord of two keys in KEYS starting a COMMAND.
+    \nKEYS can be a string or a vector of two elements. Currently only elements
+    that corresponds to ascii codes in the range 32 to 126 can be used.
+    \nCOMMAND can be an interactive function, a string, or nil.
+    If COMMAND is nil, the key-chord is removed.
+
+    MODIFICATION: Do not define the transposed key chord.
+    "
+      (if (/= 2 (length keys))
+          (error "Key-chord keys must have two elements"))
+      ;; Exotic chars in a string are >255 but define-key wants 128..255 for those
+      (let ((key1 (logand 255 (aref keys 0)))
+            (key2 (logand 255 (aref keys 1))))
+        (define-key keymap (vector 'key-chord key1 key2) command)))
+    (fset 'key-chord-define 'sacha/key-chord-define)
+
+    (defun sacha/switch-to-previous-buffer ()
+      "Switch to previously open buffer.
+    Repeated invocations toggle between the two most recently open buffers."
+      (interactive)
+      (switch-to-buffer (other-buffer (current-buffer) 1)))
+
+    (defun sacha/org-check-agenda ()
+      "Peek at agenda."
+      (interactive)
+      (cond
+       ((derived-mode-p 'org-agenda-mode)
+        (if (window-parent) (delete-window) (bury-buffer)))
+       ((get-buffer "*Org Agenda*")
+        (switch-to-buffer-other-window "*Org Agenda*"))
+       (t (org-agenda nil "a"))))
+
+    (defvar sacha/key-chord-command-map (make-sparse-keymap))
+    (bind-key "h" 'emms-pause sacha/key-chord-command-map)
+    (bind-key "u" 'emms-pause sacha/key-chord-command-map)
+    (bind-key "t" 'emms-seek-backward sacha/key-chord-command-map)
+    (bind-key "s" 'emms-seek-to sacha/key-chord-command-map)
+    (bind-key "f" 'windmove-right sacha/key-chord-command-map)
+    (bind-key "b" 'windmove-left sacha/key-chord-command-map)
+    (bind-key "n" 'windmove-down sacha/key-chord-command-map)
+    (bind-key "p" 'windmove-up sacha/key-chord-command-map)
+#+end_src
+
+I'm trying to get the hang of windmove.
+#+begin_src emacs-lisp
+  (defvar sacha/windmove-map (make-sparse-keymap))
+  (bind-key "h" 'windmove-left sacha/windmove-map)
+  (bind-key "t" 'windmove-up sacha/windmove-map)
+  (bind-key "n" 'windmove-down sacha/windmove-map)
+  (bind-key "s" 'windmove-right sacha/windmove-map)
+  (bind-key "<left>" 'windmove-left sacha/windmove-map)
+  (bind-key "<up>" 'windmove-up sacha/windmove-map)
+  (bind-key "<down>" 'windmove-down sacha/windmove-map)
+  (bind-key "<right>" 'windmove-right sacha/windmove-map)
+#+end_src
+
+Now let's set up the actual keychords.
+
+#+begin_src emacs-lisp
+    (use-package key-chord
+      :init
+      (progn 
+        (fset 'key-chord-define 'sacha/key-chord-define)
+        (setq key-chord-one-key-delay 0.16)
+        (key-chord-mode 1)
+        ;; k can be bound too
+        (key-chord-define-global "uu"     'undo)
+        (key-chord-define-global "jj"     'ace-jump-word-mode)
+        (key-chord-define-global "yy"     sacha/windmove-map)
+        ;; y is now free
+        (key-chord-define-global "jj"     'ace-jump-word-mode)
+        (key-chord-define-global "jw"     'ace-window)
+        (key-chord-define-global "jl"     'ace-jump-line-mode)
+        ;(key-chord-define-global "jz"     'ace-jump-zap-up-to-char)
+        ;(key-chord-define-global "jZ"     'ace-jump-zap-to-char)
+        (key-chord-define-global "FF"     'find-file)
+        (key-chord-define-global "qq"     'sacha/org-quick-clock-in-task)
+        (key-chord-define-global "hh"     sacha/key-chord-command-map)
+        (key-chord-define-global "hc"     'emms-seek-forward)
+        (key-chord-define-global "xx"     'er/expand-region)
+        (key-chord-define-global "  "     'sacha/insert-space-or-expand)
+        (key-chord-define-global "JJ"     'sacha/switch-to-previous-buffer)))
+#+end_src
