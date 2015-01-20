@@ -73,3 +73,5 @@ Thumbs.db
 ##############
 dnewman.el
 savehist
+bookmarks
+projectile-bookmarks.eld
