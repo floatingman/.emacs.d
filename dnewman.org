@@ -2550,7 +2550,8 @@ Ooooh. Graphviz and Ditaa make it easier to create diagrams from Emacs. See [[ht
    '((dot . t)
      (ditaa . t) 
      (sh . t)
-     (R . t)))
+     (R . t)
+     (C . t)))
   (add-to-list 'org-src-lang-modes '("dot" . graphviz-dot))))
 #+end_src
 *** Editing source code
