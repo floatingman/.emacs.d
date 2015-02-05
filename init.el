@@ -9,3 +9,4 @@
 (package-initialize t)
 (setq package-enable-at-startup nil)
 (org-babel-load-file "~/.emacs.d/dnewman.org")
+(org-babel-load-file "~/.emacs.d/org-mode.org")
