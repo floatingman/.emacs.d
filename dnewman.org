@@ -1,7 +1,5 @@
 #+TITLE: Daniel Newman's Emacs configuration
 #+OPTIONS: toc:4 h:4
-
-
 * Configuration
 ** About this file
 <<babel-init>>
@@ -437,17 +435,8 @@ register. Using registers for all these file shortcuts is probably a bit of a wa
    (lambda (r)
      (set-register (car r) (cons 'file (cdr r))))
    '((?i . "~/.emacs.d/dnewman.org")
-     (?o . "~/personal/organizer.org")
-     (?b . "~/personal/business.org")
-     (?B . "~/Dropbox/Books")
-     (?e . "~/code/dev/emacs-notes/tasks.org")
-     (?w . "~/Dropbox/public/sharing/index.org")
-     (?W . "~/Dropbox/public/sharing/blog.org")
-     (?j . "~/personal/journal.org")
-     (?I . "~/Dropbox/Inbox")
-     (?g . "~/sachac.github.io/evil-plans/index.org")
-     (?c . "~/code/dev/elisp-course.org")
-     (?l . "~/dropbox/public/sharing/learning.org")))
+     (?o . "~/.emacs.d/org-mode.org")
+     (?t . "~/personal/org/todo.org")))
 #+end_src
 
 *** Key chords 

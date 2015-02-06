@@ -867,6 +867,12 @@ Here is my refile configuration:
 
 ; Use IDO for both buffer and file completion and ido-everywhere to t
 (setq org-completion-use-ido t)
+
+#+end_src
+
+** Lets turn off ido mode except for org-mode
+[2015-02-06 Fri 06:41]
+#+begin_src emacs-lisp :eval no :tangle no
 (setq ido-everywhere t)
 (setq ido-max-directory-size 100000)
 (ido-mode (quote both))
@@ -875,6 +881,7 @@ Here is my refile configuration:
 (setq ido-default-buffer-method 'selected-window)
 ; Use the current window for indirect buffer display
 (setq org-indirect-buffer-display 'current-window)
+#+end_src
 
 ;;;; Refile settings
 ; Exclude DONE state tasks from refile targets
@@ -2202,6 +2209,7 @@ followed by the phone-call related lookup functions.
 
 #+header: :tangle yes
 #+begin_src emacs-lisp
+(use-package bbdb)
 (require 'bbdb)
 (require 'bbdb-com)
 
@@ -5709,9 +5717,10 @@ post of the org-mode mailing list.  I actually use M-x a lot now
 because IDO completion is so easy.
 
 Here's the smex setup I use
-#+header: :tangle yes
+#+header: :tangle no
 #+begin_src emacs-lisp
 (add-to-list 'load-path (expand-file-name "~/.emacs.d"))
+(use-package smex)
 (require 'smex)
 (smex-initialize)
 
