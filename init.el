@@ -2,9 +2,6 @@
 (package-initialize nil)
 
 ;; Override the packages with the the git version of Org and other packages
-(add-to-list 'load-path "~/elisp/org-mode/lisp")
-(add-to-list 'load-path "~/elisp/org-mode/contrib/lisp")
-(add-to-list 'load-path "/usr/share/emacs/site-lisp")
 (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
 
 ;; Initialize a few variables
@@ -22,12 +19,22 @@
 (require 'init-elpa)      ;; Machinery for installing required packages
 (require 'init-exec-path) ;; Set up $PATH
 
-(require 'init-org) ;; load org-mode
-
 ;; Load the rest of the packages
 (package-initialize t)
 (setq package-enable-at-startup nil)
 (org-babel-load-file "~/.emacs.d/dnewman.org")
+
+(require 'init-org) ;; load org-mode
+
+(require-package 'smart-mode-line)
+(require-package 'guide-key)
+(require-package 'key-chord)
+(require-package 'smartscan)
+(require-package 'artbollocks-mode)
+(require-package 'tern)
+(require-package '2048-game)
+
+
 
 
 

@@ -9,6 +9,7 @@
 (require-package 'bbdb)
 (require-package 'org-fstree)
 (require-package 'deft)
+(require-package 'smex)
 
 (when *is-a-mac*
   (require-package 'org-mac-link)

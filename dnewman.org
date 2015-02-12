@@ -320,6 +320,13 @@ From https://github.com/itsjeyd/emacs-config/blob/emacs24/init.el
           (line-beginning-position 2)))))
 #+end_src
 
+*** Server
+Start a emacs server so new instances aren't created when opening new files
+#+begin_src emacs-lisp
+(server-start)
+
+#+end_src
+[2015-02-11 Wed 22:07]
 ** Navigation
 *** Pop to mark
 
@@ -866,7 +873,7 @@ couldn't figure things out (ex: syntax errors)."
         (progn
           (add-hook 'hippie-expand-try-functions-list 'yas-hippie-try-expand)
           (setq yas-key-syntaxes '("w_" "w_." "^ "))
-          (setq yas-installed-snippets-dir "~/elisp/yasnippet-snippets")
+          (setq yas-snippet-dirs "~/elisp/yasnippet-snippets")
           (setq yas-expand-only-for-last-commands '(self-insert-command))
           (yas-global-mode 1))
         :config
