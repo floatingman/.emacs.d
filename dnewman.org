@@ -1594,7 +1594,7 @@ cool. On Windows, these things help a little.
 
 #+begin_src emacs-lisp
 (setq tramp-default-method "plink")
-(setq tramp-auto-save-directory "c:\\sacha\\tmp")
+(setq tramp-auto-save-directory "c:\\tmp")
 #+end_src
 
 ** Other nifty Emacs things I want to learn

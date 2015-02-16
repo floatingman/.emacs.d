@@ -25,6 +25,7 @@
 (org-babel-load-file "~/.emacs.d/dnewman.org")
 
 (require 'init-org) ;; load org-mode
+(require 'init-mswindows)
 
 (require-package 'smart-mode-line)
 (require-package 'guide-key)
