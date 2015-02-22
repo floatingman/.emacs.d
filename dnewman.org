@@ -51,6 +51,12 @@ It's best to keep sensitive information in a separate file so you can publish yo
 #+end_src
 
 ** General configuration
+*** Startup
+Don't show the startup screen
+#+begin_src emacs-lisp 
+(setq inhibit-startup-message t)
+#+end_src
+[2015-02-21 Sat 21:15]
 *** Backups
 
 By default, Emacs saves backup files in the current directory, but I like to save everything in one single directory
@@ -91,7 +97,7 @@ When you're starting out, tooltips, menus, and the tool bar can be very helpful.
 (when window-system
   (tooltip-mode -1)
   (tool-bar-mode -1)
-  (menu-bar-mode -1)
+  (menu-bar-mode 1)
   (scroll-bar-mode -1))
 #+end_src
 
@@ -163,6 +169,7 @@ possible, although I prefer ido's way of switching buffers.
 Great for describing bindings. I'll replace the binding for =where-is= too.
 
 #+begin_src emacs-lisp
+(require-package 'helm-descbinds)
 (use-package helm-descbinds
   :bind (("C-h b" . helm-descbinds)
          ("C-h w" . helm-descbinds)))
@@ -1070,6 +1077,74 @@ And the rest of the js2 config:
   (add-hook 'js2-mode-hook 'tern-mode)))
 
 #+end_src
+*** C Programming
+Refactoring C code:
+#+begin_src emacs-lisp
+(defun my-move-function-up ()
+  "Move current function up."
+  (interactive)
+  (save-excursion
+    (c-mark-function)
+    (let ((fun-beg (point))
+          (fun-end (mark)))
+      (transpose-regions (progn
+                           (c-beginning-of-defun 1)
+                           (point))
+                         (progn
+                           (c-end-of-defun 1)
+                           (point))
+                         fun-beg fun-end))))
+
+(defun my-move-function-down ()
+  "Move current function down."
+  (interactive)
+  (save-excursion
+    (c-mark-function)
+    (let ((fun-beg (point))
+          (fun-end (mark)))
+      (transpose-regions fun-beg fun-end
+                         (progn
+                           (c-beginning-of-defun -1)
+                           (point))
+                         (progn
+                           (c-end-of-defun 1)
+                           (point))))))
+(defun mark-c-scope-beg ()
+  "Marks the c-scope (region between {}) enclosing the point. 
+   Naive, as will be confused by { } within strings"
+  (let 
+	  ((scope-depth 1))
+	(while (not (= scope-depth 0))
+	  (search-backward-regexp "}\\|{")
+	  (if (string= (char-to-string (char-before)) "}")
+		  (setq scope-depth (1+ scope-depth))
+			(setq scope-depth (1- scope-depth)))))
+  (point))
+
+(defun mark-c-scope-end ()
+  "Marks the c-scope (region between {}) enclosing the point. 
+   Naive, as will be confused by { } within strings"
+  (let 
+	  ((scope-depth 1))
+	(while (not (= scope-depth 0))
+	  (search-forward-regexp "}\\|{")
+	  (if (string= (char-to-string (char-before)) "}")
+		  (setq scope-depth (1- scope-depth))
+			(setq scope-depth (1_ scope-depth)))))
+  (point))
+
+(defun kill-c-scope ()
+  (interactive)
+  (let
+	  ((inital-point (point)))
+	(save-excursion 
+	  (let
+		((beg (mark-c-scope-beg)))
+		(goto-char inital-point)
+		(let ((end (mark-c-scope-end))))))))
+
+
+#+end_src
 *** Magit - nice git interface
 		:PROPERTIES:
 		:ID:       o2b:9a42a292-7b75-4c7f-8da2-7a0d8c22d0c6
@@ -1092,7 +1167,6 @@ Thanks to sheijk for hints on tweaking magit to limit it to the current director
 
     (use-package magit
       :ensure magit
-      :load-path "~/elisp/magit"
       :config
       (progn
         (when (equal system-type 'windows-nt)
