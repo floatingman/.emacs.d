@@ -551,6 +551,34 @@ From http://www.masteringemacs.org/articles/2011/03/25/working-multiple-files-di
 (require 'find-dired)
 (setq find-ls-option '("-print0 | xargs -0 ls -ld" . "-ld"))
 #+end_src
+
+Borrowed from http://whattheemacsd.com/setup-dired.el-02.html
+
+Allows recursive deletes
+
+#+begin_src emacs-lisp
+(setq dired-recursive-deletes 'top)
+
+(defun dired-back-to-top ()
+  (interactive)
+  (beginning-of-buffer)
+  (dired-next-line 4))
+
+(defun dired-jump-to-bottom ()
+  (interactive)
+  (end-of-buffer)
+  (dired-next-line -1))
+
+(add-hook 'dired-mode-hook
+          (lambda ()
+            (define-key dired-mode-map
+              (vector 'remap 'beginning-of-buffer) 'dired-back-to-top)
+            (define-key dired-mode-map
+              (vector 'remap 'end-of-buffer) 'dired-jump-to-bottom)
+            ))
+
+#+end_src
+
 *** Move to beginning of line
 Copied from http://emacsredux.com/blog/2013/05/22/smarter-navigation-to-the-beginning-of-a-line/
 
@@ -1078,6 +1106,16 @@ And the rest of the js2 config:
 
 #+end_src
 *** C Programming
+Reset silly gnu indention and start a new line when typing delimiters
+#+begin_src emacs-lisp
+(setq c-default-style "linux"
+      c-basic-offset 4)
+''(add-hook 'c-mode-common-hook '(lambda () (c-toggle-auto-state 1)))
+(remove-hook 'c-mode-common-hook 'visual-line-mode)
+(add-to-list 'c-mode-common-hook (lambda () (setq truncate-lines -1)))
+(add-to-list 'c-mode-common-hook (lambda () (setq compile-command "build.bat")))
+#+end_src
+
 Refactoring C code:
 #+begin_src emacs-lisp
 (defun my-move-function-up ()
@@ -1649,7 +1687,7 @@ And ace-isearch...
 #+begin_src emacs-lisp
 (use-package ace-isearch
   :ensure ace-isearch
-  :init (global-ace-isearch-mode 1))
+  :init (global-ace-isearch-mode 0))
 #+end_src
 
 And ace-jump-zap...
@@ -1683,7 +1721,7 @@ cool. On Windows, these things help a little.
       (require 'smartparens-config)
       (add-hook 'emacs-lisp-mode-hook 'smartparens-mode)
       (add-hook 'emacs-lisp-mode-hook 'show-smartparens-mode)
-
+      (smartparens-global-mode t)
   ;;;;;;;;;;;;;;;;;;;;;;;;
       ;; keybinding management
 
@@ -1865,6 +1903,7 @@ cool. On Windows, these things help a little.
  And this loads the beeminder code:
 
  #+BEGIN_SRC emacs-lisp :eval no :tangle no
+(require-package 'beeminder)
  (use-package beeminder
    :config (add-hook 'message-send-news-hook 'sacha/beeminder-track-message))
  #+END_SRC
@@ -1872,7 +1911,8 @@ cool. On Windows, these things help a little.
 *** Rainbow delimiters
 
  #+begin_src emacs-lisp  :eval no :tangle no
- (use-package rainbow-delimiters
+(require-package 'rainbow-delimiters) 
+(use-package rainbow-delimiters
    :init (global-rainbow-delimiters-mode))
  #+end_src
 
@@ -2093,8 +2133,9 @@ cool. On Windows, these things help a little.
  #+end_src
 ** Games
 *** Typing of Emacs
-     #+begin_src emacs-lisp :eval no :tangle no
-       (use-package typing
+#+begin_src emacs-lisp :eval no :tangle no
+(require-package 'typing)
+(use-package typing
          :init
          (autoload 'typing-of-emacs "typing" nil t)
          :config
