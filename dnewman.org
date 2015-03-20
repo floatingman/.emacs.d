@@ -645,7 +645,29 @@ From http://endlessparentheses.com/emacs-narrow-or-widen-dwim.html
   (("C-x n w" . recursive-widen)
    ("C-x n n" . recursive-narrow-or-widen-dwim)))
 #+end_src
+** Gnus
+https://henrikpingel.wordpress.com/2014/07/30/how-to-use-isync-and-the-dovecot-mail-server-to-read-your-gmail-in-emacs-efficiently/
+from Henrik Pingel setup of gmail and gnus using isync and dovecot which partial follows Sacha Chua http://sachachua.com/blog/2008/05/geek-how-to-use-offlineimap-and-the-dovecot-mail-server-to-read-your-gmail-in-emacs-efficiently/
 
+#+begin_src emacs-lisp
+(setq gnus-select-method
+'(nnimap "Mail"
+(nnimap-address "localhost")
+(nnimap-stream network)
+(nnimap-authenticator login)
+(nnir-search-engine imap)))
+(setq user-mail-address "dwnewman78@gmail.com")
+(setq gnus-ignored-from-addresses "dwnewman78@gmail.com")
+
+; set gmail smtp
+(setq message-send-mail-function 'smtpmail-send-it
+smtpmail-starttls-credentials '(("smtp.gmail.com" 587 nil nil))
+smtpmail-auth-credentials '(("smtp.gmail.com" 587 "dwnewman78@gmail.com" nil))
+smtpmail-default-smtp-server "smtp.gmail.com"
+smtpmail-smtp-server "smtp.gmail.com"
+smtpmail-smtp-service 587)
+;      smtpmail-local-domain “yourcompany.com”)
+#+end_src
 ** Reading
 
 https://github.com/xahlee/xah_emacs_init/blob/master/xah_emacs_font.el
