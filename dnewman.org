@@ -1240,6 +1240,11 @@ http://www.jesshamrick.com/2012/09/18/emacs-as-a-python-ide/
 ; try to automagically figure out indentation
 (setq py-smart-indentation t)
 #+end_src
+
+Django
+#+begin_src emacs-lisp
+(require-package 'python-django)
+#+end_src
 *** Magit - nice git interface
 		:PROPERTIES:
 		:ID:       o2b:9a42a292-7b75-4c7f-8da2-7a0d8c22d0c6
