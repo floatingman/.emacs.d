@@ -9,8 +9,8 @@ with inspiration from [[https://github.com/sachac/.emacs.d][Sacha Chua]] and [[h
 ** Personal Information
 
 #+begin_src emacs-lisp
-(setq user-full-name "Daniel Newman"
-      user-mail-address "dnewman@danlovesprogramming.com")
+(setq user-full-name "Daniel Newman")
+
 #+end_src
 
 ** Emacs initialization
@@ -33,13 +33,15 @@ in a directory in my =load-path=, Emacs can find them.
 
 #+begin_src emacs-lisp
 (add-to-list 'load-path "~/elisp")
-(add-to-list 'load-path "~/elisp/artbollocks-mode")
+;;(add-to-list 'load-path "~/elisp/artbollocks-mode")
 (unless (package-installed-p 'use-package)
   (package-install 'use-package))
+(setq use-package-verbose t)
 (require 'use-package)
 (use-package auto-compile
   :ensure t
-  :init (auto-compile-on-load-mode))
+  :config (auto-compile-on-load-mode))
+(setq load-prefer-newer t)
 #+end_src
 
 *** Load Secrets
@@ -299,7 +301,7 @@ It's hard to remember keyboard shortcuts. The =guide-key= package pops up help a
 #+begin_src emacs-lisp
 (use-package guide-key
   :diminish guide-key-mode
-  :init
+  :config
   (progn
   (setq guide-key/guide-key-sequence '("C-x r" "C-x 4" "C-c"))
   (guide-key-mode 1)))  ; Enable guide-key-mode
@@ -511,7 +513,7 @@ Now let's set up the actual keychords.
 
 #+begin_src emacs-lisp
     (use-package key-chord
-      :init
+      :config
       (progn 
         (fset 'key-chord-define 'sacha/key-chord-define)
         (setq key-chord-one-key-delay 0.16)
@@ -540,7 +542,7 @@ From https://github.com/itsjeyd/emacs-config/blob/emacs24/init.el
 
 #+begin_src emacs-lisp
 (use-package smartscan
-  :init (global-smartscan-mode t))
+  :config (global-smartscan-mode t))
 #+end_src
 
 *** Dired
@@ -1736,8 +1738,7 @@ cool. On Windows, these things help a little.
 
 #+begin_src emacs-lisp
   (use-package smartparens
-    :ensure smartparens
-    :diminish smartparens
+    :ensure t
     :config
     (progn
       (require 'smartparens-config)
