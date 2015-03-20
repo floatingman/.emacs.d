@@ -1208,22 +1208,38 @@ Refactoring C code:
 
 #+end_src
 *** Python
+Playing around with different python setups for coding in emacs
+this one is from http://www.xiaohanyu.me/oh-my-emacs/modules/ome-python.html
+you need to pip install virtualenv, flake8, pyflakes, nose, ipython,(jedi or rope-py3k), importmagic
+
 #+begin_src emacs-lisp
-
-
-(defun python-config-python ()
-  "Configure python.el to defaults of using python."
-  (interactive)
-  (setq python-shell-virtualenv-path "venv"
-        python-shell-interpreter "python3"
-        python-shell-prompt-regexp ">>> "
-        python-shell-prompt-output-regexp ""
-        python-shell-completion-module-string-code ""
-        python-shell-completion-string-code "';'.join(__COMPLETER_all_completions('''%s'''))
-"))
-
+(require-package 'elpy)
+(defun dnewman-elpy-setup()
+  (elpy-enable)
+  (setq elpy-rpc-backend "jedi")
+  (elpy-use-ipython)
+  (define-key python-mode-map (kbd "RET")
+    'newline-and-indent)
+  (add-hook 'python-mode-hook
+            (lambda () (set (make-local-variable 'comment-inline-offset) 2))))
+(add-to-list 'auto-mode-alist '("\\.wsgi\\'" . python-mode))
+(add-hook 'python-mode-hook 'dnewman-elpy-setup)
 #+end_src
 
+Use Ipython
+http://www.jesshamrick.com/2012/09/18/emacs-as-a-python-ide/
+#+begin_src emacs-lisp
+(setq-default py-shell-name "ipython")
+(setq-default py-which-bufname "IPython")
+
+; switch to the interpreter after executing code
+(setq py-shell-switch-buffers-on-execute-p t)
+(setq py-switch-buffers-on-execute-p t)
+; don't split windows
+(setq py-split-windows-on-execute-p nil)
+; try to automagically figure out indentation
+(setq py-smart-indentation t)
+#+end_src
 *** Magit - nice git interface
 		:PROPERTIES:
 		:ID:       o2b:9a42a292-7b75-4c7f-8da2-7a0d8c22d0c6
