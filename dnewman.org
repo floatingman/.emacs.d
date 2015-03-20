@@ -1207,6 +1207,23 @@ Refactoring C code:
 
 
 #+end_src
+*** Python
+#+begin_src emacs-lisp
+
+
+(defun python-config-python ()
+  "Configure python.el to defaults of using python."
+  (interactive)
+  (setq python-shell-virtualenv-path "venv"
+        python-shell-interpreter "python3"
+        python-shell-prompt-regexp ">>> "
+        python-shell-prompt-output-regexp ""
+        python-shell-completion-module-string-code ""
+        python-shell-completion-string-code "';'.join(__COMPLETER_all_completions('''%s'''))
+"))
+
+#+end_src
+
 *** Magit - nice git interface
 		:PROPERTIES:
 		:ID:       o2b:9a42a292-7b75-4c7f-8da2-7a0d8c22d0c6
