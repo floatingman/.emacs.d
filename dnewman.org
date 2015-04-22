@@ -43,6 +43,16 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
 
 (require 'init-benchmarking)
 #+end_src
+**** variables to used in config
+#+begin_src emacs-lisp
+;; Initialize a few variables
+(defconst *spell-check-support-enabled* t) ;; Enable with t if you prefer
+(defconst *is-a-mac* (eq system-type 'darwin))
+(defconst *is-windows* (eq system-type 'windows-nt))
+(defconst *is-linux* (eq system-type 'gnu/linux))
+(defconst *is-gui* (not (eq window-system nil)))
+#+end_src
+
 **** init-compat
 #+begin_src emacs-lisp
 ;;----------------------------------------------------------------------------
@@ -334,30 +344,33 @@ re-downloaded in order to locate PACKAGE."
 
 (require 'init-exec-path)
 #+end_src
-*** Add my elisp directory and other files
-
-Sometimes I load files outside the package system. As long as they're
-in a directory in my =load-path=, Emacs can find them.
-
+**** Load any custom preload config
 #+begin_src emacs-lisp
-(add-to-list 'load-path "~/elisp")
-;;(add-to-list 'load-path "~/elisp/artbollocks-mode")
-(unless (package-installed-p 'use-package)
-  (package-install 'use-package))
-(setq use-package-verbose t)
+(require 'init-preload-local nil t)
 (require 'use-package)
-(use-package auto-compile
-  :ensure t
-  :config (auto-compile-on-load-mode))
-(setq load-prefer-newer t)
 #+end_src
-
 *** Load Secrets
 
 It's best to keep sensitive information in a separate file so you can publish your config but save private information.
 
 #+begin_src emacs-lisp
 (load "~/.emacs.secrets" t)
+#+end_src
+
+*** Packages with no config
+#+begin_src emacs-lisp
+(require-package 'wgrep)
+(require-package 'project-local-variables)
+(require-package 'diminish)
+(require-package 'scratch)
+(require-package 'mwe-log-commands)
+(require-package 'smart-mode-line)
+(require-package 'guide-key)
+(require-package 'key-chord)
+(require-package 'smartscan)
+(require-package 'artbollocks-mode)
+(require-package 'tern)
+(require-package '2048-game)
 #+end_src
 
 ** General configuration
