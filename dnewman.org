@@ -327,6 +327,9 @@ From https://github.com/itsjeyd/emacs-config/blob/emacs24/init.el
       (if mark-active (list (region-beginning) (region-end))
         (list (line-beginning-position)
           (line-beginning-position 2)))))
+
+;delete selection when typing over
+(delete-selection-mode 1)
 #+end_src
 
 *** Server
@@ -339,6 +342,12 @@ Start a emacs server so new instances aren't created when opening new files
 *** Reload files if they change on disk
 #+begin_src emacs-lisp
 (global-auto-revert-mode t)
+#+end_src
+*** Save place in files when reopening
+#+begin_src emacs-lisp
+(require 'saveplace)
+(setq-default save-place t)
+(setq save-place-file "~/.emacs.d/saved-places")
 #+end_src
 
 ** Navigation
@@ -779,25 +788,85 @@ Also, =visual-line-mode= is so much better than =auto-fill-mode=. It doesn't act
 *** Web development
 #+begin_src emacs-lisp
   ;; from FAQ at http://web-mode.org/ for smartparens
-  (defun sacha/web-mode-hook ()
-    (setq web-mode-enable-auto-pairing nil))
+  ;;(defun sacha/web-mode-hook ()
+  ;;  (setq web-mode-enable-auto-pairing nil))
 
-  (defun sacha/sp-web-mode-is-code-context (id action context)
-    (when (and (eq action 'insert)
-               (not (or (get-text-property (point) 'part-side)
-                        (get-text-property (point) 'block-side))))
-      t))
+(defun sp-web-mode-is-code-context (id action context)
+  (when (and (eq action 'insert)
+             (not (or (get-text-property (point) 'part-side)
+                      (get-text-property (point) 'block-side))))
+    t))
 
-  (use-package web-mode
-    :ensure web-mode
-    :init (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
-    :config
-    (progn
-      (setq web-mode-enable-current-element-highlight t)
-      (setq web-mode-ac-sources-alist
-            '(("css" . (ac-source-css-property))
-              ("html" . (ac-source-words-in-buffer ac-source-abbrev)))
-            )))
+  ;;(use-package web-mode
+;;    :ensure web-mode
+    ;;:init (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+    ;;:config
+    ;;(progn
+    ;;  (setq web-mode-enable-current-element-highlight t)
+    ;;  (setq web-mode-ac-sources-alist
+    ;;        '(("css" . (ac-source-css-property))
+    ;;          ("html" . (ac-source-words-in-buffer ac-source-abbrev)))
+    ;;        )))
+(require-package 'web-mode)
+(add-to-list 'auto-mode-alist '("\\.phtml\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.tpl\\.php\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.[agj]sp\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.as[cp]x\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+
+(defun my-web-mode-hook ()
+  "Hooks for Web mode."
+  (add-hook 'local-write-file-hooks
+              (lambda ()
+                 (delete-trailing-whitespace)
+                 nil))
+  (setq web-mode-markup-indent-offset 2)
+  (setq web-mode-css-indent-offset 2)
+  (setq web-mode-code-indent-offset 2)
+  (setq web-mode-style-padding 1)
+  (setq web-mode-script-padding 1)
+  (setq web-mode-block-padding 0)
+  (setq web-mode-comment-style 2)
+;(set-face-attribute 'web-mode-css-rule-face nil :foreground "Pink3")
+  (setq web-mode-extra-snippets
+      '(("erb" . (("toto" . ("<% toto | %>\n\n<% end %>"))))
+        ("php" . (("dowhile" . ("<?php do { ?>\n\n<?php } while (|); ?>"))
+                  ("debug" . ("<?php error_log(__LINE__); ?>"))))
+       ))
+  (setq web-mode-extra-auto-pairs
+      '(("erb"  . (("beg" "end")))
+        ("php"  . (("beg" "end")
+                   ("beg" "end")))
+       ))
+  (setq web-mode-enable-auto-pairing nil)
+  (setq web-mode-enable-css-colorization t)
+  (setq web-mode-enable-block-face t)
+  (setq web-mode-enable-part-face t)
+  (setq web-mode-enable-comment-keywords t)
+  (setq web-mode-enable-heredoc-fontification t)
+  (setq web-mode-enable-current-element-highlight t)
+  (setq web-mode-enable-current-column-highlight t)
+  (define-key web-mode-map (kbd "C-n") 'web-mode-tag-match)
+  (setq web-mode-extra-snippets
+      '(("erb" . (("toto" . ("<% toto | %>\n\n<% end %>"))))
+        ("php" . (("dowhile" . ("<?php do { ?>\n\n<?php } while (|); ?>"))
+                  ("debug" . ("<?php error_log(__LINE__); ?>"))))
+       ))
+  (setq web-mode-extra-auto-pairs
+      '(("erb"  . (("beg" "end")))
+        ("php"  . (("beg" "end")
+                   ("beg" "end")))
+       ))
+  (setq web-mode-ac-sources-alist
+    '(("css" . (ac-source-css-property))
+    ("html" . (ac-source-words-in-buffer ac-source-abbrev)))
+  ))
+(add-hook 'web-mode-hook  'my-web-mode-hook)
+
 #+end_src
 *** Tab width of 2 is compact and readable
 #+begin_src emacs-lisp
@@ -1464,6 +1533,10 @@ with HTTPS sites.
   :ensure company
   :config
   (add-hook 'prog-mode-hook 'company-mode))
+(require-package 'auto-complete)
+(require 'auto-complete-config)
+(global-auto-complete-mode t)
+
 #+end_src
 
 ** Ledger (personal finance): Make it easier to review my credit card transactions
@@ -1856,7 +1929,7 @@ cool. On Windows, these things help a little.
       ;; pair management
 
       (sp-local-pair 'minibuffer-inactive-mode "'" nil :actions nil)
-      (sp-local-pair 'web-mode "<" nil :when '(sacha/sp-web-mode-is-code-context))
+      (sp-local-pair 'web-mode "<" nil :when '(sp-web-mode-is-code-context))
 
   ;;; markdown-mode
       (sp-with-modes '(markdown-mode gfm-mode rst-mode)
