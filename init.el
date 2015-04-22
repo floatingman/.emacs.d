@@ -12,12 +12,12 @@
 (defconst *is-gui* (not (eq window-system nil)))
 
 ;; From old config
-(require 'init-benchmarking) ;; Measure startup time
-(require 'init-compat)
-(require 'init-utils)
-(require 'init-site-lisp) ;; Must come before elpa, as it may provide package.el
-(require 'init-elpa)      ;; Machinery for installing required packages
-(require 'init-exec-path) ;; Set up $PATH
+;(require 'init-benchmarking) ;; Measure startup time
+;(require 'init-compat)
+;(require 'init-utils)
+;(require 'init-site-lisp) ;; Must come before elpa, as it may provide package.el
+;(require 'init-elpa)      ;; Machinery for installing required packages
+;(require 'init-exec-path) ;; Set up $PATH
 
 ;; Load the rest of the packages
 (package-initialize t)
