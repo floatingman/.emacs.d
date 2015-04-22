@@ -39,9 +39,6 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
                                                            require-start-time))
                      t)))))
 
-(provide 'init-benchmarking)
-
-(require 'init-benchmarking)
 #+end_src
 **** variables to used in config
 #+begin_src emacs-lisp
@@ -94,11 +91,6 @@ to case differences."
 ;;----------------------------------------------------------------------------
 (unless (boundp 'last-command-char)
   (defvaralias 'last-command-char 'last-command-event))
-
-
-(provide 'init-compat)
-
-(require 'init-compat)
 #+end_src
 **** init-utils
 #+begin_src emacs-lisp
@@ -187,10 +179,6 @@ to case differences."
         (error "Cannot open tramp file")
       (browse-url (concat "file://" file-name)))))
 
-
-(provide 'init-utils)
-
-(require 'init-utils)
 #+end_src
 **** init-site-lisp
 #+begin_src emacs-lisp
@@ -247,11 +235,6 @@ source file under ~/.emacs.d/site-lisp/name/"
   (ensure-lib-from-url
    'package
    "http://repo.or.cz/w/emacs.git/blob_plain/1a0a666f941c99882093d7bd08ced15033bc3f0c:/lisp/emacs-lisp/package.el"))
-
-
-(provide 'init-site-lisp)
-
-(require 'init-site-lisp)
 #+end_src
 **** init-elpa
 #+begin_src emacs-lisp
@@ -267,11 +250,9 @@ source file under ~/.emacs.d/site-lisp/name/"
 
 (require 'package)
 
-
-
 ;;; Standard package repositories
 
-;(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
+;;(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
 
 ;; We include the org repository for completeness, but don't normally
 ;; use it.
@@ -281,10 +262,8 @@ source file under ~/.emacs.d/site-lisp/name/"
   (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
 
 ;;; Also use Melpa for most packages
-(add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/"))
-(add-to-list 'package-archives '("melpa-stable" . "http://melpa-stable.milkbox.net/packages/"))
-
-
+(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
+(add-to-list 'package-archives '("melpa-stable" . "http://stable.melpa.org/packages/"))
 
 ;; If gpg cannot be found, signature checking will fail, so we
 ;; conditionally enable it according to whether gpg is available. We
@@ -295,8 +274,6 @@ source file under ~/.emacs.d/site-lisp/name/"
 (sanityinc/package-maybe-enable-signatures)
 (after-load 'init-exec-path
   (sanityinc/package-maybe-enable-signatures))
-
-
 
 ;;; On-demand installation of packages
 
@@ -312,21 +289,43 @@ re-downloaded in order to locate PACKAGE."
         (package-refresh-contents)
         (require-package package min-version t)))))
 
-
+(defun maybe-require-package (package &optional min-version no-refresh)
+  "Try to install PACKAGE, and return non-nil if successful.
+In the event of failure, return nil and print a warning message.
+Optionally require MIN-VERSION.  If NO-REFRESH is non-nil, the
+available package lists will not be re-downloaded in order to
+locate PACKAGE."
+  (condition-case err
+      (require-package package min-version no-refresh)
+    (error
+     (message "Couldn't install package `%s': %S" package err)
+     nil)))
 
 ;;; Fire up package.el
 
+(setq package-enable-at-startup nil)
 (package-initialize)
-
-
 
 (require-package 'fullframe)
 (fullframe list-packages quit-window)
 
+(require-package 'cl-lib)
+(require 'cl-lib)
 
-(provide 'init-elpa)
+(defun sanityinc/set-tabulated-list-column-width (col-name width)
+  "Set any column with name COL-NAME to the given WIDTH."
+  (cl-loop for column across tabulated-list-format
+           when (string= col-name (car column))
+           do (setf (elt column 1) width)))
 
-(require 'init-elpa)
+(defun sanityinc/maybe-widen-package-menu-columns ()
+  "Widen some columns of the package menu table to avoid truncation."
+  (when (boundp 'tabulated-list-format)
+    (sanityinc/set-tabulated-list-column-width "Version" 13)
+    (let ((longest-archive-name (apply 'max (mapcar 'length (mapcar 'car package-archives)))))
+      (sanityinc/set-tabulated-list-column-width "Archive" longest-archive-name))))
+
+(add-hook 'package-menu-mode-hook 'sanityinc/maybe-widen-package-menu-columns)
 #+end_src
 **** init-exec-path
 #+begin_src emacs-lisp
@@ -339,10 +338,6 @@ re-downloaded in order to locate PACKAGE."
 
 (when (memq window-system '(mac ns))
   (exec-path-from-shell-initialize))
-
-(provide 'init-exec-path)
-
-(require 'init-exec-path)
 #+end_src
 **** Load any custom preload config
 #+begin_src emacs-lisp
@@ -371,6 +366,13 @@ It's best to keep sensitive information in a separate file so you can publish yo
 (require-package 'artbollocks-mode)
 (require-package 'tern)
 (require-package '2048-game)
+(require-package 'gnuplot)
+(require-package 'lua-mode)
+(require-package 'htmlize)
+(require-package 'dsvn)
+(when *is-a-mac*
+  (require-package 'osx-location))
+(require-package 'regex-tool)
 #+end_src
 
 ** General configuration
@@ -1107,87 +1109,83 @@ Also, =visual-line-mode= is so much better than =auto-fill-mode=. It doesn't act
    I've tried to wrap my head around how Sacha Chua has her org mode setup, but I think I've gotten too use to the way Bernt Hansen has setup. I have used his method for several years and I guess it's just hard coded in my muscle memory.  Nevertheless, I have the config saved in an external file org-mode.org
 ** Coding
 *** Web development
+redoing web development config to follow Purcell's config
+**** html
 #+begin_src emacs-lisp
-  ;; from FAQ at http://web-mode.org/ for smartparens
-  ;;(defun sacha/web-mode-hook ()
-  ;;  (setq web-mode-enable-auto-pairing nil))
+(require-package 'tidy)
+(add-hook 'html-mode-hook (lambda () (tidy-build-menu html-mode-map)))
 
-(defun sp-web-mode-is-code-context (id action context)
-  (when (and (eq action 'insert)
-             (not (or (get-text-property (point) 'part-side)
-                      (get-text-property (point) 'block-side))))
-    t))
+(require-package 'tagedit)
+(after-load 'sgml-mode
+  (tagedit-add-paredit-like-keybindings)
+  (add-hook 'sgml-mode-hook (lambda () (tagedit-mode 1))))
 
-  ;;(use-package web-mode
-;;    :ensure web-mode
-    ;;:init (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
-    ;;:config
-    ;;(progn
-    ;;  (setq web-mode-enable-current-element-highlight t)
-    ;;  (setq web-mode-ac-sources-alist
-    ;;        '(("css" . (ac-source-css-property))
-    ;;          ("html" . (ac-source-words-in-buffer ac-source-abbrev)))
-    ;;        )))
-(require-package 'web-mode)
-(add-to-list 'auto-mode-alist '("\\.phtml\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.tpl\\.php\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.[agj]sp\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.as[cp]x\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+(add-auto-mode 'html-mode "\\.(jsp|tmpl)\\'")
 
-(defun my-web-mode-hook ()
-  "Hooks for Web mode."
-  (add-hook 'local-write-file-hooks
-              (lambda ()
-                 (delete-trailing-whitespace)
-                 nil))
-  (setq web-mode-markup-indent-offset 2)
-  (setq web-mode-css-indent-offset 2)
-  (setq web-mode-code-indent-offset 2)
-  (setq web-mode-style-padding 1)
-  (setq web-mode-script-padding 1)
-  (setq web-mode-block-padding 0)
-  (setq web-mode-comment-style 2)
-;(set-face-attribute 'web-mode-css-rule-face nil :foreground "Pink3")
-  (setq web-mode-extra-snippets
-      '(("erb" . (("toto" . ("<% toto | %>\n\n<% end %>"))))
-        ("php" . (("dowhile" . ("<?php do { ?>\n\n<?php } while (|); ?>"))
-                  ("debug" . ("<?php error_log(__LINE__); ?>"))))
-       ))
-  (setq web-mode-extra-auto-pairs
-      '(("erb"  . (("beg" "end")))
-        ("php"  . (("beg" "end")
-                   ("beg" "end")))
-       ))
-  (setq web-mode-enable-auto-pairing nil)
-  (setq web-mode-enable-css-colorization t)
-  (setq web-mode-enable-block-face t)
-  (setq web-mode-enable-part-face t)
-  (setq web-mode-enable-comment-keywords t)
-  (setq web-mode-enable-heredoc-fontification t)
-  (setq web-mode-enable-current-element-highlight t)
-  (setq web-mode-enable-current-column-highlight t)
-  (define-key web-mode-map (kbd "C-n") 'web-mode-tag-match)
-  (setq web-mode-extra-snippets
-      '(("erb" . (("toto" . ("<% toto | %>\n\n<% end %>"))))
-        ("php" . (("dowhile" . ("<?php do { ?>\n\n<?php } while (|); ?>"))
-                  ("debug" . ("<?php error_log(__LINE__); ?>"))))
-       ))
-  (setq web-mode-extra-auto-pairs
-      '(("erb"  . (("beg" "end")))
-        ("php"  . (("beg" "end")
-                   ("beg" "end")))
-       ))
-  (setq web-mode-ac-sources-alist
-    '(("css" . (ac-source-css-property))
-    ("html" . (ac-source-words-in-buffer ac-source-abbrev)))
-  ))
-(add-hook 'web-mode-hook  'my-web-mode-hook)
+;; Note: ERB is configured in init-ruby-mode
+#+end_src
+**** css
+#+begin_src emacs-lisp
+;;; Colourise CSS colour literals
+(when (maybe-require-package 'rainbow-mode)
+  (dolist (hook '(css-mode-hook html-mode-hook sass-mode-hook))
+    (add-hook hook 'rainbow-mode)))
 
+
+;;; Embedding in html
+(require-package 'mmm-mode)
+(after-load 'mmm-vars
+  (mmm-add-group
+   'html-css
+   '((css-cdata
+      :submode css-mode
+      :face mmm-code-submode-face
+      :front "<style[^>]*>[ \t\n]*\\(//\\)?<!\\[CDATA\\[[ \t]*\n?"
+      :back "[ \t]*\\(//\\)?]]>[ \t\n]*</style>"
+      :insert ((?j js-tag nil @ "<style type=\"text/css\">"
+                   @ "\n" _ "\n" @ "</style>" @)))
+     (css
+      :submode css-mode
+      :face mmm-code-submode-face
+      :front "<style[^>]*>[ \t]*\n?"
+      :back "[ \t]*</style>"
+      :insert ((?j js-tag nil @ "<style type=\"text/css\">"
+                   @ "\n" _ "\n" @ "</style>" @)))
+     (css-inline
+      :submode css-mode
+      :face mmm-code-submode-face
+      :front "style=\""
+      :back "\"")))
+  (dolist (mode (list 'html-mode 'nxml-mode))
+    (mmm-add-mode-ext-class mode "\\.r?html\\(\\.erb\\)?\\'" 'html-css)))
+
+
+
+
+;;; SASS and SCSS
+(require-package 'sass-mode)
+(require-package 'scss-mode)
+(setq-default scss-compile-at-save nil)
+
+
+
+;;; LESS
+(require-package 'less-css-mode)
+(when (featurep 'js2-mode)
+  (require-package 'skewer-less))
+
+
+
+;;; Auto-complete CSS keywords
+(after-load 'auto-complete
+  (dolist (hook '(css-mode-hook sass-mode-hook scss-mode-hook))
+    (add-hook hook 'ac-css-mode-setup)))
+
+
+;;; Use eldoc for syntax hints
+(require-package 'css-eldoc)
+(autoload 'turn-on-css-eldoc "css-eldoc")
+(add-hook 'css-mode-hook 'turn-on-css-eldoc)
 #+end_src
 *** Tab width of 2 is compact and readable
 #+begin_src emacs-lisp
