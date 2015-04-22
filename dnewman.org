@@ -1109,8 +1109,49 @@ Also, =visual-line-mode= is so much better than =auto-fill-mode=. It doesn't act
 ** Org
    I've tried to wrap my head around how Sacha Chua has her org mode setup, but I think I've gotten too use to the way Bernt Hansen has setup. I have used his method for several years and I guess it's just hard coded in my muscle memory.  Nevertheless, I have the config saved in an external file org-mode.org
 ** Coding
+*** Compiling
+#+begin_src emacs-lisp
+(setq-default compilation-scroll-output t)
+
+(require-package 'alert)
+
+;; Customize `alert-default-style' to get messages after compilation
+
+(defun sanityinc/alert-after-compilation-finish (buf result)
+  "Use `alert' to report compilation RESULT if BUF is hidden."
+  (unless (catch 'is-visible
+            (walk-windows (lambda (w)
+                            (when (eq (window-buffer w) buf)
+                              (throw 'is-visible t))))
+            nil)
+    (alert (concat "Compilation " result)
+           :buffer buf
+           :category 'compilation)))
+
+(after-load 'compile
+  (add-hook 'compilation-finish-functions
+            'sanityinc/alert-after-compilation-finish))
+#+end_src
+*** Flycheck
+#+begin_src emacs-lisp
+(when (maybe-require-package 'flycheck)
+  (add-hook 'after-init-hook 'global-flycheck-mode)
+
+  ;; Override default flycheck triggers
+  (setq flycheck-check-syntax-automatically '(save idle-change mode-enabled)
+        flycheck-idle-change-delay 0.8)
+
+  (setq flycheck-display-errors-function #'flycheck-display-error-messages-unless-error-list))
+#+end_src
 *** Web development
 redoing web development config to follow Purcell's config
+**** multi-mode-mode
+#+begin_src emacs-lisp
+(require-package 'mmm-mode)
+(require 'mmm-auto)
+(setq mmm-global-mode 'buffers-with-submode-classes)
+(setq mmm-submode-decoration-level 2)
+#+end_src
 **** html
 #+begin_src emacs-lisp
 (require-package 'tidy)
@@ -1188,6 +1229,108 @@ redoing web development config to follow Purcell's config
 (autoload 'turn-on-css-eldoc "css-eldoc")
 (add-hook 'css-mode-hook 'turn-on-css-eldoc)
 #+end_src
+**** javascript
+#+begin_src emacs-lisp
+(require-package 'json-mode)
+(maybe-require-package 'js2-mode)
+(maybe-require-package 'ac-js2)
+(maybe-require-package 'coffee-mode)
+(require-package 'js-comint)
+
+(defcustom preferred-javascript-mode
+  (first (remove-if-not #'fboundp '(js2-mode js-mode)))
+  "Javascript mode to use for .js files."
+  :type 'symbol
+  :group 'programming
+  :options '(js2-mode js-mode))
+
+(defconst preferred-javascript-indent-level 2)
+
+;; Need to first remove from list if present, since elpa adds entries too, which
+;; may be in an arbitrary order
+(eval-when-compile (require 'cl))
+(setq auto-mode-alist (cons `("\\.js\\(\\.erb\\)?\\'" . ,preferred-javascript-mode)
+                            (loop for entry in auto-mode-alist
+                                  unless (eq preferred-javascript-mode (cdr entry))
+                                  collect entry)))
+
+
+;; js2-mode
+
+;; Change some defaults: customize them to override
+(setq-default js2-basic-offset 2
+              js2-bounce-indent-p nil)
+(after-load 'js2-mode
+  ;; Disable js2 mode's syntax error highlighting by default...
+  (setq-default js2-mode-show-parse-errors nil
+                js2-mode-show-strict-warnings nil)
+  ;; ... but enable it if flycheck can't handle javascript
+  (autoload 'flycheck-get-checker-for-buffer "flycheck")
+  (defun sanityinc/disable-js2-checks-if-flycheck-active ()
+    (unless (flycheck-get-checker-for-buffer)
+      (set (make-local-variable 'js2-mode-show-parse-errors) t)
+      (set (make-local-variable 'js2-mode-show-strict-warnings) t)))
+  (add-hook 'js2-mode-hook 'sanityinc/disable-js2-checks-if-flycheck-active)
+
+  (add-hook 'js2-mode-hook (lambda () (setq mode-name "JS2")))
+
+  (after-load 'js2-mode
+    (js2-imenu-extras-setup)))
+
+;; js-mode
+(setq-default js-indent-level preferred-javascript-indent-level)
+
+
+(add-to-list 'interpreter-mode-alist (cons "node" preferred-javascript-mode))
+
+
+;; Javascript nests {} and () a lot, so I find this helpful
+
+(require-package 'rainbow-delimiters)
+(dolist (hook '(js2-mode-hook js-mode-hook json-mode-hook))
+  (add-hook hook 'rainbow-delimiters-mode))
+
+
+
+;;; Coffeescript
+
+(after-load 'coffee-mode
+  (setq coffee-js-mode preferred-javascript-mode
+        coffee-tab-width preferred-javascript-indent-level))
+
+(when (fboundp 'coffee-mode)
+  (add-to-list 'auto-mode-alist '("\\.coffee\\.erb\\'" . coffee-mode)))
+
+;; ---------------------------------------------------------------------------
+;; Run and interact with an inferior JS via js-comint.el
+;; ---------------------------------------------------------------------------
+
+(setq inferior-js-program-command "js")
+
+(defvar inferior-js-minor-mode-map (make-sparse-keymap))
+(define-key inferior-js-minor-mode-map "\C-x\C-e" 'js-send-last-sexp)
+(define-key inferior-js-minor-mode-map "\C-\M-x" 'js-send-last-sexp-and-go)
+(define-key inferior-js-minor-mode-map "\C-cb" 'js-send-buffer)
+(define-key inferior-js-minor-mode-map "\C-c\C-b" 'js-send-buffer-and-go)
+(define-key inferior-js-minor-mode-map "\C-cl" 'js-load-file-and-go)
+
+(define-minor-mode inferior-js-keys-mode
+  "Bindings for communicating with an inferior js interpreter."
+  nil " InfJS" inferior-js-minor-mode-map)
+
+(dolist (hook '(js2-mode-hook js-mode-hook))
+  (add-hook hook 'inferior-js-keys-mode))
+
+;; ---------------------------------------------------------------------------
+;; Alternatively, use skewer-mode
+;; ---------------------------------------------------------------------------
+
+(when (maybe-require-package 'skewer-mode)
+  (after-load 'skewer-mode
+    (add-hook 'skewer-mode-hook
+              (lambda () (inferior-js-keys-mode -1)))))
+#+end_src
+[2015-04-22 Wed 15:24]
 *** Tab width of 2 is compact and readable
 #+begin_src emacs-lisp
     (setq-default tab-width 2)
@@ -1469,7 +1612,7 @@ I sometimes need to know where I am in a line.
 
 This makes script blocks easier to copy:
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :eval no :tangle no
 (defvar sacha/javascript-test-regexp (concat (regexp-quote "/** Testing **/") "\\(.*\n\\)*")
 	"Regular expression matching testing-related code to remove.
 See `sacha/copy-javascript-region-or-buffer'.")
@@ -1496,7 +1639,7 @@ test-related code is detected."
 
 And the rest of the js2 config:
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :eval no :tangle no
       (use-package js2-mode
         :ensure t
         :commands js2-mode
@@ -1516,7 +1659,7 @@ And the rest of the js2 config:
 
 **** Tern - for Javascript
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :eval no :tangle no
 (use-package tern
   :init
   (progn
@@ -1828,7 +1971,7 @@ options to add at the end of the command, but that can wait for another time (or
 
 SASS
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :eval no :tangle no
 (add-hook 'sass-mode-hook
           (lambda () (setq indent-tabs-mode nil)))
 (setq-default indent-tabs-mode nil)
@@ -1840,22 +1983,77 @@ Chrome. You may need to start Chrome with =chrome
 --allow-running-insecure-content=, if you're using the user script
 with HTTPS sites.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :eval no :tangle no
 (use-package skewer-mode
   :ensure skewer-mode
   :config (skewer-setup))
 #+end_src
 
-*** Autocomplete
+*** Auto-complete
 
 #+begin_src emacs-lisp
-(use-package company
-  :ensure company
-  :config
-  (add-hook 'prog-mode-hook 'company-mode))
 (require-package 'auto-complete)
 (require 'auto-complete-config)
 (global-auto-complete-mode t)
+(setq-default ac-expand-on-auto-complete nil)
+(setq-default ac-auto-start nil)
+(setq-default ac-dwim nil) ; To get pop-ups with docs even if a word is uniquely completed
+
+;;----------------------------------------------------------------------------
+;; Use Emacs' built-in TAB completion hooks to trigger AC (Emacs >= 23.2)
+;;----------------------------------------------------------------------------
+(setq tab-always-indent 'complete)  ;; use 't when auto-complete is disabled
+(add-to-list 'completion-styles 'initials t)
+;; Stop completion-at-point from popping up completion buffers so eagerly
+(setq completion-cycle-threshold 5)
+
+;; TODO: find solution for php, haskell and other modes where TAB always does something
+
+(setq c-tab-always-indent nil
+      c-insert-tab-function 'indent-for-tab-command)
+
+;; hook AC into completion-at-point
+(defun sanityinc/auto-complete-at-point ()
+  (when (and (not (minibufferp))
+	     (fboundp 'auto-complete-mode)
+	     auto-complete-mode)
+    #'auto-complete))
+
+(defun sanityinc/never-indent ()
+  (set (make-local-variable 'indent-line-function) (lambda () 'noindent)))
+
+(defun set-auto-complete-as-completion-at-point-function ()
+  (setq completion-at-point-functions
+        (cons 'sanityinc/auto-complete-at-point
+              (remove 'sanityinc/auto-complete-at-point completion-at-point-functions))))
+
+(add-hook 'auto-complete-mode-hook 'set-auto-complete-as-completion-at-point-function)
+
+
+(set-default 'ac-sources
+             '(ac-source-imenu
+               ac-source-dictionary
+               ac-source-words-in-buffer
+               ac-source-words-in-same-mode-buffers
+               ac-source-words-in-all-buffer))
+
+(dolist (mode '(magit-log-edit-mode
+                log-edit-mode org-mode text-mode haml-mode
+                git-commit-mode
+                sass-mode yaml-mode csv-mode espresso-mode haskell-mode
+                html-mode nxml-mode sh-mode smarty-mode clojure-mode
+                lisp-mode textile-mode markdown-mode tuareg-mode
+                js3-mode css-mode less-css-mode sql-mode
+                sql-interactive-mode
+                inferior-emacs-lisp-mode))
+  (add-to-list 'ac-modes mode))
+
+
+;; Exclude very large buffers from dabbrev
+(defun sanityinc/dabbrev-friend-buffer (other-buffer)
+  (< (buffer-size other-buffer) (* 1 1024 1024)))
+
+(setq dabbrev-friend-buffer-function 'sanityinc/dabbrev-friend-buffer)
 
 #+end_src
 
