@@ -793,87 +793,6 @@ register. Using registers for all these file shortcuts is probably a bit of a wa
      (?t . "~/personal/org/todo.org")))
 #+end_src
 
-*** Key chords 
-I'm on a Dvorak keyboard, so these might not work for you.
-Experimenting with this. =key-chord= lets you define keyboard
-shortcuts that use ordinary keys.
-
-Some code from http://emacsredux.com/blog/2013/04/28/switch-to-previous-buffer/
-#+begin_src emacs-lisp
-    (defun sacha/key-chord-define (keymap keys command)
-      "Define in KEYMAP, a key-chord of two keys in KEYS starting a COMMAND.
-    \nKEYS can be a string or a vector of two elements. Currently only elements
-    that corresponds to ascii codes in the range 32 to 126 can be used.
-    \nCOMMAND can be an interactive function, a string, or nil.
-    If COMMAND is nil, the key-chord is removed.
-
-    MODIFICATION: Do not define the transposed key chord.
-    "
-      (if (/= 2 (length keys))
-          (error "Key-chord keys must have two elements"))
-      ;; Exotic chars in a string are >255 but define-key wants 128..255 for those
-      (let ((key1 (logand 255 (aref keys 0)))
-            (key2 (logand 255 (aref keys 1))))
-        (define-key keymap (vector 'key-chord key1 key2) command)))
-    (fset 'key-chord-define 'sacha/key-chord-define)
-
-    (defun sacha/switch-to-previous-buffer ()
-      "Switch to previously open buffer.
-    Repeated invocations toggle between the two most recently open buffers."
-      (interactive)
-      (switch-to-buffer (other-buffer (current-buffer) 1)))
-
-    (defvar sacha/key-chord-command-map (make-sparse-keymap))
-    (bind-key "h" 'emms-pause sacha/key-chord-command-map)
-    (bind-key "u" 'emms-pause sacha/key-chord-command-map)
-    (bind-key "t" 'emms-seek-backward sacha/key-chord-command-map)
-    (bind-key "s" 'emms-seek-to sacha/key-chord-command-map)
-    (bind-key "f" 'windmove-right sacha/key-chord-command-map)
-    (bind-key "b" 'windmove-left sacha/key-chord-command-map)
-    (bind-key "n" 'windmove-down sacha/key-chord-command-map)
-    (bind-key "p" 'windmove-up sacha/key-chord-command-map)
-#+end_src
-
-I'm trying to get the hang of windmove.
-#+begin_src emacs-lisp
-  (defvar sacha/windmove-map (make-sparse-keymap))
-  (bind-key "h" 'windmove-left sacha/windmove-map)
-  (bind-key "t" 'windmove-up sacha/windmove-map)
-  (bind-key "n" 'windmove-down sacha/windmove-map)
-  (bind-key "s" 'windmove-right sacha/windmove-map)
-  (bind-key "<left>" 'windmove-left sacha/windmove-map)
-  (bind-key "<up>" 'windmove-up sacha/windmove-map)
-  (bind-key "<down>" 'windmove-down sacha/windmove-map)
-  (bind-key "<right>" 'windmove-right sacha/windmove-map)
-#+end_src
-
-Now let's set up the actual keychords.
-
-#+begin_src emacs-lisp
-    (use-package key-chord
-      :config
-      (progn 
-        (fset 'key-chord-define 'sacha/key-chord-define)
-        (setq key-chord-one-key-delay 0.16)
-        (key-chord-mode 1)
-        ;; k can be bound too
-        (key-chord-define-global "uu"     'undo)
-        (key-chord-define-global "jj"     'ace-jump-word-mode)
-        (key-chord-define-global "yy"     sacha/windmove-map)
-        ;; y is now free
-        (key-chord-define-global "jj"     'ace-jump-word-mode)
-        (key-chord-define-global "jw"     'ace-window)
-        (key-chord-define-global "jl"     'ace-jump-line-mode)
-        ;(key-chord-define-global "jz"     'ace-jump-zap-up-to-char)
-        ;(key-chord-define-global "jZ"     'ace-jump-zap-to-char)
-        (key-chord-define-global "FF"     'find-file)
-        (key-chord-define-global "hh"     sacha/key-chord-command-map)
-        (key-chord-define-global "hc"     'emms-seek-forward)
-        (key-chord-define-global "xx"     'er/expand-region)
-        (key-chord-define-global "  "     'sacha/insert-space-or-expand)
-        (key-chord-define-global "JJ"     'sacha/switch-to-previous-buffer)))
-#+end_src
-
 *** Smartscan
 
 From https://github.com/itsjeyd/emacs-config/blob/emacs24/init.el
@@ -1891,8 +1810,7 @@ Django
 (maybe-require-package 'github-clone)
 (maybe-require-package 'magit-gh-pulls)
 #+end_src
-[2015-04-22 Wed 21:25]
-[2015-04-22 Wed 21:24]
+
 *** Tag files
 
     I don't often use a TAGS file, but when I do, I don't want to have
