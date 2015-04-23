@@ -43,7 +43,7 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
 **** variables to used in config
 #+begin_src emacs-lisp
 ;; Initialize a few variables
-(defconst *spell-check-support-enabled* t) ;; Enable with t if you prefer
+(defconst *spell-check-support-enabled* nil) ;; Enable with t if you prefer
 (defconst *is-a-mac* (eq system-type 'darwin))
 (defconst *is-windows* (eq system-type 'windows-nt))
 (defconst *is-linux* (eq system-type 'gnu/linux))
@@ -360,10 +360,10 @@ It's best to keep sensitive information in a separate file so you can publish yo
 (require-package 'diminish)
 (require-package 'scratch)
 (require-package 'mwe-log-commands)
-(require-package 'smart-mode-line)
+;(require-package 'smart-mode-line)
 (require-package 'guide-key)
 (require-package 'key-chord)
-(require-package 'smartscan)
+;(require-package 'smartscan)
 (require-package 'artbollocks-mode)
 (require-package 'tern)
 (require-package '2048-game)
@@ -637,6 +637,28 @@ Start a emacs server so new instances aren't created when opening new files
 (setq save-place-file "~/.emacs.d/saved-places")
 #+end_src
 
+*** Fonts
+#+begin_src emacs-lisp
+;;; Character sets
+
+(defcustom sanityinc/force-default-font-for-symbols nil
+  "When non-nil, force Emacs to use your default font for symbols."
+  :type 'boolean)
+
+(defun sanityinc/maybe-use-default-font-for-symbols ()
+  "Force Emacs to render symbols using the default font, if so configured."
+  (when sanityinc/force-default-font-for-symbols
+    (set-fontset-font "fontset-default" 'symbol (face-attribute 'default :family))))
+
+(add-hook 'after-init-hook 'sanityinc/maybe-use-default-font-for-symbols)
+
+;;; Changing font sizes
+
+(require-package 'default-text-scale)
+(global-set-key (kbd "C-M-=") 'default-text-scale-increase)
+(global-set-key (kbd "C-M--") 'default-text-scale-decrease)
+#+end_src
+[2015-04-22 Wed 22:52]
 ** Editing
 #+begin_src emacs-lisp
 (require-package 'unfill)
@@ -985,6 +1007,83 @@ With arg N, insert N newlines."
 (diminish 'guide-key-mode)
 #+end_src
 ** Navigation
+*** ISearch
+#+begin_src emacs-lisp
+;; Show number of matches while searching
+(when (maybe-require-package 'anzu)
+  (global-anzu-mode t)
+  (diminish 'anzu-mode)
+  (global-set-key [remap query-replace-regexp] 'anzu-query-replace-regexp)
+  (global-set-key [remap query-replace] 'anzu-query-replace))
+
+;; Activate occur easily inside isearch
+(define-key isearch-mode-map (kbd "C-o") 'isearch-occur)
+
+;; DEL during isearch should edit the search string, not jump back to the previous result
+(define-key isearch-mode-map [remap isearch-delete-char] 'isearch-del-char)
+
+;; Search back/forth for the symbol at point
+;; See http://www.emacswiki.org/emacs/SearchAtPoint
+(defun isearch-yank-symbol ()
+  "*Put symbol at current point into search string."
+  (interactive)
+  (let ((sym (symbol-at-point)))
+    (if sym
+        (progn
+          (setq isearch-regexp t
+                isearch-string (concat "\\_<" (regexp-quote (symbol-name sym)) "\\_>")
+                isearch-message (mapconcat 'isearch-text-char-description isearch-string "")
+                isearch-yank-flag t))
+      (ding)))
+  (isearch-search-and-update))
+
+(define-key isearch-mode-map "\C-\M-w" 'isearch-yank-symbol)
+
+
+;; http://www.emacswiki.org/emacs/ZapToISearch
+(defun zap-to-isearch (rbeg rend)
+  "Kill the region between the mark and the closest portion of
+the isearch match string. The behaviour is meant to be analogous
+to zap-to-char; let's call it zap-to-isearch. The deleted region
+does not include the isearch word. This is meant to be bound only
+in isearch mode.  The point of this function is that oftentimes
+you want to delete some portion of text, one end of which happens
+to be an active isearch word. The observation to make is that if
+you use isearch a lot to move the cursor around (as you should,
+it is much more efficient than using the arrows), it happens a
+lot that you could just delete the active region between the mark
+and the point, not include the isearch word."
+  (interactive "r")
+  (when (not mark-active)
+    (error "Mark is not active"))
+  (let* ((isearch-bounds (list isearch-other-end (point)))
+         (ismin (apply 'min isearch-bounds))
+         (ismax (apply 'max isearch-bounds))
+         )
+    (if (< (mark) ismin)
+        (kill-region (mark) ismin)
+      (if (> (mark) ismax)
+          (kill-region ismax (mark))
+        (error "Internal error in isearch kill function.")))
+    (isearch-exit)
+    ))
+
+(define-key isearch-mode-map [(meta z)] 'zap-to-isearch)
+
+
+;; http://www.emacswiki.org/emacs/ZapToISearch
+(defun isearch-exit-other-end (rbeg rend)
+  "Exit isearch, but at the other end of the search string.
+This is useful when followed by an immediate kill."
+  (interactive "r")
+  (isearch-exit)
+  (goto-char isearch-other-end))
+
+(define-key isearch-mode-map [(control return)] 'isearch-exit-other-end)
+
+
+#+end_src
+
 *** Helm-swoop - quickly finding lines
 
 This promises to be a fast way to find things. Let's bind it to =Ctrl-Shift-S= to see if I can get used to that...
@@ -1023,24 +1122,65 @@ Windmove doesn't behave well with Org, so we need to use different keybindings.
 #+end_src
 *** Make window splitting more useful
 
-Copied from http://www.reddit.com/r/emacs/comments/25v0eo/you_emacs_tips_and_tricks/chldury
 #+begin_src emacs-lisp
-(defun sacha/vsplit-last-buffer (prefix)
-  "Split the window vertically and display the previous buffer."
-  (interactive "p")
-  (split-window-vertically)
-  (other-window 1 nil)
-  (unless prefix
-    (switch-to-next-buffer)))
-(defun sacha/hsplit-last-buffer (prefix)
-  "Split the window horizontally and display the previous buffer."
-  (interactive "p")
-  (split-window-horizontally)
-  (other-window 1 nil)
-  (unless prefix (switch-to-next-buffer)))
-(bind-key "C-x 2" 'sacha/vsplit-last-buffer)
-(bind-key "C-x 3" 'sacha/hsplit-last-buffer)
+;;----------------------------------------------------------------------------
+;; When splitting window, show (other-buffer) in the new window
+;;----------------------------------------------------------------------------
+(defun split-window-func-with-other-buffer (split-function)
+  (lexical-let ((s-f split-function))
+    (lambda ()
+      (interactive)
+      (funcall s-f)
+      (set-window-buffer (next-window) (other-buffer)))))
 
+(global-set-key "\C-x2" (split-window-func-with-other-buffer 'split-window-vertically))
+(global-set-key "\C-x3" (split-window-func-with-other-buffer 'split-window-horizontally))
+
+(defun sanityinc/toggle-delete-other-windows ()
+  "Delete other windows in frame if any, or restore previous window config."
+  (interactive)
+  (if (and winner-mode
+           (equal (selected-window) (next-window)))
+      (winner-undo)
+    (delete-other-windows)))
+
+(global-set-key "\C-x1" 'sanityinc/toggle-delete-other-windows)
+
+;;----------------------------------------------------------------------------
+;; Rearrange split windows
+;;----------------------------------------------------------------------------
+(defun split-window-horizontally-instead ()
+  (interactive)
+  (save-excursion
+    (delete-other-windows)
+    (funcall (split-window-func-with-other-buffer 'split-window-horizontally))))
+
+(defun split-window-vertically-instead ()
+  (interactive)
+  (save-excursion
+    (delete-other-windows)
+    (funcall (split-window-func-with-other-buffer 'split-window-vertically))))
+
+(global-set-key "\C-x|" 'split-window-horizontally-instead)
+(global-set-key "\C-x_" 'split-window-vertically-instead)
+
+;; Borrowed from http://postmomentum.ch/blog/201304/blog-on-emacs
+(defun sanityinc/split-window()
+  "Split the window to see the most recent buffer in the other window.
+Call a second time to restore the original window configuration."
+  (interactive)
+  (if (eq last-command 'sanityinc/split-window)
+      (progn
+        (jump-to-register :sanityinc/split-window)
+        (setq this-command 'sanityinc/unsplit-window))
+    (window-configuration-to-register :sanityinc/split-window)
+    (switch-to-buffer-other-window nil)))
+
+(global-set-key (kbd "<f7>") 'sanityinc/split-window)
+(global-set-key (kbd "<f6>")
+                (lambda ()
+                  (interactive)
+                  (switch-to-buffer nil)))
 #+end_src
 *** Searching based on the current word
 
@@ -1129,6 +1269,29 @@ Allows recursive deletes
               (vector 'remap 'end-of-buffer) 'dired-jump-to-bottom)
             ))
 
+#+end_src
+
+From Purcell's config
+#+begin_src emacs-lisp
+(require-package 'dired+)
+(require-package 'dired-sort)
+
+(setq-default diredp-hide-details-initially-flag nil
+              dired-dwim-target t)
+
+(after-load 'dired
+  (require 'dired+)
+  (require 'dired-sort)
+  (when (fboundp 'global-dired-hide-details-mode)
+    (global-dired-hide-details-mode -1))
+  (setq dired-recursive-deletes 'top)
+  (define-key dired-mode-map [mouse-2] 'dired-find-file)
+  (add-hook 'dired-mode-hook
+            (lambda () (guide-key/add-local-guide-key-sequence "%"))))
+
+(when (maybe-require-package 'diff-hl)
+  (after-load 'dired
+    (add-hook 'dired-mode-hook 'diff-hl-dired-mode)))
 #+end_src
 
 *** Move to beginning of line
@@ -1344,6 +1507,35 @@ Also, =visual-line-mode= is so much better than =auto-fill-mode=. It doesn't act
         flycheck-idle-change-delay 0.8)
 
   (setq flycheck-display-errors-function #'flycheck-display-error-messages-unless-error-list))
+#+end_src
+*** Flyspell
+#+begin_src emacs-lisp
+;;----------------------------------------------------------------------------
+;; Add spell-checking in comments for all programming language modes
+;;----------------------------------------------------------------------------
+(if (fboundp 'prog-mode)
+    (add-hook 'prog-mode-hook 'flyspell-prog-mode)
+  (dolist (hook '(lisp-mode-hook
+                  emacs-lisp-mode-hook
+                  scheme-mode-hook
+                  clojure-mode-hook
+                  ruby-mode-hook
+                  yaml-mode
+                  python-mode-hook
+                  shell-mode-hook
+                  php-mode-hook
+                  css-mode-hook
+                  haskell-mode-hook
+                  caml-mode-hook
+                  nxml-mode-hook
+                  crontab-mode-hook
+                  perl-mode-hook
+                  tcl-mode-hook
+                  javascript-mode-hook))
+    (add-hook hook 'flyspell-prog-mode)))
+
+(after-load 'flyspell
+  (add-to-list 'flyspell-prog-text-faces 'nxml-text-face))
 #+end_src
 *** Web development
 redoing web development config to follow Purcell's config
@@ -2472,7 +2664,7 @@ cool. On Windows, these things help a little.
 ** Other nifty Emacs things I want to learn
 *** Smartparens mode						      :drill:
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (use-package smartparens
     :ensure t
     :config
