@@ -601,37 +601,6 @@ Some more tweaks to solarized:
 
 #+end_src
 
-*** Undo tree mode - visualize your undos and branches
-
-People often struggle with the Emacs undo model, where there's really no concept of "redo" - you simply undo the undo. 
-# 
-This lets you use =C-x u= (=undo-tree-visualize=) to visually walk through the changes you've made, undo back to a certain point (or redo), and go down different branches.
-
-#+begin_src emacs-lisp
-  (use-package undo-tree
-    :ensure undo-tree
-    :diminish undo-tree-mode
-    :init
-    (progn
-      (global-undo-tree-mode)
-      (setq undo-tree-visualizer-timestamps t)
-      (setq undo-tree-visualizer-diff t)))
-#+end_src
-
-*** Help - guide-key
-
-It's hard to remember keyboard shortcuts. The =guide-key= package pops up help after a short delay.
-
-#+begin_src emacs-lisp
-(use-package guide-key
-  :diminish guide-key-mode
-  :config
-  (progn
-  (setq guide-key/guide-key-sequence '("C-x r" "C-x 4" "C-c"))
-  (guide-key-mode 1)))  ; Enable guide-key-mode
-#+end_src
-
-
 *** UTF-8
 
 From http://www.wisdomandwonder.com/wordpress/wp-content/uploads/2014/03/C3F.html
@@ -652,8 +621,6 @@ From https://github.com/itsjeyd/emacs-config/blob/emacs24/init.el
         (list (line-beginning-position)
           (line-beginning-position 2)))))
 
-;delete selection when typing over
-(delete-selection-mode 1)
 #+end_src
 
 *** Server
@@ -663,10 +630,6 @@ Start a emacs server so new instances aren't created when opening new files
 
 #+end_src
 [2015-02-11 Wed 22:07]
-*** Reload files if they change on disk
-#+begin_src emacs-lisp
-(global-auto-revert-mode t)
-#+end_src
 *** Save place in files when reopening
 #+begin_src emacs-lisp
 (require 'saveplace)
@@ -674,22 +637,354 @@ Start a emacs server so new instances aren't created when opening new files
 (setq save-place-file "~/.emacs.d/saved-places")
 #+end_src
 
+** Editing
+#+begin_src emacs-lisp
+(require-package 'unfill)
+
+(when (fboundp 'electric-pair-mode)
+  (electric-pair-mode))
+(when (eval-when-compile (version< "24.4" emacs-version))
+  (electric-indent-mode 1))
+
+;;----------------------------------------------------------------------------
+;; Some basic preferences
+;;----------------------------------------------------------------------------
+(setq-default
+ blink-cursor-interval 0.4
+ bookmark-default-file (expand-file-name ".bookmarks.el" user-emacs-directory)
+ buffers-menu-max-size 30
+ case-fold-search t
+ column-number-mode t
+ delete-selection-mode t
+ ediff-split-window-function 'split-window-horizontally
+ ediff-window-setup-function 'ediff-setup-windows-plain
+ indent-tabs-mode nil
+ make-backup-files nil
+ mouse-yank-at-point t
+ save-interprogram-paste-before-kill t
+ scroll-preserve-screen-position 'always
+ set-mark-command-repeat-pop t
+ show-trailing-whitespace t
+ tooltip-delay 1.5
+ truncate-lines nil
+ truncate-partial-width-windows nil
+ visible-bell t)
+
+(global-auto-revert-mode)
+(setq global-auto-revert-non-file-buffers t
+      auto-revert-verbose nil)
+
+(transient-mark-mode t)
+
+;;; Whitespace
+
+(defun sanityinc/no-trailing-whitespace ()
+  "Turn off display of trailing whitespace in this buffer."
+  (setq show-trailing-whitespace nil))
+
+;; But don't show trailing whitespace in SQLi, inf-ruby etc.
+(dolist (hook '(special-mode-hook
+                Info-mode-hook
+                eww-mode-hook
+                term-mode-hook
+                comint-mode-hook
+                compilation-mode-hook
+                twittering-mode-hook
+                minibuffer-setup-hook))
+  (add-hook hook #'sanityinc/no-trailing-whitespace))
+
+
+(require-package 'whitespace-cleanup-mode)
+(global-whitespace-cleanup-mode t)
+
+(global-set-key [remap just-one-space] 'cycle-spacing)
+
+;;; Newline behaviour
+
+(global-set-key (kbd "RET") 'newline-and-indent)
+(defun sanityinc/newline-at-end-of-line ()
+  "Move to end of line, enter a newline, and reindent."
+  (interactive)
+  (move-end-of-line 1)
+  (newline-and-indent))
+
+(global-set-key (kbd "S-<return>") 'sanityinc/newline-at-end-of-line)
+
+
+(when (eval-when-compile (string< "24.3.1" emacs-version))
+  ;; https://github.com/purcell/emacs.d/issues/138
+  (after-load 'subword
+    (diminish 'subword-mode)))
+
+
+(when (fboundp 'global-prettify-symbols-mode)
+  (global-prettify-symbols-mode))
+
+(require-package 'undo-tree)
+(global-undo-tree-mode)
+(diminish 'undo-tree-mode)
+
+(require-package 'highlight-symbol)
+(dolist (hook '(prog-mode-hook html-mode-hook css-mode-hook))
+  (add-hook hook 'highlight-symbol-mode)
+  (add-hook hook 'highlight-symbol-nav-mode))
+(add-hook 'org-mode-hook 'highlight-symbol-nav-mode)
+(after-load 'highlight-symbol
+  (diminish 'highlight-symbol-mode)
+  (defadvice highlight-symbol-temp-highlight (around sanityinc/maybe-suppress activate)
+    "Suppress symbol highlighting while isearching."
+    (unless isearch-mode ad-do-it)))
+
+;;----------------------------------------------------------------------------
+;; Zap *up* to char is a handy pair for zap-to-char
+;;----------------------------------------------------------------------------
+(autoload 'zap-up-to-char "misc" "Kill up to, but not including ARGth occurrence of CHAR.")
+(global-set-key (kbd "M-Z") 'zap-up-to-char)
+
+
+(require-package 'browse-kill-ring)
+(setq browse-kill-ring-separator "\f")
+(after-load 'page-break-lines
+  (push 'browse-kill-ring-mode page-break-lines-modes))
+
+
+;;----------------------------------------------------------------------------
+;; Don't disable narrowing commands
+;;----------------------------------------------------------------------------
+(put 'narrow-to-region 'disabled nil)
+(put 'narrow-to-page 'disabled nil)
+(put 'narrow-to-defun 'disabled nil)
+
+;;----------------------------------------------------------------------------
+;; Show matching parens
+;;----------------------------------------------------------------------------
+(show-paren-mode 1)
+
+;;----------------------------------------------------------------------------
+;; Expand region
+;;----------------------------------------------------------------------------
+(require-package 'expand-region)
+(global-set-key (kbd "C-=") 'er/expand-region)
+
+
+;;----------------------------------------------------------------------------
+;; Don't disable case-change functions
+;;----------------------------------------------------------------------------
+(put 'upcase-region 'disabled nil)
+(put 'downcase-region 'disabled nil)
+
+
+;;----------------------------------------------------------------------------
+;; Rectangle selections, and overwrite text when the selection is active
+;;----------------------------------------------------------------------------
+(cua-selection-mode t)                  ; for rectangles, CUA is nice
+
+
+;;----------------------------------------------------------------------------
+;; Handy key bindings
+;;----------------------------------------------------------------------------
+;; To be able to M-x without meta
+(global-set-key (kbd "C-x C-m") 'execute-extended-command)
+
+;; Vimmy alternatives to M-^ and C-u M-^
+(global-set-key (kbd "C-c j") 'join-line)
+(global-set-key (kbd "C-c J") (lambda () (interactive) (join-line 1)))
+
+(global-set-key (kbd "C-.") 'set-mark-command)
+(global-set-key (kbd "C-x C-.") 'pop-global-mark)
+
+(require-package 'ace-jump-mode)
+(global-set-key (kbd "C-;") 'ace-jump-mode)
+(global-set-key (kbd "C-:") 'ace-jump-word-mode)
+
+
+(require-package 'multiple-cursors)
+;; multiple-cursors
+(global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+(global-set-key (kbd "C->") 'mc/mark-next-like-this)
+(global-set-key (kbd "C-+") 'mc/mark-next-like-this)
+(global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
+;; From active region to multiple cursors:
+(global-set-key (kbd "C-c c r") 'set-rectangular-region-anchor)
+(global-set-key (kbd "C-c c c") 'mc/edit-lines)
+(global-set-key (kbd "C-c c e") 'mc/edit-ends-of-lines)
+(global-set-key (kbd "C-c c a") 'mc/edit-beginnings-of-lines)
+
+
+;; Train myself to use M-f and M-b instead
+(global-unset-key [M-left])
+(global-unset-key [M-right])
+
+
+
+(defun kill-back-to-indentation ()
+  "Kill from point back to the first non-whitespace character on the line."
+  (interactive)
+  (let ((prev-pos (point)))
+    (back-to-indentation)
+    (kill-region (point) prev-pos)))
+
+(global-set-key (kbd "C-M-<backspace>") 'kill-back-to-indentation)
+
+
+;;----------------------------------------------------------------------------
+;; Page break lines
+;;----------------------------------------------------------------------------
+(require-package 'page-break-lines)
+(global-page-break-lines-mode)
+(diminish 'page-break-lines-mode)
+
+;;----------------------------------------------------------------------------
+;; Fill column indicator
+;;----------------------------------------------------------------------------
+(when (eval-when-compile (> emacs-major-version 23))
+  (require-package 'fill-column-indicator)
+  (defun sanityinc/prog-mode-fci-settings ()
+    (turn-on-fci-mode)
+    (when show-trailing-whitespace
+      (set (make-local-variable 'whitespace-style) '(face trailing))
+      (whitespace-mode 1)))
+
+  ;;(add-hook 'prog-mode-hook 'sanityinc/prog-mode-fci-settings)
+
+  (defun sanityinc/fci-enabled-p ()
+    (and (boundp 'fci-mode) fci-mode))
+
+  (defvar sanityinc/fci-mode-suppressed nil)
+  (defadvice popup-create (before suppress-fci-mode activate)
+    "Suspend fci-mode while popups are visible"
+    (let ((fci-enabled (sanityinc/fci-enabled-p)))
+      (when fci-enabled
+        (set (make-local-variable 'sanityinc/fci-mode-suppressed) fci-enabled)
+        (turn-off-fci-mode))))
+  (defadvice popup-delete (after restore-fci-mode activate)
+    "Restore fci-mode when all popups have closed"
+    (when (and sanityinc/fci-mode-suppressed
+               (null popup-instances))
+      (setq sanityinc/fci-mode-suppressed nil)
+      (turn-on-fci-mode)))
+
+  ;; Regenerate fci-mode line images after switching themes
+  (defadvice enable-theme (after recompute-fci-face activate)
+    (dolist (buffer (buffer-list))
+      (with-current-buffer buffer
+        (when (sanityinc/fci-enabled-p)
+          (turn-on-fci-mode))))))
+
+
+;;----------------------------------------------------------------------------
+;; Shift lines up and down with M-up and M-down. When paredit is enabled,
+;; it will use those keybindings. For this reason, you might prefer to
+;; use M-S-up and M-S-down, which will work even in lisp modes.
+;;----------------------------------------------------------------------------
+(require-package 'move-dup)
+(global-set-key [M-up] 'md/move-lines-up)
+(global-set-key [M-down] 'md/move-lines-down)
+(global-set-key [M-S-up] 'md/move-lines-up)
+(global-set-key [M-S-down] 'md/move-lines-down)
+
+(global-set-key (kbd "C-c p") 'md/duplicate-down)
+(global-set-key (kbd "C-c P") 'md/duplicate-up)
+
+;;----------------------------------------------------------------------------
+;; Fix backward-up-list to understand quotes, see http://bit.ly/h7mdIL
+;;----------------------------------------------------------------------------
+(defun backward-up-sexp (arg)
+  "Jump up to the start of the ARG'th enclosing sexp."
+  (interactive "p")
+  (let ((ppss (syntax-ppss)))
+    (cond ((elt ppss 3)
+           (goto-char (elt ppss 8))
+           (backward-up-sexp (1- arg)))
+          ((backward-up-list arg)))))
+
+(global-set-key [remap backward-up-list] 'backward-up-sexp) ; C-M-u, C-M-up
+
+
+;;----------------------------------------------------------------------------
+;; Cut/copy the current line if no region is active
+;;----------------------------------------------------------------------------
+(require-package 'whole-line-or-region)
+(whole-line-or-region-mode t)
+(diminish 'whole-line-or-region-mode)
+(make-variable-buffer-local 'whole-line-or-region-mode)
+
+(defun suspend-mode-during-cua-rect-selection (mode-name)
+  "Add an advice to suspend `MODE-NAME' while selecting a CUA rectangle."
+  (let ((flagvar (intern (format "%s-was-active-before-cua-rectangle" mode-name)))
+        (advice-name (intern (format "suspend-%s" mode-name))))
+    (eval-after-load 'cua-rect
+      `(progn
+         (defvar ,flagvar nil)
+         (make-variable-buffer-local ',flagvar)
+         (defadvice cua--activate-rectangle (after ,advice-name activate)
+           (setq ,flagvar (and (boundp ',mode-name) ,mode-name))
+           (when ,flagvar
+             (,mode-name 0)))
+         (defadvice cua--deactivate-rectangle (after ,advice-name activate)
+           (when ,flagvar
+             (,mode-name 1)))))))
+
+(suspend-mode-during-cua-rect-selection 'whole-line-or-region-mode)
+
+
+
+(defun sanityinc/open-line-with-reindent (n)
+  "A version of `open-line' which reindents the start and end positions.
+If there is a fill prefix and/or a `left-margin', insert them
+on the new line if the line would have been blank.
+With arg N, insert N newlines."
+  (interactive "*p")
+  (let* ((do-fill-prefix (and fill-prefix (bolp)))
+	 (do-left-margin (and (bolp) (> (current-left-margin) 0)))
+	 (loc (point-marker))
+	 ;; Don't expand an abbrev before point.
+	 (abbrev-mode nil))
+    (delete-horizontal-space t)
+    (newline n)
+    (indent-according-to-mode)
+    (when (eolp)
+      (delete-horizontal-space t))
+    (goto-char loc)
+    (while (> n 0)
+      (cond ((bolp)
+	     (if do-left-margin (indent-to (current-left-margin)))
+	     (if do-fill-prefix (insert-and-inherit fill-prefix))))
+      (forward-line 1)
+      (setq n (1- n)))
+    (goto-char loc)
+    (end-of-line)
+    (indent-according-to-mode)))
+
+(global-set-key (kbd "C-o") 'sanityinc/open-line-with-reindent)
+
+
+;;----------------------------------------------------------------------------
+;; Random line sorting
+;;----------------------------------------------------------------------------
+(defun sort-lines-random (beg end)
+  "Sort lines in region randomly."
+  (interactive "r")
+  (save-excursion
+    (save-restriction
+      (narrow-to-region beg end)
+      (goto-char (point-min))
+      (let ;; To make `end-of-line' and etc. to ignore fields.
+          ((inhibit-field-text-motion t))
+        (sort-subr nil 'forward-line 'end-of-line nil nil
+                   (lambda (s1 s2) (eq (random 2) 0)))))))
+
+
+
+(require-package 'highlight-escape-sequences)
+(hes-mode)
+
+(require-package 'guide-key)
+(setq guide-key/guide-key-sequence '("C-x" "C-c" "C-x 4" "C-x 5" "C-c ;" "C-c ; f" "C-c ' f" "C-x n" "C-x C-r" "C-x r"))
+(guide-key-mode 1)
+(diminish 'guide-key-mode)
+#+end_src
 ** Navigation
-*** Pop to mark
-
-Handy way of getting back to previous places.
-
-#+begin_src emacs-lisp
-(bind-key "C-x p" 'pop-to-mark-command)
-(setq set-mark-command-repeat-pop t)
-#+end_src
-*** Text size
-
-#+begin_src emacs-lisp
-(bind-key "C-+" 'text-scale-increase)
-(bind-key "C--" 'text-scale-decrease)
-#+end_src
-
 *** Helm-swoop - quickly finding lines
 
 This promises to be a fast way to find things. Let's bind it to =Ctrl-Shift-S= to see if I can get used to that...
@@ -775,8 +1070,6 @@ This lets me search up and down. I don't use this often, though.
     "Match in a case-insensitive way."
     (let ((case-fold-search t))
       ad-do-it))
-  (global-set-key '[M-up] 'sacha/search-word-backward)
-  (global-set-key '[M-down] 'sacha/search-word-forward)
 #+end_src
 
 *** Frequently-accessed files
@@ -1015,16 +1308,6 @@ Also, =visual-line-mode= is so much better than =auto-fill-mode=. It doesn't act
 (bind-key "C-x 8 s" (sacha/insert-unicode "ZERO WIDTH SPACE"))
 (bind-key "C-x 8 S" (sacha/insert-unicode "SNOWMAN"))
 #+end_src
-*** Clean up spaces
-
-#+begin_src emacs-lisp
-  (bind-key "M-SPC" 'cycle-spacing)
-#+end_src
-*** Expand
-
-#+begin_src emacs-lisp
-(bind-key "M-/" 'hippie-expand)
-#+end_src
 ** Org
    I've tried to wrap my head around how Sacha Chua has her org mode setup, but I think I've gotten too use to the way Bernt Hansen has setup. I have used his method for several years and I guess it's just hard coded in my muscle memory.  Nevertheless, I have the config saved in an external file org-mode.org
 ** Coding
@@ -1254,13 +1537,6 @@ redoing web development config to follow Purcell's config
 #+begin_src emacs-lisp
     (setq-default tab-width 2)
 #+end_src
-*** New lines are always indented
-
-I almost always want to go to the right indentation on the next line.
-#+begin_src emacs-lisp
-(global-set-key (kbd "RET") 'newline-and-indent)
-#+end_src
-
 *** Adapt to being on Windows
 
 I'm on Windows, so I use Cygwin to add Unix-y tools to make my life easier. 
@@ -1273,15 +1549,6 @@ These config snippets seem to help too.
     (add-hook 'comint-output-filter-functions 'comint-watch-for-password-prompt nil t))
 #+end_src
 
-*** Expand region
-
-This is something I have to get the hang of too. It gradually expands the selection. Handy for Emacs Lisp.
-
-#+begin_src emacs-lisp
-  (use-package expand-region
-    :ensure expand-region
-    :bind ("C-=" . er/expand-region))
-#+end_src
 *** Emacs Lisp
 **** Edebug
 
@@ -1514,13 +1781,6 @@ because
 Because
 
 
-*** Show column number
-
-I sometimes need to know where I am in a line.
-    #+begin_src emacs-lisp
-(column-number-mode 1)
-#+end_src
-
 *** Don't show whitespace in diff, but show context
     #+begin_src emacs-lisp
 (setq vc-diff-switches '("-b" "-B" "-u"))
@@ -1592,7 +1852,6 @@ Reset silly gnu indention and start a new line when typing delimiters
       c-basic-offset 4)
 ''(add-hook 'c-mode-common-hook '(lambda () (c-toggle-auto-state 1)))
 (remove-hook 'c-mode-common-hook 'visual-line-mode)
-(add-to-list 'c-mode-common-hook (lambda () (setq truncate-lines -1)))
 (add-to-list 'c-mode-common-hook (lambda () (setq compile-command "build.bat")))
 #+end_src
 
@@ -1674,8 +1933,6 @@ you need to pip install virtualenv, flake8, pyflakes, nose, ipython,(jedi or rop
   (elpy-enable)
   (setq elpy-rpc-backend "jedi")
   (elpy-use-ipython)
-  (define-key python-mode-map (kbd "RET")
-    'newline-and-indent)
   (add-hook 'python-mode-hook
             (lambda () (set (make-local-variable 'comment-inline-offset) 2))))
 (add-to-list 'auto-mode-alist '("\\.wsgi\\'" . python-mode))
@@ -1836,27 +2093,6 @@ Django
         '(progn
            (add-hook 'drupal-mode-hook 'sacha/find-tags)))
       #+end_src
-*** Projects
-
-#+begin_src emacs-lisp
-(use-package projectile
-  :ensure projectile
-  :diminish projectile-mode
-  :init 
-  (progn
-    (setq projectile-keymap-prefix (kbd "C-c p")) 
-    (setq projectile-completion-system 'default)
-    (setq projectile-enable-caching t)
-    (projectile-global-mode)))
-(use-package helm-projectile
-   :ensure helm-projectile)
-#+end_src
-*** Exploring MELPA recipes
-
-#+begin_src emacs-lisp
-
-#+end_src
-
 *** Ruby
 
 		#+begin_src emacs-lisp
@@ -1893,13 +2129,6 @@ Django
   
 #+end_src
 
-SASS
-
-#+begin_src emacs-lisp :eval no :tangle no
-(add-hook 'sass-mode-hook
-          (lambda () (setq indent-tabs-mode nil)))
-(setq-default indent-tabs-mode nil)
-#+end_src
 *** Skewer
 
 This lets you send HTML, CSS, and Javascript fragments to Google
@@ -2181,49 +2410,6 @@ Use with =#+COLUMNS: %40ITEM %17Effort(Estimated){:} %CLOCKSUM=, =#+BEGIN: colum
 
 ** Advanced stuff / things I tend to forget about
 *** Editing multiple things
-**** Multiple cursors mode					      :drill:
-     SCHEDULED: <2013-03-03 Sun>
-    :PROPERTIES:
-    :ID:       o2b:61b0ffae-669b-4360-98fd-a6f0ea6f018e
-    :DRILL_LAST_INTERVAL: 3.86
-    :DRILL_REPEATS_SINCE_FAIL: 2
-    :DRILL_TOTAL_REPEATS: 2
-    :DRILL_FAILURE_COUNT: 1
-    :DRILL_AVERAGE_QUALITY: 2.5
-    :DRILL_EASE: 2.36
-    :DRILL_LAST_QUALITY: 3
-    :DRILL_LAST_REVIEWED: [2013-02-27 Wed 21:18]
-    :END:
-
-I often define keyboard macros to process multiple lines in a region.
-Maybe =multiple-cursors= will be an even better way. Looks promising!
-[[http://emacsrocks.com/e13.html][See Emacs Rocks episode 13 (multiple-cursors) for a great demo]].
-
-#+begin_src emacs-lisp
-  (use-package multiple-cursors
-    :ensure multiple-cursors
-    :bind 
-     (("C-c m a" . mc/mark-all-like-this)
-      ("C-c m m" . mc/mark-all-like-this-dwim)
-      ("C-c m l" . mc/edit-lines)
-      ("C-c m n" . mc/mark-next-like-this)
-      ("C-c m p" . mc/mark-previous-like-this)
-      ("C-c m s" . mc/mark-sgml-tag-pair)
-      ("C-c m d" . mc/mark-all-like-this-in-defun)))
-  (use-package phi-search
-    :ensure phi-search)
-  (use-package phi-search-mc
-    :ensure phi-search-mc
-    :config
-    (phi-search-mc/setup-keys))
-  (use-package mc-extras
-    :ensure mc-extras
-    :config
-      (define-key mc/keymap (kbd "C-. =") 'mc/compare-chars))
-#+end_src
-
-Thanks to [[http://irreal.org/blog/?p=1733][Irreal]] and [[http://planet.emacsen.org/][Planet Emacsen]] for the link!
-
 *** Edit list   :drill:
     SCHEDULED: <2013-03-03 Sun>
     :PROPERTIES:
@@ -2246,27 +2432,7 @@ M-x edit-list makes it easier to edit an Emacs Lisp list.
   :commands edit-list)
 #+end_src
 
-*** Ace Jump mode  :drill:
-    :PROPERTIES:
-    :ID:       56f173e7-d2a2-4589-84d7-c6b435c8a5f8
-    :DRILL_LAST_INTERVAL: 0.0
-    :DRILL_REPEATS_SINCE_FAIL: 1
-    :DRILL_TOTAL_REPEATS: 3
-    :DRILL_FAILURE_COUNT: 2
-    :DRILL_AVERAGE_QUALITY: 1.667
-    :DRILL_EASE: 2.36
-    :DRILL_LAST_QUALITY: 0
-    :DRILL_LAST_REVIEWED: [2013-03-13 Wed 09:50]
-    :END:
-
-Quickly jump to a position in the current view.
-
-#+begin_src emacs-lisp
-  (use-package ace-jump-mode
-    :ensure ace-jump-mode)
-  ;; I use the jj key-chord for this; see the definitions for key-chord
-#+end_src
-
+*** Ace Jump mode
 Ace Window looks useful too.
 
 #+begin_src emacs-lisp
@@ -2328,7 +2494,6 @@ cool. On Windows, these things help a little.
 
       (define-key sp-keymap (kbd "C-M-e") 'sp-up-sexp)
       (define-key emacs-lisp-mode-map (kbd ")") 'sp-up-sexp)
-      (define-key sp-keymap (kbd "C-M-u") 'sp-backward-up-sexp)
       (define-key sp-keymap (kbd "C-M-t") 'sp-transpose-sexp)
 
       (define-key sp-keymap (kbd "C-M-n") 'sp-next-sexp)
@@ -2347,9 +2512,7 @@ cool. On Windows, these things help a little.
 
       (define-key sp-keymap (kbd "M-D") 'sp-splice-sexp)
       (define-key sp-keymap (kbd "C-M-<delete>") 'sp-splice-sexp-killing-forward)
-      (define-key sp-keymap (kbd "C-M-<backspace>") 'sp-splice-sexp-killing-backward)
-      (define-key sp-keymap (kbd "C-S-<backspace>") 'sp-splice-sexp-killing-around)
-
+      
       (define-key sp-keymap (kbd "C-]") 'sp-select-next-thing-exchange)
       (define-key sp-keymap (kbd "C-<left_bracket>") 'sp-select-previous-thing)
       (define-key sp-keymap (kbd "C-M-]") 'sp-select-next-thing)
