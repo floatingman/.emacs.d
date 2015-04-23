@@ -1794,99 +1794,105 @@ Django
 (require-package 'python-django)
 ;;(require-package 'pony-mode)
 #+end_src
-*** Magit - nice git interface
-		:PROPERTIES:
-		:ID:       o2b:9a42a292-7b75-4c7f-8da2-7a0d8c22d0c6
-		:POST_DATE: [2014-10-31 Fri 23:26]
-		:POSTID:   27579
-		:BLOG:     sacha
-		:END:
-
-<<magit>>
-
-Thanks to sheijk for hints on tweaking magit to limit it to the current directory!
-
+*** Git
 #+begin_src emacs-lisp
-    (defun sacha/magit-commit-all ()
-      "Publish the current file and commit all the current changes."
-      (interactive)
-      (magit-status default-directory)
-      (magit-stage-all)
-      (call-interactively 'magit-log-edit))
+;; TODO: link commits from vc-log to magit-show-commit
+;; TODO: smerge-mode
+(require-package 'magit)
+(require-package 'git-blame)
+(require-package 'git-commit-mode)
+(require-package 'git-rebase-mode)
+(require-package 'gitignore-mode)
+(require-package 'gitconfig-mode)
+(require-package 'git-messenger) ;; Though see also vc-annotate's "n" & "p" bindings
+(require-package 'git-timemachine)
 
-    (use-package magit
-      :ensure magit
-      :config
-      (progn
-        (when (equal system-type 'windows-nt)
-          (setq magit-git-executable "c:/program files (x86)/git/bin/git.exe"))
-        (setq magit-diff-options '("-b")) ; ignore whitespace
-        (defvar sacha/magit-limit-to-directory nil "Limit magit status to a specific directory.")
-        (defun sacha/magit-status-in-directory (directory)
-          "Displays magit status limited to DIRECTORY.
-  Uses the current `default-directory', or prompts for a directory
-  if called with a prefix argument. Sets `sacha/magit-limit-to-directory'
-  so that it's still active even after you stage a change. Very experimental."
-          (interactive (list (expand-file-name
-                              (if current-prefix-arg
-                                  (read-directory-name "Directory: ")
-                                default-directory))))
-          (setq sacha/magit-limit-to-directory directory)
-          (magit-status directory))
+(setq-default
+ magit-save-some-buffers nil
+ magit-process-popup-time 10
+ magit-diff-refine-hunk t
+ magit-completing-read-function 'magit-ido-completing-read)
 
-        (defadvice magit-insert-untracked-files (around sacha activate)
-          (if sacha/magit-limit-to-directory
-              (magit-with-section (section untracked 'untracked "Untracked files:" t)
-                (let ((files (cl-mapcan
-                              (lambda (f)
-                                (when (eq (aref f 0) ??) (list f)))
-                              (magit-git-lines
-                               "status" "--porcelain" "--" sacha/magit-limit-to-directory))))
-                  (if (not files)
-                      (setq section nil)
-                    (dolist (file files)
-                      (setq file (magit-decode-git-path (substring file 3)))
-                      (magit-with-section (section file file)
-                        (insert "\t" file "\n")))
-                    (insert "\n"))))
-            ad-do-it))
+;; Hint: customize `magit-repo-dirs' so that you can use C-u M-F12 to
+;; quickly open magit on any one of your projects.
+(global-set-key [(meta f12)] 'magit-status)
 
-        (defadvice magit-insert-unstaged-changes (around sacha activate)
-          (if sacha/magit-limit-to-directory
-              (let ((magit-current-diff-range (cons 'index 'working))
-                    (magit-diff-options (copy-sequence magit-diff-options)))
-                (magit-git-insert-section (unstaged "Unstaged changes:")
-                    #'magit-wash-raw-diffs
-                  "diff-files"
-                  "--" sacha/magit-limit-to-directory
-                  ))
-            ad-do-it))
+(after-load 'magit
+  (define-key magit-status-mode-map (kbd "C-M-<up>") 'magit-goto-parent-section))
 
-        (defadvice magit-insert-staged-changes (around sacha activate)
-          "Limit to `sacha/magit-limit-to-directory' if specified."
-          (if sacha/magit-limit-to-directory
-              (let ((no-commit (not (magit-git-success "log" "-1" "HEAD"))))
-                (when (or no-commit (magit-anything-staged-p))
-                  (let ((magit-current-diff-range (cons "HEAD" 'index))
-                        (base (if no-commit
-                                  (magit-git-string "mktree")
-                                "HEAD"))
-                        (magit-diff-options (append '("--cached") magit-diff-options)))
-                    (magit-git-insert-section (staged "Staged changes:")
-                        (apply-partially #'magit-wash-raw-diffs t)
-                      "diff-index" "--cached" base "--" sacha/magit-limit-to-directory))))
-            ad-do-it)))
-      :bind (("C-x v d" . magit-status)
-             ("C-x v C-d" . sacha/magit-status-in-directory)
-             ("C-x v p" . magit-push) 
-             ("C-x v c" . sacha/magit-commit-all)))
+(require-package 'fullframe)
+(after-load 'magit
+  (fullframe magit-status magit-mode-quit-window))
+
+(add-hook 'git-commit-mode-hook 'goto-address-mode)
+(after-load 'session
+  (add-to-list 'session-mode-disable-list 'git-commit-mode))
+
+;;; When we start working on git-backed files, use git-wip if available
+
+(after-load 'magit
+  (when (executable-find magit-git-executable)
+    (global-magit-wip-save-mode)
+    (diminish 'magit-wip-save-mode)))
+
+(after-load 'magit
+  (diminish 'magit-auto-revert-mode))
+
+(when *is-a-mac*
+  (after-load 'magit
+    (add-hook 'magit-mode-hook (lambda () (local-unset-key [(meta h)])))))
+
+
+;; Convenient binding for vc-git-grep
+(global-set-key (kbd "C-x v f") 'vc-git-grep)
+
+
+;;; git-svn support
+
+(require-package 'magit-svn)
+(autoload 'magit-svn-enabled "magit-svn")
+(defun sanityinc/maybe-enable-magit-svn-mode ()
+  (when (magit-svn-enabled)
+    (magit-svn-mode)))
+(add-hook 'magit-status-mode-hook #'sanityinc/maybe-enable-magit-svn-mode)
+
+(after-load 'compile
+  (dolist (defn (list '(git-svn-updated "^\t[A-Z]\t\\(.*\\)$" 1 nil nil 0 1)
+                      '(git-svn-needs-update "^\\(.*\\): needs update$" 1 nil nil 2 1)))
+    (add-to-list 'compilation-error-regexp-alist-alist defn)
+    (add-to-list 'compilation-error-regexp-alist (car defn))))
+
+(defvar git-svn--available-commands nil "Cached list of git svn subcommands")
+(defun git-svn--available-commands ()
+  (or git-svn--available-commands
+      (setq git-svn--available-commands
+            (sanityinc/string-all-matches
+             "^  \\([a-z\\-]+\\) +"
+             (shell-command-to-string "git svn help") 1))))
+
+(defun git-svn (dir command)
+  "Run a git svn subcommand in DIR."
+  (interactive (list (read-directory-name "Directory: ")
+                     (completing-read "git-svn command: " (git-svn--available-commands) nil t nil nil (git-svn--available-commands))))
+  (let* ((default-directory (vc-git-root dir))
+         (compilation-buffer-name-function (lambda (major-mode-name) "*git-svn*")))
+    (compile (concat "git svn " command))))
+
+(require-package 'git-messenger)
+(global-set-key (kbd "C-x v p") #'git-messenger:popup-message)
 #+end_src
+*** Github
+#+begin_src emacs-lisp
+(require-package 'yagist)
+(require-package 'github-browse-file)
+(require-package 'bug-reference-github)
+(add-hook 'prog-mode-hook 'bug-reference-prog-mode)
 
-The proper way to implement this is probably to patch or override the
-definition of magit-git-insert-section so that it takes a list of
-options to add at the end of the command, but that can wait for another time (or braver souls). 
-
-**** TODO Make this better by adding a post command options variable
+(maybe-require-package 'github-clone)
+(maybe-require-package 'magit-gh-pulls)
+#+end_src
+[2015-04-22 Wed 21:25]
+[2015-04-22 Wed 21:24]
 *** Tag files
 
     I don't often use a TAGS file, but when I do, I don't want to have
