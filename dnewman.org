@@ -415,11 +415,86 @@ From http://www.wisdomandwonder.com/wordpress/wp-content/uploads/2014/03/C3F.htm
 	regexp-search-ring))
 #+end_src
 
+*** Themes
+#+begin_src emacs-lisp
+(when (< emacs-major-version 24)
+  (require-package 'color-theme))
+
+(require-package 'color-theme-sanityinc-solarized)
+(require-package 'color-theme-sanityinc-tomorrow)
+
+;;------------------------------------------------------------------------------
+;; Old-style color theming support (via color-theme.el)
+;;------------------------------------------------------------------------------
+(defcustom window-system-color-theme 'color-theme-sanityinc-solarized-dark
+  "Color theme to use in window-system frames.
+If Emacs' native theme support is available, this setting is
+ignored: use `custom-enabled-themes' instead."
+  :type 'symbol)
+
+(defcustom tty-color-theme 'color-theme-terminal
+  "Color theme to use in TTY frames.
+If Emacs' native theme support is available, this setting is
+ignored: use `custom-enabled-themes' instead."
+  :type 'symbol)
+
+(unless (boundp 'custom-enabled-themes)
+  (defun color-theme-terminal ()
+    (interactive)
+    (color-theme-sanityinc-solarized-dark))
+
+  (defun apply-best-color-theme-for-frame-type (frame)
+    (with-selected-frame frame
+      (funcall (if window-system
+                   window-system-color-theme
+                 tty-color-theme))))
+
+  (defun reapply-color-themes ()
+    (interactive)
+    (mapcar 'apply-best-color-theme-for-frame-type (frame-list)))
+
+  (set-variable 'color-theme-is-global nil)
+  (add-hook 'after-make-frame-functions 'apply-best-color-theme-for-frame-type)
+  (add-hook 'after-init-hook 'reapply-color-themes)
+  (apply-best-color-theme-for-frame-type (selected-frame)))
+
+
+;;------------------------------------------------------------------------------
+;; New-style theme support, in which per-frame theming is not possible
+;;------------------------------------------------------------------------------
+
+;; If you don't customize it, this is the theme you get.
+(setq-default custom-enabled-themes '(sanityinc-solarized-light))
+
+;; Ensure that themes will be applied even if they have not been customized
+(defun reapply-themes ()
+  "Forcibly load the themes listed in `custom-enabled-themes'."
+  (dolist (theme custom-enabled-themes)
+    (unless (custom-theme-p theme)
+      (load-theme theme)))
+  (custom-set-variables `(custom-enabled-themes (quote ,custom-enabled-themes))))
+
+(add-hook 'after-init-hook 'reapply-themes)
+
+
+;;------------------------------------------------------------------------------
+;; Toggle between light and dark
+;;------------------------------------------------------------------------------
+(defun light ()
+  "Activate a light color theme."
+  (interactive)
+  (color-theme-sanityinc-solarized-light))
+
+(defun dark ()
+  "Activate a dark color theme."
+  (interactive)
+  (color-theme-sanityinc-solarized-dark))
+#+end_src
 *** Windows configuration
 
 When you're starting out, tooltips, menus, and the tool bar can be very helpful. [[http://sachachua.com/blog/2014/03/emacs-basics-using-mouse/][(Emacs Basics: Using the Mouse]]). Eventually, you may want to reclaim that extra little bit of screenspace. The following code turns those things off when using a graphical Emacs.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
 (when window-system
   (tooltip-mode -1)
   (tool-bar-mode -1)
@@ -566,8 +641,8 @@ I like light on dark because I find it to be more restful. The
 color-theme in ELPA was a little odd, though, so we define some advice to make
 it work. Some things still aren't quite right.
 
-#+begin_src emacs-lisp
-  (defadvice color-theme-alist (around dnewman activate)
+#+begin_src emacs-lisp :tangle no
+  (defadvice color-theme-alist (around sacha activate)
     (if (ad-get-arg 0)
         ad-do-it
       nil))
@@ -592,7 +667,7 @@ I sometimes need to switch to a lighter background for screenshots.
 For that, I use =color-theme-vim=.
 
 Some more tweaks to solarized:
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
 (when window-system
   (custom-set-faces
    '(erc-input-face ((t (:foreground "antique white"))))
@@ -1737,9 +1812,18 @@ Also, =visual-line-mode= is so much better than =auto-fill-mode=. It doesn't act
 ** Org
    I've tried to wrap my head around how Sacha Chua has her org mode setup, but I think I've gotten too use to the way Bernt Hansen has setup. I have used his method for several years and I guess it's just hard coded in my muscle memory.  Nevertheless, I have the config saved in an external file org-mode.org
 ** Coding
-*** Auto-complete
+I keep switching between auto-complete mode and company mode for autocompletion
 
+*** Company
 #+begin_src emacs-lisp
+(require-package 'company)
+(add-hook 'after-init-hook 'global-company-mode)
+;; enabled for only programming modes
+;;(add-hook 'prog-mode-hook 'company-mode)
+#+end_src
+[2015-04-24 Fri 15:08]
+*** Auto-complete
+#+begin_src emacs-lisp :tangle no
 (require-package 'auto-complete)
 (require 'auto-complete-config)
 (global-auto-complete-mode t)
@@ -1770,13 +1854,12 @@ Also, =visual-line-mode= is so much better than =auto-fill-mode=. It doesn't act
 (defun sanityinc/never-indent ()
   (set (make-local-variable 'indent-line-function) (lambda () 'noindent)))
 
-(defun set-auto-complete-as-completion-at-point-function ()
-  (setq completion-at-point-functions
-        (cons 'sanityinc/auto-complete-at-point
-              (remove 'sanityinc/auto-complete-at-point completion-at-point-functions))))
+;(defun set-auto-complete-as-completion-at-point-function ()
+;  (setq completion-at-point-functions
+;        (cons 'sanityinc/auto-complete-at-point
+;              (remove 'sanityinc/auto-complete-at-point completion-at-point-functions))))
 
-(add-hook 'auto-complete-mode-hook 'set-auto-complete-as-completion-at-point-function)
-
+;(add-hook 'auto-complete-mode-hook 'set-auto-complete-as-completion-at-point-function)
 
 (set-default 'ac-sources
              '(ac-source-imenu
@@ -1885,6 +1968,22 @@ Also, =visual-line-mode= is so much better than =auto-fill-mode=. It doesn't act
   (add-hook 'compilation-finish-functions
             'sanityinc/alert-after-compilation-finish))
 #+end_src
+*** Projects
+#+begin_src emacs-lisp
+(require-package 'projectile)
+(after-load 'projectile
+  (diminish 'projectile-mode))
+
+(require-package 'projectile-rails)
+(progn
+    (setq projectile-keymap-prefix (kbd "C-c P"))
+    (setq projectile-completion-system 'default)
+    (setq projectile-enable-caching t)
+    (projectile-global-mode))
+(require-package 'helm-projectile)
+(add-hook 'projectile-mode-hook 'projectile-rails-on)
+#+end_src
+[2015-04-24 Fri 13:47]
 *** Flycheck
 #+begin_src emacs-lisp
 (when (maybe-require-package 'flycheck)
@@ -2191,7 +2290,8 @@ Also, =visual-line-mode= is so much better than =auto-fill-mode=. It doesn't act
   "Enable features useful when working with elisp."
   (elisp-slime-nav-mode t)
   (set-up-hippie-expand-for-elisp)
-  (ac-emacs-lisp-mode-setup))
+;  (ac-emacs-lisp-mode-setup)
+)
 
 (defconst sanityinc/elispy-modes
   '(emacs-lisp-mode ielm-mode)
@@ -2455,7 +2555,6 @@ redoing web development config to follow Purcell's config
 
 (add-to-list 'interpreter-mode-alist (cons "node" preferred-javascript-mode))
 
-
 ;; Javascript nests {} and () a lot, so I find this helpful
 
 (require-package 'rainbow-delimiters)
@@ -2463,7 +2562,6 @@ redoing web development config to follow Purcell's config
   (add-hook hook 'rainbow-delimiters-mode))
 
 
-
 ;;; Coffeescript
 
 (after-load 'coffee-mode
@@ -2511,7 +2609,7 @@ redoing web development config to follow Purcell's config
 
 I'm on Windows, so I use Cygwin to add Unix-y tools to make my life easier. 
 These config snippets seem to help too.
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (when (eq system-type 'windows-nt)
 	  (setenv "CYGWIN" "nodosfilewarning")
     (setq shell-file-name "C:/emacs/libexec/emacs/24.4/i686-pc-mingw32/cmdproxy.exe")
@@ -2887,8 +2985,26 @@ Refactoring C code:
 		((beg (mark-c-scope-beg)))
 		(goto-char inital-point)
 		(let ((end (mark-c-scope-end))))))))
+#+end_src
 
-
+Compile with a makefile or compile a single file if no makefile exists
+#+begin_src emacs-lisp
+(require 'compile)
+ (add-hook 'c-mode-hook
+           (lambda ()
+	     (unless (file-exists-p "Makefile")
+	       (set (make-local-variable 'compile-command)
+                    ;; emulate make's .c.o implicit pattern rule, but with
+                    ;; different defaults for the CC, CPPFLAGS, and CFLAGS
+                    ;; variables:
+                    ;; $(CC) -c -o $@ $(CPPFLAGS) $(CFLAGS) $<
+		    (let ((file (file-name-nondirectory buffer-file-name)))
+                      (format "%s -c -o %s.o %s %s %s"
+                              (or (getenv "CC") "gcc")
+                              (file-name-sans-extension file)
+                              (or (getenv "CPPFLAGS") "-DDEBUG=9")
+                              (or (getenv "CFLAGS") "-ansi -pedantic -Wall -g")
+			      file))))))
 #+end_src
 *** Python
 Playing around with different python setups for coding in emacs
@@ -2964,7 +3080,7 @@ Django
            (add-hook 'drupal-mode-hook 'sacha/find-tags)))
       #+end_src
 *** Ruby
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
 (use-package rinari :ensure rinari)
 (use-package bundler :ensure bundler)
     (use-package robe
@@ -2975,7 +3091,7 @@ Django
              (add-hook 'ruby-mode-hook 'auto-complete-mode)))
 #+end_src
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
 (defun sacha/rspec-verify-single ()
   "Runs the specified example at the point of the current buffer."
   (interactive)
@@ -2997,6 +3113,146 @@ Django
     (fset 'rspec-verify-single 'sacha/rspec-verify-single)))
   
 #+end_src
+*** Purcell Ruby
+#+begin_src emacs-lisp
+;;; Basic ruby setup
+(require-package 'ruby-mode)
+(require-package 'ruby-hash-syntax)
+
+(add-auto-mode 'ruby-mode
+               "Rakefile\\'" "\\.rake\\'" "\\.rxml\\'"
+               "\\.rjs\\'" "\\.irbrc\\'" "\\.pryrc\\'" "\\.builder\\'" "\\.ru\\'"
+               "\\.gemspec\\'" "Gemfile\\'" "Kirkfile\\'")
+
+(setq ruby-use-encoding-map nil)
+
+(after-load 'ruby-mode
+  (define-key ruby-mode-map (kbd "TAB") 'indent-for-tab-command)
+
+  ;; Stupidly the non-bundled ruby-mode isn't a derived mode of
+  ;; prog-mode: we run the latter's hooks anyway in that case.
+  (add-hook 'ruby-mode-hook
+            (lambda ()
+              (unless (derived-mode-p 'prog-mode)
+                (run-hooks 'prog-mode-hook)))))
+
+(add-hook 'ruby-mode-hook 'subword-mode)
+
+;; TODO: hippie-expand ignoring : for names in ruby-mode
+;; TODO: hippie-expand adaptor for auto-complete sources
+
+;;; Inferior ruby
+(require-package 'inf-ruby)
+(require-package 'ac-inf-ruby)
+(after-load 'auto-complete
+  (add-to-list 'ac-modes 'inf-ruby-mode))
+(add-hook 'inf-ruby-mode-hook 'ac-inf-ruby-enable)
+(after-load 'inf-ruby
+  (define-key inf-ruby-mode-map (kbd "TAB") 'auto-complete))
+
+
+;;; Ruby compilation
+(require-package 'ruby-compilation)
+
+(after-load 'ruby-mode
+  (let ((m ruby-mode-map))
+    (define-key m [S-f7] 'ruby-compilation-this-buffer)
+    (define-key m [f7] 'ruby-compilation-this-test)
+    (define-key m [f6] 'recompile)))
+
+
+;;; Robe
+(require-package 'robe)
+(after-load 'ruby-mode
+  (add-hook 'ruby-mode-hook 'robe-mode))
+
+(defun sanityinc/maybe-enable-robe-ac ()
+  "Enable/disable robe auto-complete source as necessary."
+  (if robe-mode
+      (progn
+        (add-hook 'ac-sources 'ac-source-robe nil t)
+        (set-auto-complete-as-completion-at-point-function))
+    (remove-hook 'ac-sources 'ac-source-robe)))
+
+;(after-load 'robe
+;  (add-hook 'robe-mode-hook 'sanityinc/maybe-enable-robe-ac))
+
+
+;;; ri support
+(require-package 'yari)
+(defalias 'ri 'yari)
+
+
+;;; YAML
+
+(require-package 'yaml-mode)
+
+
+;;; ERB
+(require-package 'mmm-mode)
+(defun sanityinc/ensure-mmm-erb-loaded ()
+  (require 'mmm-erb))
+
+(require 'derived)
+
+(defun sanityinc/set-up-mode-for-erb (mode)
+  (add-hook (derived-mode-hook-name mode) 'sanityinc/ensure-mmm-erb-loaded)
+  (mmm-add-mode-ext-class mode "\\.erb\\'" 'erb))
+
+(let ((html-erb-modes '(html-mode html-erb-mode nxml-mode)))
+  (dolist (mode html-erb-modes)
+    (sanityinc/set-up-mode-for-erb mode)
+    (mmm-add-mode-ext-class mode "\\.r?html\\(\\.erb\\)?\\'" 'html-js)
+    (mmm-add-mode-ext-class mode "\\.r?html\\(\\.erb\\)?\\'" 'html-css)))
+
+(mapc 'sanityinc/set-up-mode-for-erb
+      '(coffee-mode js-mode js2-mode js3-mode markdown-mode textile-mode))
+
+(mmm-add-mode-ext-class 'html-erb-mode "\\.jst\\.ejs\\'" 'ejs)
+
+(add-auto-mode 'html-erb-mode "\\.rhtml\\'" "\\.html\\.erb\\'")
+(add-to-list 'auto-mode-alist '("\\.jst\\.ejs\\'"  . html-erb-mode))
+(mmm-add-mode-ext-class 'yaml-mode "\\.yaml\\'" 'erb)
+
+(dolist (mode (list 'js-mode 'js2-mode 'js3-mode))
+  (mmm-add-mode-ext-class mode "\\.js\\.erb\\'" 'erb))
+
+
+;;----------------------------------------------------------------------------
+;; Ruby - my convention for heredocs containing SQL
+;;----------------------------------------------------------------------------
+
+;; Needs to run after rinari to avoid clobbering font-lock-keywords?
+
+;; (require-package 'mmm-mode)
+;; (eval-after-load 'mmm-mode
+;;   '(progn
+;;      (mmm-add-classes
+;;       '((ruby-heredoc-sql
+;;          :submode sql-mode
+;;          :front "<<-?[\'\"]?\\(end_sql\\)[\'\"]?"
+;;          :save-matches 1
+;;          :front-offset (end-of-line 1)
+;;          :back "^[ \t]*~1$"
+;;          :delimiter-mode nil)))
+;;      (mmm-add-mode-ext-class 'ruby-mode "\\.rb\\'" 'ruby-heredoc-sql)))
+
+;(add-to-list 'mmm-set-file-name-for-modes 'ruby-mode)
+#+end_src
+[2015-04-23 Thu 14:10]
+*** Rails
+#+begin_src emacs-lisp
+(require-package 'rinari)
+(after-load 'rinari
+  (diminish 'rinari-minor-mode "Rin"))
+(global-rinari-mode)
+
+(defun update-rails-ctags ()
+  (interactive)
+  (let ((default-directory (or (rinari-root) default-directory)))
+    (shell-command (concat "ctags -a -e -f " rinari-tags-file-name " --tag-relative -R app lib vendor test"))))
+#+end_src
+[2015-04-23 Thu 14:16]
 ** Ledger (personal finance): Make it easier to review my credit card transactions
 
 #+begin_src emacs-lisp
@@ -3164,7 +3420,7 @@ Use with =#+COLUMNS: %40ITEM %17Effort(Estimated){:} %CLOCKSUM=, =#+BEGIN: colum
 ** Workarounds
 *** color-theme sometimes comes across lists. Odd!
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
   (defadvice face-attribute (around sacha activate)
     (if (symbolp (ad-get-arg 0))
         ad-do-it))
@@ -3726,9 +3982,6 @@ cool. On Windows, these things help a little.
  #+end_src
 
 ** Path
-
- #+begin_src emacs-lisp
- (setenv "PATH" (concat "\"c:/program files/postgresql/9.3/bin;\"" (getenv "PATH")))
- #+end_src
-
- 
+#+begin_src emacs-lisp
+(setenv "PATH" (concat "\"c:/program files/postgresql/9.3/bin;\"" (getenv "PATH")))
+#+end_src
