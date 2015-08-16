@@ -1814,7 +1814,154 @@ Also, =visual-line-mode= is so much better than =auto-fill-mode=. It doesn't act
    I've tried to wrap my head around how Sacha Chua has her org mode setup, but I think I've gotten too use to the way Bernt Hansen has setup. I have used his method for several years and I guess it's just hard coded in my muscle memory.  Nevertheless, I have the config saved in an external file org-mode.org
 ** Coding
 I keep switching between auto-complete mode and company mode for autocompletion
+*** Casey Muratori Follow along code
+#+begin_src emacs-lisp
+(setq casey-todo-file "h:/handmade/code/todo.txt")
+(setq casey-log-file "h:/handmade/code/log.txt")
+(setq casey-makescript "build.bat")
+#+end_src
 
+ Setup my compilation mode
+#+begin_src emacs-lisp
+(defun casey-big-fun-compilation-hook ()
+  (make-local-variable 'truncate-lines)
+  (setq truncate-lines nil)
+)
+
+(add-hook 'compilation-mode-hook 'casey-big-fun-compilation-hook)
+#+end_src
+
+todo and log files
+#+begin_src emacs-lisp
+(defun load-todo ()
+  (interactive)
+  (find-file casey-todo-file)
+)
+(define-key global-map "\et" 'load-todo)
+
+(defun insert-timeofday ()
+   (interactive "*")
+   (insert (format-time-string "---------------- %a, %d %b %y: %I:%M%p")))
+(defun load-log ()
+  (interactive)
+  (find-file casey-log-file)
+  (if (boundp 'longlines-mode) ()
+    (longlines-mode 1)
+    (longlines-show-hard-newlines))
+  (if (equal longlines-mode t) ()
+    (longlines-mode 1)
+    (longlines-show-hard-newlines))
+  (end-of-buffer)
+  (newline-and-indent)
+  (insert-timeofday)
+  (newline-and-indent)
+  (newline-and-indent)
+  (end-of-buffer)
+)
+(define-key global-map "\eT" 'load-log)
+#+end_src
+
+Header and source file headers
+#+begin_src emacs-lisp :tangle no
+  (defun casey-header-format ()
+     "Format the given file as a header file."
+     (interactive)
+     (setq BaseFileName (file-name-sans-extension (file-name-nondirectory buffer-file-name)))
+     (insert "#if !defined(")
+     (push-mark)
+     (insert BaseFileName)
+     (upcase-region (mark) (point))
+     (pop-mark)
+     (insert "_H)\n")
+     (insert "/* ========================================================================\n")
+     (insert "   $File: $\n")
+     (insert "   $Date: $\n")
+     (insert "   $Revision: $\n")
+     (insert "   $Creator: Daniel Newman $\n")
+     (insert "   $Notice: (C) Copyright 2015 by Daniel Newman. All Rights Reserved. $\n")
+     (insert "   ======================================================================== */\n")
+     (insert "\n")
+     (insert "#define ")
+     (push-mark)
+     (insert BaseFileName)
+     (upcase-region (mark) (point))
+     (pop-mark)
+     (insert "_H\n")
+     (insert "#endif")
+  )
+
+  (defun casey-source-format ()
+     "Format the given file as a source file."
+     (interactive)
+     (setq BaseFileName (file-name-sans-extension (file-name-nondirectory buffer-file-name)))
+     (insert "/* ========================================================================\n")
+     (insert "   $File: $\n")
+     (insert "   $Date: $\n")
+     (insert "   $Revision: $\n")
+     (insert "   $Creator: Daniel Newman $\n")
+     (insert "   $Notice: (C) Copyright 2015 by Daniel Newman. All Rights Reserved. $\n")
+     (insert "   ======================================================================== */\n")
+  )
+
+  (cond ((file-exists-p buffer-file-name) t)
+        ((string-match "[.]hin" buffer-file-name) (casey-source-format))
+        ((string-match "[.]cin" buffer-file-name) (casey-source-format))
+        ((string-match "[.]h" buffer-file-name) (casey-header-format))
+        ((string-match "[.]cpp" buffer-file-name) (casey-source-format)))
+#+end_src
+
+devenv.com error parsing
+#+begin_src emacs-lisp
+  (add-to-list 'compilation-error-regexp-alist 'casey-devenv)
+  (add-to-list 'compilation-error-regexp-alist-alist '(casey-devenv
+   "*\\([0-9]+>\\)?\\(\\(?:[a-zA-Z]:\\)?[^:(\t\n]+\\)(\\([0-9]+\\)) : \\(?:see declaration\\|\\(?:warnin\\(g\\)\\|[a-z ]+\\) C[0-9]+:\\)"
+    2 3 nil (4)))
+#+end_src
+
+Compilation
+#+begin_src emacs-lisp
+(setq compilation-directory-locked nil)
+(setq compilation-context-lines 0)
+(setq compilation-error-regexp-alist
+    (cons '("^\\([0-9]+>\\)?\\(\\(?:[a-zA-Z]:\\)?[^:(\t\n]+\\)(\\([0-9]+\\)) : \\(?:fatal error\\|warnin\\(g\\)\\) C[0-9]+:" 2 3 nil (4))
+     compilation-error-regexp-alist))
+
+(defun find-project-directory-recursive ()
+  "Recursively search for a makefile."
+  (interactive)
+  (if (file-exists-p casey-makescript) t
+      (cd "../")
+      (find-project-directory-recursive)))
+
+(defun lock-compilation-directory ()
+  "The compilation process should NOT hunt for a makefile"
+  (interactive)
+  (setq compilation-directory-locked t)
+  (message "Compilation directory is locked."))
+
+(defun unlock-compilation-directory ()
+  "The compilation process SHOULD hunt for a makefile"
+  (interactive)
+  (setq compilation-directory-locked nil)
+  (message "Compilation directory is roaming."))
+
+(defun find-project-directory ()
+  "Find the project directory."
+  (interactive)
+  (setq find-project-from-directory default-directory)
+  (switch-to-buffer-other-window "*compilation*")
+  (if compilation-directory-locked (cd last-compilation-directory)
+  (cd find-project-from-directory)
+  (find-project-directory-recursive)
+  (setq last-compilation-directory default-directory)))
+
+(defun make-without-asking ()
+  "Make the current build."
+  (interactive)
+  (if (find-project-directory) (compile casey-makescript))
+  (other-window 1))
+(define-key global-map "\em" 'make-without-asking)
+#+end_src
 *** Company
 #+begin_src emacs-lisp
 (require-package 'company)
@@ -3129,6 +3276,21 @@ Django
 #+begin_src emacs-lisp
 (require-package 'python-django)
 ;;(require-package 'pony-mode)
+#+end_src
+*** Todos
+Bright-red TODOs
+#+begin_src emacs-lisp
+ (setq fixme-modes '(c++-mode c-mode emacs-lisp-mode))
+ (make-face 'font-lock-fixme-face)
+ (make-face 'font-lock-note-face)
+ (mapc (lambda (mode)
+	 (font-lock-add-keywords
+	  mode
+	  '(("\\<\\(TODO\\)" 1 'font-lock-fixme-face t)
+            ("\\<\\(NOTE\\)" 1 'font-lock-note-face t))))
+	fixme-modes)
+ (modify-face 'font-lock-fixme-face "Red" nil nil t nil t nil nil)
+ (modify-face 'font-lock-note-face "Dark Green" nil nil t nil t nil nil)
 #+end_src
 *** Tag files
 
