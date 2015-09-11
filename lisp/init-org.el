@@ -6,6 +6,7 @@
 ;;input from sanityinc emacs config
 (require-package 'org)
 (require-package 'org-plus-contrib)
+(require-package 'org-pomodoro)
 (require-package 'bbdb)
 (require-package 'org-fstree)
 (require-package 'deft)
@@ -114,7 +115,6 @@
 (global-set-key (kbd "<f9> g") 'gnus)
 (global-set-key (kbd "<f9> h") 'bh/hide-other)
 (global-set-key (kbd "<f9> n") 'bh/toggle-next-task-display)
-(global-set-key (kbd "<f9> w") 'widen)
 
 (global-set-key (kbd "<f9> I") 'bh/punch-in)
 (global-set-key (kbd "<f9> O") 'bh/punch-out)
@@ -138,6 +138,8 @@
 (global-set-key (kbd "C-<f11>") 'org-clock-in)
 (global-set-key (kbd "C-s-<f12>") 'bh/save-then-publish)
 (global-set-key (kbd "C-c c") 'org-capture)
+(global-set-key (kbd "C-c C-x C-i") 'org-pomodoro)
+(global-set-key (kbd "C-c C-x C-o") 'org-pomodoro)
 
 (defun bh/hide-other ()
   (interactive)
@@ -168,8 +170,8 @@
 
 ;;5.1 TODO Keywords
 (setq org-todo-keywords
-      (quote ((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)")
-              (sequence "WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "PHONE" "MEETING"))))
+      (quote ((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!/!)")
+              (sequence "WAITING(w@/!)" "HOLD(h@/!)" "SOMEDAY(o)" "|" "CANCELLED(c@/!)"))))
 
 (setq org-todo-keyword-faces
       (quote (("TODO" :foreground "red" :weight bold)
@@ -177,9 +179,8 @@
               ("DONE" :foreground "forest green" :weight bold)
               ("WAITING" :foreground "orange" :weight bold)
               ("HOLD" :foreground "magenta" :weight bold)
-              ("CANCELLED" :foreground "forest green" :weight bold)
-              ("MEETING" :foreground "forest green" :weight bold)
-              ("PHONE" :foreground "forest green" :weight bold))))
+              ("SOMEDAY" :foreground "purple" :weight bold)
+              ("CANCELLED" :foreground "forest green" :weight bold))))
 
 ;;5.2 Fast Todo Selection
 (setq org-use-fast-todo-selection t)
@@ -191,9 +192,9 @@
               ("WAITING" ("WAITING" . t))
               ("HOLD" ("WAITING") ("HOLD" . t))
               (done ("WAITING") ("HOLD"))
-              ("TODO" ("WAITING") ("CANCELLED") ("HOLD"))
-              ("NEXT" ("WAITING") ("CANCELLED") ("HOLD"))
-              ("DONE" ("WAITING") ("CANCELLED") ("HOLD")))))
+              ("TODO" ("WAITING") ("CANCELLED") ("HOLD") ("SOMEDAY"))
+              ("NEXT" ("WAITING") ("CANCELLED") ("HOLD") ("SOMEDAY"))
+              ("DONE" ("WAITING") ("CANCELLED") ("HOLD") ("SOMEDAY")))))
 
 ;;6.1 Capture Templates
 (setq org-directory "~/personal/org")
@@ -203,22 +204,13 @@
 (setq org-capture-templates
       (quote (("t" "todo" entry (file "~/personal/org/refile.org")
                "* TODO %?\n%U\n%a\n" :clock-in t :clock-resume t)
-              ("r" "respond" entry (file "~/personal/org/refile.org")
-               "* NEXT Respond to %:from on %:subject\nSCHEDULED: %t\n%U\n%a\n" :clock-in t :clock-resume t :immediate-finish t)
               ("n" "note" entry (file "~/personal/org/refile.org")
                "* %? :NOTE:\n%U\n%a\n" :clock-in t :clock-resume t)
               ("j" "Journal" entry (file+datetree "~/personal/org/diary.org")
                "* %?\n%U\n" :clock-in t :clock-resume t)
-              ("w" "org-protocol" entry (file "~/personal/org/refile.org")
-               "* TODO Review %c\n%U\n" :immediate-finish t)
-              ("m" "Meeting" entry (file "~/personal/org/refile.org")
-               "* MEETING with %? :MEETING:\n%U" :clock-in t :clock-resume t)
-              ("p" "Phone call" entry (file "~/personal/org/refile.org")
-               "* PHONE %? :PHONE:\n%U" :clock-in t :clock-resume t)
               ("h" "Habit" entry (file "~/personal/org/refile.org")
-               "* NEXT %?\n%U\n%a\nSCHEDULED: %(format-time-string \"<%Y-%m-%d %a .+1d/3d>\")\n:PROPERTIES:\n:STYLE: habit\n:REPEAT_TO_STATE: NEXT\n:END:\n")
-              ("c" "Clocked notes" entry (clock)
-               "* %? :NOTE:\n%U\n%a\n" :clock-in t :clock-resume t))))
+               "* NEXT %?\n%U\n%a\nSCHEDULED: %(format-time-string \"<%Y-%m-%d %a
+               .+1d/3d>\")\n:PROPERTIES:\n:STYLE: habit\n:REPEAT_TO_STATE: NEXT\n:END:\n"))))
 
 
 ;; Remove empty LOGBOOK drawers on clock out
@@ -226,7 +218,7 @@
   (interactive)
   (save-excursion
     (beginning-of-line 0)
-    (org-remove-empty-drawer-at "LOGBOOK" (point))))
+    (org-remove-empty-drawer-at (point))))
 
 (add-hook 'org-clock-out-hook 'bh/remove-empty-drawer-on-clock-out 'append)
 
@@ -330,11 +322,14 @@
                             (org-agenda-sorting-strategy
                              '(category-keep))))
                 (tags-todo "-CANCELLED+WAITING|HOLD/!"
-                           ((org-agenda-overriding-header "Waiting and Postponed Tasks")
+                           ((org-agenda-overriding-header (concat "Waiting and Postponed Tasks"
+                                                                  (if bh/hide-scheduled-and-waiting-next-tasks
+                                                                      ""
+                                                                    " (including WAITING and SCHEDULED tasks)")))
                             (org-agenda-skip-function 'bh/skip-stuck-projects)
                             (org-tags-match-list-sublevels nil)
-                            (org-agenda-todo-ignore-scheduled t)
-                            (org-agenda-todo-ignore-deadlines t)))
+                            (org-agenda-todo-ignore-scheduled bh/hide-scheduled-and-waiting-next-tasks)
+                            (org-agenda-todo-ignore-deadlines bh/hide-scheduled-and-waiting-next-tasks)))
                 (tags "-REFILE/"
                       ((org-agenda-overriding-header "Tasks to Archive")
                        (org-agenda-skip-function 'bh/skip-non-archivable-tasks)
