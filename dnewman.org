@@ -43,7 +43,7 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
 **** variables to used in config
 #+begin_src emacs-lisp
 ;; Initialize a few variables
-(defconst *spell-check-support-enabled* nil) ;; Enable with t if you prefer
+(defconst *spell-check-support-enabled* t) ;; Enable with t if you prefer
 (defconst *is-a-mac* (eq system-type 'darwin))
 (defconst *is-windows* (eq system-type 'windows-nt))
 (defconst *is-linux* (eq system-type 'gnu/linux))
@@ -883,8 +883,8 @@ Start a emacs server so new instances aren't created when opening new files
 ;; TODO: smerge-mode
 (require-package 'magit)
 (require-package 'git-blame)
-(require-package 'git-commit-mode)
-(require-package 'git-rebase-mode)
+;;(require-package 'git-commit-mode)
+;;(require-package 'git-rebase-mode)
 (require-package 'gitignore-mode)
 (require-package 'gitconfig-mode)
 (require-package 'git-messenger) ;; Though see also vc-annotate's "n" & "p" bindings

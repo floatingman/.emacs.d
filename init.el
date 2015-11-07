@@ -15,14 +15,16 @@
 (add-to-list 'load-path "~/.emacs.d/site-lisp/org-mode/lisp")
 (add-to-list 'load-path "~/.emacs.d/site-lisp/org-mode/contrib/lisp")
 
+
+
 ;; Load the rest of the packages
 (package-initialize nil)
 (setq package-enable-at-startup nil)
 (org-babel-load-file "~/.emacs.d/dnewman.org")
 
+;; Load some custom configs 
 (require 'init-org) ;; load org-mode
 (require 'init-mswindows)
-
 
 
 
