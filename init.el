@@ -44,6 +44,8 @@
    [default bold shadow italic underline bold bold-italic bold])
  '(ansi-color-names-vector
    (vector "#657b83" "#dc322f" "#859900" "#b58900" "#268bd2" "#d33682" "#2aa198" "#fdf6e3"))
+ '(browse-url-browser-function (quote browse-url-generic))
+ '(browse-url-generic-program "google-chrome-stable")
  '(custom-enabled-themes (quote (lush)))
  '(custom-safe-themes
    (quote
@@ -68,6 +70,7 @@
      (package :foreground "#cc7832")
      (deprecated :strike-through "#a9b7c6"))))
  '(fci-rule-color "#eee8d5")
+ '(httpd-port 7890)
  '(safe-local-variable-values
    (quote
     ((no-byte-compile t)
