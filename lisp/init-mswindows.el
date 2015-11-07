@@ -8,6 +8,7 @@
            )
           )
   (setq null-device "/dev/null")
+  (setq ispell-program-name "C:\\cygwin64\\bin\\aspell.exe")
   (setq find-program "C:\\cygwin64\\bin\\find.exe"
         grep-program "C:\\cygwin64\\bin\\grep.exe")
   )

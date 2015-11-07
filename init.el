@@ -73,6 +73,7 @@
      (deprecated :strike-through "#a9b7c6"))))
  '(fci-rule-color "#eee8d5")
  '(httpd-port 7890)
+
  '(safe-local-variable-values
    (quote
     ((no-byte-compile t)
