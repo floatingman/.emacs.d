@@ -360,7 +360,7 @@ It's best to keep sensitive information in a separate file so you can publish yo
 (require-package 'diminish)
 (require-package 'scratch)
 (require-package 'mwe-log-commands)
-;(require-package 'smart-mode-line)
+(require-package 'smart-mode-line)
 (require-package 'guide-key)
 (require-package 'key-chord)
 ;(require-package 'smartscan)
