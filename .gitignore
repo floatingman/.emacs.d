@@ -68,3 +68,18 @@ flycheck*
 ehthumbs.db
 Icon?
 Thumbs.db
+
+# Misc Files #
+##############
+dnewman.el
+savehist
+bookmarks
+projectile-bookmarks.eld
+sachaorgmode.org
+*.txt
+eshell
+recentf
+request/
+saved-places
+rake.cache
+site-lisp/org-mode
