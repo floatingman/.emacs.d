@@ -3708,7 +3708,12 @@ Use with =#+COLUMNS: %40ITEM %17Effort(Estimated){:} %CLOCKSUM=, =#+BEGIN: colum
 #+begin_src emacs-lisp
 ;(setq eimp-mogrify-program "c:/Program Files/ImageMagick-6.8.3-Q16/mogrify.exe")
 #+end_src
-
+**** Load customizations
+#+begin_src emacs-lisp
+(setq custom-file "~/.emacs.d/.emacs-custom.el")
+(load custom-file)
+#+end_src
+[2015-12-16 Wed 13:50]
 ** Advanced stuff / things I tend to forget about
 *** Editing multiple things
 *** Edit list   :drill:
