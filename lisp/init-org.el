@@ -66,7 +66,7 @@
 (add-hook 'message-mode-hook '(lambda () (setq fill-column 72))
           'append)
 
-(setq org-agenda-files (quote ("~/personal/org" "~/personal/org/danielnewmandesign")))
+(setq org-agenda-files (quote ("~/Dropbox/personal/org" "~/Dropbox/personal/org/danielnewmandesign")))
 
 
 ;; flyspell mode for spell checking everywhere
@@ -197,20 +197,19 @@
               ("DONE" ("WAITING") ("CANCELLED") ("HOLD") ("SOMEDAY")))))
 
 ;;6.1 Capture Templates
-(setq org-directory "~/personal/org")
-(setq org-default-notes-file "~/personal/org/refile.org")
+(setq org-directory "~/Dropbox/personal/org")
+(setq org-default-notes-file "~/Dropbox/personal/org/refile.org")
 
 ;; Capture templates for: TODO tasks, Notes, appointments, phone calls, and org-protocol
 (setq org-capture-templates
-      (quote (("t" "todo" entry (file "~/personal/org/refile.org")
+      (quote (("t" "todo" entry (file "~/Dropbox/personal/org/refile.org")
                "* TODO %?\n%U\n%a\n" :clock-in t :clock-resume t)
-              ("n" "note" entry (file "~/personal/org/refile.org")
+              ("n" "note" entry (file "~/Dropbox/personal/org/refile.org")
                "* %? :NOTE:\n%U\n%a\n" :clock-in t :clock-resume t)
-              ("j" "Journal" entry (file+datetree "~/personal/org/diary.org")
+              ("j" "Journal" entry (file+datetree "~/Dropbox/personal/org/diary.org")
                "* %?\n%U\n" :clock-in t :clock-resume t)
-              ("h" "Habit" entry (file "~/personal/org/refile.org")
-               "* NEXT %?\n%U\n%a\nSCHEDULED: %(format-time-string \"<%Y-%m-%d %a
-               .+1d/3d>\")\n:PROPERTIES:\n:STYLE: habit\n:REPEAT_TO_STATE: NEXT\n:END:\n"))))
+              ("h" "Habit" entry (file "~/Dropbox/personal/org/refile.org")
+               "* NEXT %?\n%U\n%a\nSCHEDULED: %(format-time-string \"<%Y-%m-%d .+1d/3d>\")\n:PROPERTIES:\n:STYLE: habit\n:REPEAT_TO_STATE: NEXT\n:END:\n"))))
 
 
 ;; Remove empty LOGBOOK drawers on clock out
@@ -906,25 +905,11 @@ Skip project and sub-project tasks, habits, and loose non-project tasks."
       (org-display-inline-images)
     (error nil)))
 
-(org-babel-do-load-languages
- (quote org-babel-load-languages)
- (quote ((emacs-lisp . t)
-         (dot . t)
-         (ditaa . t)
-         (R . t)
-         (python . t)
-         (ruby . t)
-         (gnuplot . t)
-         (clojure . t)
-         (sh . t)
-         (ledger . t)
-         (org . t)
-         (plantuml . t)
-         (latex . t))))
 
-; Do not prompt to confirm evaluation
-; This may be dangerous - make sure you understand the consequences
-; of setting this -- see the docstring for details
+
+                                        ; Do not prompt to confirm evaluation
+                                        ; This may be dangerous - make sure you understand the consequences
+                                        ; of setting this -- see the docstring for details
 (setq org-confirm-babel-evaluate nil)
 
 ; Use fundamental mode when editing plantuml blocks with C-c '
@@ -1548,7 +1533,7 @@ so change the default 'F' binding in the agenda to allow both"
 
 ;;18.3.3 Use The Diary For Holidays And Appointments
 (setq org-agenda-include-diary nil)
-(setq org-agenda-diary-file "~/personal/org/diary.org")
+(setq org-agenda-diary-file "~/Dropbox/personal/org/diary.org")
 
 (setq org-agenda-insert-diary-extract-time t)
 
@@ -2053,7 +2038,7 @@ Late deadlines first, then scheduled, then non-late deadlines"
 
 ;; deft setup
 (setq deft-extension "org")
-(setq deft-directory "~/personal/org/deft/")
+(setq deft-directory "~/Dropbox/personal/org/deft/")
 (setq deft-text-mode 'org-mode)
 (global-set-key (kbd "C-x t") 'deft)
 

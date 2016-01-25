@@ -84,3 +84,5 @@ saved-places
 rake.cache
 site-lisp/org-mode
 .emacs-custom.el
+projectile.cache 
+ido.last 
