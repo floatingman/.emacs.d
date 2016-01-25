@@ -657,62 +657,6 @@ Lazy people like me never want to type "yes" when "y" will suffice.
 #+end_src
 
 
-*** Minibuffer editing - more space!
-
-    Sometimes you want to be able to do fancy things with the text
-    that you're entering into the minibuffer. Sometimes you just want
-    to be able to read it, especially when it comes to lots of text.
-    This binds =C-M-e= in a minibuffer) so that you can edit the
-    contents of the minibuffer before submitting it.
-
-#+begin_src emacs-lisp :tangle no
-  (use-package miniedit
-    :ensure miniedit
-    :commands minibuffer-edit
-    :init (miniedit-install))
-#+end_src
-
-*** Set up a light-on-dark color scheme
-
-I like light on dark because I find it to be more restful. The
-color-theme in ELPA was a little odd, though, so we define some advice to make
-it work. Some things still aren't quite right.
-
-#+begin_src emacs-lisp :tangle no
-  (defadvice color-theme-alist (around sacha activate)
-    (if (ad-get-arg 0)
-        ad-do-it
-      nil))
-  (use-package color-theme :ensure t)
-  (use-package color-theme-solarized :ensure t)
-  (defun sacha/setup-color-theme ()
-    (interactive)
-    (color-theme-solarized-dark)
-    (set-face-foreground 'secondary-selection "darkblue")
-    (set-face-background 'secondary-selection "lightblue")
-    (set-face-background 'font-lock-doc-face "black")
-    (set-face-foreground 'font-lock-doc-face "wheat")
-    (set-face-background 'font-lock-string-face "black"))
- 
-  (use-package color-theme
-    :init
-    (when window-system
-      (sacha/setup-color-theme)))
-#+end_src
-
-I sometimes need to switch to a lighter background for screenshots.
-For that, I use =color-theme-vim=.
-
-Some more tweaks to solarized:
-#+begin_src emacs-lisp :tangle no
-(when window-system
-  (custom-set-faces
-   '(erc-input-face ((t (:foreground "antique white"))))
-   '(helm-selection ((t (:background "ForestGreen" :foreground "black"))))
-   '(outline-1 ((t (:inherit font-lock-function-name-face :foreground "cornflower blue"))))))
-
-#+end_src
-
 *** UTF-8
 
 From http://www.wisdomandwonder.com/wordpress/wp-content/uploads/2014/03/C3F.html
@@ -1485,20 +1429,6 @@ This promises to be a fast way to find things. Let's bind it to =Ctrl-Shift-S= t
   )
 #+end_src
 
-*** Windmove - switching between windows
-
-Windmove lets you move between windows with something more natural than cycling through =C-x o= (=other-window=).
-Windmove doesn't behave well with Org, so we need to use different keybindings.
-
-#+begin_src emacs-lisp :tangle no
-  (use-package windmove
-    :bind
-    (("<f2> <right>" . windmove-right)
-     ("<f2> <left>" . windmove-left)
-     ("<f2> <up>" . windmove-up)
-     ("<f2> <down>" . windmove-down)
-     ))
-#+end_src
 *** Make window splitting more useful
 
 #+begin_src emacs-lisp
@@ -1620,15 +1550,6 @@ register. Using registers for all these file shortcuts is probably a bit of a wa
    '((?i . "~/.emacs.d/dnewman.org")
      (?o . "~/.emacs.d/org-mode.org")
      (?t . "~/personal/org/todo.org")))
-#+end_src
-
-*** Smartscan
-
-From https://github.com/itsjeyd/emacs-config/blob/emacs24/init.el
-
-#+begin_src emacs-lisp :tangle no
-(use-package smartscan
-  :config (global-smartscan-mode t))
 #+end_src
 
 *** Dired
@@ -1854,15 +1775,6 @@ Also, =visual-line-mode= is so much better than =auto-fill-mode=. It doesn't act
 #+begin_src emacs-lisp
 (remove-hook 'text-mode-hook #'turn-on-auto-fill)
 (add-hook 'text-mode-hook 'turn-on-visual-line-mode)
-#+end_src
-*** Unicode
-
-#+begin_src emacs-lisp :tangle no
-(defmacro sacha/insert-unicode (unicode-name)
-  `(lambda () (interactive)
-     (insert-char (cdr (assoc-string ,unicode-name (ucs-names))))))
-(bind-key "C-x 8 s" (sacha/insert-unicode "ZERO WIDTH SPACE"))
-(bind-key "C-x 8 S" (sacha/insert-unicode "SNOWMAN"))
 #+end_src
 ** Org
    I've tried to wrap my head around how Sacha Chua has her org mode setup, but I think I've gotten too use to the way Bernt Hansen has setup. I have used his method for several years and I guess it's just hard coded in my muscle memory.  Nevertheless, I have the config saved in an external file org-mode.org
@@ -2640,7 +2552,7 @@ redoing web development config to follow Purcell's config
   (tagedit-add-paredit-like-keybindings)
   (add-hook 'sgml-mode-hook (lambda () (tagedit-mode 1))))
 
-(add-auto-mode 'html-mode "\\.(jsp|tmpl)\\'")
+(add-auto-mode 'html-mode "\\.(jsp|tmpl|ejs)\\'")
 
 ;; Note: ERB is configured in init-ruby-mode
 #+end_src
@@ -2708,50 +2620,6 @@ redoing web development config to follow Purcell's config
 (add-hook 'css-mode-hook 'turn-on-css-eldoc)
 #+end_src
 **** javascript
-Trying out a new config
-#+begin_src emacs-lisp :tangle no
-(require-package 'js3-mode)
-(defun ome-js3-mode-setup ()
-  (add-hook 'js3-mode-hook
-            (lambda ()
-              (setq js3-auto-indent-p t
-                    js3-curly-indent-offset 0
-                    js3-enter-indents-newline t
-                    js3-expr-indent-offset 2
-                    js3-indent-on-enter-key t
-                    js3-lazy-commas t
-                    js3-lazy-dots t
-                    js3-lazy-operators t
-                    js3-paren-indent-offset 2
-                    js3-square-indent-offset 4)
-              (linum-mode 1)))
-
-            ;; https://github.com/Fuco1/smartparens/issues/239
-            ;; (defadvice js3-enter-key (after fix-sp-state activate)
-            ;;   (setq sp-last-operation 'sp-self-insert))
-
-            ;; (sp-local-pair 'js3-mode
-            ;;                "{"
-            ;;                nil
-            ;;                :post-handlers
-            ;;                '((ome-create-newline-and-enter-sexp js3-enter-key))))
-  (add-to-list 'ac-modes 'js3-mode))
-
-(require-package 'tern)
-(defun ome-tern-setup ()
-  (when (el-get-package-installed-p 'js2-mode)
-    (add-hook 'js2-mode-hook (lambda () (tern-mode t))))
-  (when (el-get-package-installed-p 'js3-mode)
-    (add-hook 'js3-mode-hook (lambda () (tern-mode t))))
-  (setq tern-command (cons (executable-find "tern") '()))
-  (eval-after-load 'tern
-    '(progn
-       (require 'tern-auto-complete)
-       (tern-ac-setup))))
-
-
-#+end_src
-
 #+begin_src emacs-lisp 
 (require-package 'json-mode)
 (maybe-require-package 'js2-mode)
@@ -2850,96 +2718,17 @@ Trying out a new config
     (add-hook 'skewer-mode-hook
               (lambda () (inferior-js-keys-mode -1)))))
 #+end_src
-[2015-04-22 Wed 15:24]
 **** emmet
 #+begin_src emacs-lisp
 (require-package 'emmet-mode)
-;;(require-package 'helm-emmet)
-(require-package 'company-web)
+;;(require-package 'company-web)
 #+end_src
 
 *** Tab width of 2 is compact and readable
 #+begin_src emacs-lisp
     (setq-default tab-width 2)
 #+end_src
-*** Adapt to being on Windows
-
-I'm on Windows, so I use Cygwin to add Unix-y tools to make my life easier. 
-These config snippets seem to help too.
-#+begin_src emacs-lisp :tangle no
-  (when (eq system-type 'windows-nt)
-	  (setenv "CYGWIN" "nodosfilewarning")
-    (setq shell-file-name "C:/emacs/libexec/emacs/24.4/i686-pc-mingw32/cmdproxy.exe")
-    (add-hook 'comint-output-filter-functions 'shell-strip-ctrl-m nil t)
-    (add-hook 'comint-output-filter-functions 'comint-watch-for-password-prompt nil t))
-#+end_src
-
 *** Emacs Lisp
-**** Edebug
-
-Did you know edebug has a trace function? I didn't. Thanks, agumonkey!
-
-#+begin_src emacs-lisp
-(setq edebug-trace t)
-#+end_src
-
-While edebugging, use T to view a trace buffer (=*edebug-trace*=).
-Emacs will quickly execute the rest of your code, printing out the
-arguments and return values for each expression it evaluates.
-
-**** Eldoc
-Eldoc provides minibuffer hints when working with Emacs Lisp.
-#+begin_src emacs-lisp :tangle no
-(use-package "eldoc"
-  :diminish eldoc-mode
-  :commands turn-on-eldoc-mode
-  :init
-  (progn
-  (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
-  (add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
-  (add-hook 'ielm-mode-hook 'turn-on-eldoc-mode)))
-#+end_src
-**** Refactoring  :drill:
-     SCHEDULED: <2013-03-03 Sun>
-     :PROPERTIES:
-     :ID:       99ac7ddb-08ef-46c4-8fa8-8a45164f9ef4
-     :DRILL_LAST_INTERVAL: 3.86
-     :DRILL_REPEATS_SINCE_FAIL: 2
-     :DRILL_TOTAL_REPEATS: 2
-     :DRILL_FAILURE_COUNT: 1
-     :DRILL_AVERAGE_QUALITY: 2.5
-     :DRILL_EASE: 2.36
-     :DRILL_LAST_QUALITY: 3
-     :DRILL_LAST_REVIEWED: [2013-02-27 Wed 21:18]
-     :END:
-
-More things that I need to get used to...
-
-#+begin_src emacs-lisp :tangle no
-;; C-c C-v l : elint current buffer in clean environment.
-;; C-c C-v L : elint current buffer by multiple emacs binaries.
-;;             See `erefactor-lint-emacsen'
-;; C-c C-v r : Rename symbol in current buffer.
-;;             Resolve `let' binding as long as i can.
-;; C-c C-v R : Rename symbol in requiring modules and current buffer.
-;; C-c C-v h : Highlight current symbol in this buffer
-;;             and suppress `erefacthr-highlight-mode'.
-;; C-c C-v d : Dehighlight all by above command.
-;; C-c C-v c : Switch prefix bunch of symbols.
-;;             ex: '(hoge-var hoge-func) -> '(foo-var foo-func)
-;; C-c C-v ? : Display flymake elint warnings/errors
-
-  (use-package erefactor
-    :ensure erefactor
-    :config
-    (define-key emacs-lisp-mode-map "\C-c\C-v" erefactor-map))
-#+end_src
-**** Jumping to code
-
-#+begin_src emacs-lisp :tangle no
-(define-key emacs-lisp-mode-map (kbd "C-c .") 'find-function-at-point)
-(bind-key "C-c f" 'find-function)
-#+end_src
 **** Sorting
 
 #+begin_src emacs-lisp
@@ -2970,6 +2759,17 @@ couldn't figure things out (ex: syntax errors)."
           (insert (mapconcat 'cdr list "\n"))))))
 #+end_src
 *** Snippets
+#+begin_src emacs-lisp
+(require-package 'yasnippet)
+(add-hook 'hippie-expand-try-functions-list 'yas-hippie-try-expand)
+(setq yas-key-syntaxes '("w_" "w_." "^ "))
+(setq yas-snippet-dirs "~/.emacs.d/site-lisp/yasnippet-snippets")
+(setq yas-expand-only-for-last-commands '(self-insert-command))
+(yas-global-mode 1)
+
+
+#+end_src
+
     #+begin_src emacs-lisp :tangle no
       (use-package yasnippet
         :ensure t
@@ -3013,7 +2813,7 @@ From http://emacswiki.org/emacs/Yasnippet
 #+end_src
 
 From https://github.com/pcmantz/elisp/blob/master/my-bindings.el
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
   (setq default-cursor-color "gray")
   (setq yasnippet-can-fire-cursor-color "purple")
 
@@ -3052,7 +2852,7 @@ From https://github.com/pcmantz/elisp/blob/master/my-bindings.el
 #+end_src
 
 This requires me to modify the behaviour of hippie-expand so that it doesn't ding so much.
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp 
   (defun sacha/hippie-expand-maybe (arg)
     "Try to expand text before point, using multiple methods.
   The expansion functions in `hippie-expand-try-functions-list' are
@@ -3096,14 +2896,6 @@ This requires me to modify the behaviour of hippie-expand so that it doesn't din
                 (message "Undoing expansions"))))))
 
 #+end_src
-
-yas/expand
-yas-expand
-    
-because
-because
-Because
-
 *** Clojure
 #+begin_src emacs-lisp
 (require-package 'clojure-mode)
