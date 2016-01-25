@@ -1865,7 +1865,7 @@ Late deadlines first, then scheduled, then non-late deadlines"
 (setq org-remove-highlights-with-change t)
 
 ;;18.26 Getting Up To Date Org-Mode Info Documentation
-(add-to-list 'Info-default-directory-list "~/.emacs.d/vendor/org-mode/doc")
+;(add-to-list 'Info-default-directory-list "~/.emacs.d/vendor/org-mode/doc")
 
 
 ;;18.27 Prefer Future Dates Or Not?
