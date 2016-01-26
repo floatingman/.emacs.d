@@ -82,8 +82,8 @@ recentf
 request/
 saved-places
 rake.cache
-site-lisp/org-mode
+site-lisp/
 .emacs-custom.el
 projectile.cache 
 ido.last 
-site-lisp/yasnippet-snippets
+
