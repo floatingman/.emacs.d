@@ -1,4 +1,4 @@
-#+TITLE: Daniel Newman's Emacs configuration
+﻿#+TITLE: Daniel Newman's Emacs configuration
 #+OPTIONS: toc:4 h:4
 * Configuration
 ** About this file
@@ -613,15 +613,6 @@ Great for describing bindings. I'll replace the binding for =where-is= too.
 (use-package helm-descbinds
   :bind (("C-h b" . helm-descbinds)
          ("C-h w" . helm-descbinds)))
-#+end_src
-
-helm-grep? Bit slow and hard to read, though.
-#+begin_src emacs-lisp :tangle no
-(defvar sacha/book-notes-directory "~/Dropbox/books")
-(defun sacha/helm-do-grep-book-notes ()
-  "Search my book notes."
-  (interactive)
-  (helm-do-grep-1 (list sacha/book-notes-directory)))
 #+end_src
 *** Mode line format
 
@@ -1667,17 +1658,6 @@ https://github.com/bbatsov/prelude
       (kill-new filename)
       (message "Copied buffer file name '%s' to the clipboard." filename))))
 #+end_src
-*** Narrowing
-From http://endlessparentheses.com/emacs-narrow-or-widen-dwim.html
-#+begin_src emacs-lisp :tangle no
-
-(use-package recursive-narrow
-  :config
-  (add-hook 'recursive-narrow-dwim-functions)
-  :bind
-  (("C-x n w" . recursive-widen)
-   ("C-x n n" . recursive-narrow-or-widen-dwim)))
-#+end_src
 ** Gnus
 https://henrikpingel.wordpress.com/2014/07/30/how-to-use-isync-and-the-dovecot-mail-server-to-read-your-gmail-in-emacs-efficiently/
 from Henrik Pingel setup of gmail and gnus using isync and dovecot which partial follows Sacha Chua http://sachachua.com/blog/2008/05/geek-how-to-use-offlineimap-and-the-dovecot-mail-server-to-read-your-gmail-in-emacs-efficiently/
@@ -1829,7 +1809,7 @@ todo and log files
 #+end_src
 
 Header and source file headers
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp 
   (defun casey-header-format ()
      "Format the given file as a header file."
      (interactive)
@@ -1870,19 +1850,19 @@ Header and source file headers
      (insert "   ======================================================================== */\n")
   )
 
-  (cond ((file-exists-p buffer-file-name) t)
-        ((string-match "[.]hin" buffer-file-name) (casey-source-format))
-        ((string-match "[.]cin" buffer-file-name) (casey-source-format))
-        ((string-match "[.]h" buffer-file-name) (casey-header-format))
-        ((string-match "[.]cpp" buffer-file-name) (casey-source-format)))
+;;  (cond ((file-exists-p buffer-file-name) t)
+;;        ((string-match "[.]hin" buffer-file-name) (casey-source-format))
+;;        ((string-match "[.]cin" buffer-file-name) (casey-source-format))
+;;        ((string-match "[.]h" buffer-file-name) (casey-header-format))
+;;        ((string-match "[.]cpp" buffer-file-name) (casey-source-format)))
 #+end_src
 
 devenv.com error parsing
-#+begin_src emacs-lisp :tangle no
-  (add-to-list 'compilation-error-regexp-alist 'casey-devenv)
-  (add-to-list 'compilation-error-regexp-alist-alist '(casey-devenv
-   "*\\([0-9]+>\\)?\\(\\(?:[a-zA-Z]:\\)?[^:(\t\n]+\\)(\\([0-9]+\\)) : \\(?:see declaration\\|\\(?:warnin\\(g\\)\\|[a-z ]+\\) C[0-9]+:\\)"
-    2 3 nil (4)))
+#+begin_src emacs-lisp
+;;  (add-to-list 'compilation-error-regexp-alist 'casey-devenv)
+;;  (add-to-list 'compilation-error-regexp-alist-alist '(casey-devenv
+;;   "*\\([0-9]+>\\)?\\(\\(?:[a-zA-Z]:\\)?[^:(\t\n]+\\)(\\([0-9]+\\)) : \\(?:see declaration\\|\\(?:warnin\\(g\\)\\|[a-z ]+\\) C[0-9]+:\\)"
+;;    2 3 nil (4)))
 #+end_src
 
 Compilation
@@ -1890,8 +1870,8 @@ Compilation
 (setq compilation-directory-locked nil)
 (setq compilation-context-lines 0)
 ;;(setq compilation-error-regexp-alist
-;;    (cons '("^\\([0-9]+>\\)?\\(\\(?:[a-zA-Z]:\\)?[^:(\t\n]+\\)(\\([0-9]+\\)) : \\(?:fatal error\\|warnin\\(g\\)\\) C[0-9]+:" 2 3 nil (4))
-;;     compilation-error-regexp-alist))
+;;(cons '("^\\([0-9]+>\\)?\\(\\(?:[a-zA-Z]:\\)?[^:(\t\n]+\\)(\\([0-9]+\\)) : ;;\\(?:fatal error\\|warnin\\(g\\)\\) C[0-9]+:" 2 3 nil (4))
+;;compilation-error-regexp-alist))
 
 (defun find-project-directory-recursive ()
   "Recursively search for a makefile."
@@ -1929,14 +1909,6 @@ Compilation
   (other-window 1))
 (define-key global-map "\em" 'make-without-asking)
 #+end_src
-*** Company
-#+begin_src emacs-lisp :tangle no
-(require-package 'company)
-(add-hook 'after-init-hook 'global-company-mode)
-;; enabled for only programming modes
-;;(add-hook 'prog-mode-hook 'company-mode)
-#+end_src
-[2015-04-24 Fri 15:08]
 *** Auto-complete
 #+begin_src emacs-lisp 
 (require-package 'auto-complete)
@@ -2083,19 +2055,18 @@ Compilation
             'sanityinc/alert-after-compilation-finish))
 #+end_src
 *** Projects
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp
 (require-package 'projectile)
 (after-load 'projectile
   (diminish 'projectile-mode))
 
 (require-package 'projectile-rails)
-(progn
-    (setq projectile-keymap-prefix (kbd "C-c P"))
-    (setq projectile-completion-system 'default)
-    (setq projectile-enable-caching t)
-    (projectile-global-mode))
-(require-package 'helm-projectile)
-(add-hook 'projectile-mode-hook 'projectile-rails-on)
+(setq projectile-keymap-prefix (kbd "C-c P"))
+(setq projectile-completion-system 'default)
+(setq projectile-enable-caching t)
+(projectile-global-mode)
+;;(require-package 'helm-projectile)
+(add-hook 'projectile-modede-hook 'projectile-rails-on)
 #+end_src
 [2015-04-24 Fri 13:47]
 *** Flycheck
@@ -2767,6 +2738,7 @@ couldn't figure things out (ex: syntax errors)."
 (setq yas-snippet-dirs "~/.emacs.d/site-lisp/yasnippet-snippets")
 (setq yas-expand-only-for-last-commands '(self-insert-command))
 (yas-global-mode 1)
+
 
 
 #+end_src

@@ -325,7 +325,7 @@
                                                                   (if bh/hide-scheduled-and-waiting-next-tasks
                                                                       ""
                                                                     " (including WAITING and SCHEDULED tasks)")))
-                            (org-agenda-skip-function 'bh/skip-stuck-projects)
+                            (org-agenda-skip-function 'bh/skip-non-tasks)
                             (org-tags-match-list-sublevels nil)
                             (org-agenda-todo-ignore-scheduled bh/hide-scheduled-and-waiting-next-tasks)
                             (org-agenda-todo-ignore-deadlines bh/hide-scheduled-and-waiting-next-tasks)))
@@ -751,6 +751,18 @@ Callers of this function already widen the buffer view."
             subtree-end))))
     (save-excursion (org-end-of-subtree t))))
 
+(defun bh/skip-non-tasks ()
+  "Show non-project tasks.
+Skip project and sub-project tasks, habits, and project related tasks."
+  (save-restriction
+    (widen)
+    (let ((next-headline (save-excursion (or (outline-next-heading) (point-max)))))
+      (cond
+       ((bh/is-task-p)
+        nil)
+       (t
+        next-headline)))))
+
 (defun bh/skip-project-trees-and-habits ()
   "Skip trees that are projects"
   (save-restriction
@@ -763,8 +775,6 @@ Callers of this function already widen the buffer view."
         subtree-end)
        (t
         nil)))))
-
-
 
 (defun bh/skip-projects-and-habits-and-single-tasks ()
   "Skip trees that are projects, tasks that are habits, single non-project tasks"
