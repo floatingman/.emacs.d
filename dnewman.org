@@ -866,7 +866,8 @@ Start a emacs server so new instances aren't created when opening new files
 (require-package 'gitconfig-mode)
 (require-package 'git-messenger) ;; Though see also vc-annotate's "n" & "p" bindings
 (require-package 'git-timemachine)
-
+(require-package 'ssh-agency)
+(setenv "SSH_ASKPASS" "git-gui--askpass")
 (when (maybe-require-package 'magit)
   (setq-default
    magit-process-popup-time 10
