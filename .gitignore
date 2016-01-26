@@ -23,7 +23,6 @@ org-clock-save.el
 /tramp
 \#*
 /elpa
-site-lisp/package/
 /swank
 /.mc-lists.el
 /var
@@ -83,6 +82,7 @@ request/
 saved-places
 rake.cache
 site-lisp/
+site-lisp/yasnippet-snippets
 .emacs-custom.el
 projectile.cache 
 ido.last 

@@ -1778,6 +1778,7 @@ Late deadlines first, then scheduled, then non-late deadlines"
                                       ("7" . ignore)
                                       ("8" . ignore)
                                       ("9" . ignore)
+                                      
                                       ("a" . ignore)
                                       ("d" . ignore)
                                       ("h" . bh/hide-other)
@@ -1794,6 +1795,7 @@ Late deadlines first, then scheduled, then non-late deadlines"
                                       ("x" . ignore)
                                       ("y" . ignore)
                                       ("z" . org-add-note)
+
                                       ("A" . ignore)
                                       ("B" . ignore)
                                       ("E" . ignore)
