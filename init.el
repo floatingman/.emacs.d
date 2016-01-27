@@ -12,6 +12,8 @@
 
 ;; Override the packages with the the git version of Org and other packages
 (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
+(add-to-list 'load-path (expand-file-name "~/.emacs.d/site-lisp/org-mode/lisp"))
+(add-to-list 'load-path (expand-file-name "~/.emacs.d/site-lisp/org-mode/contrib/lisp"))
 ;;(add-to-list 'load-path "~/.emacs.d/site-lisp/org-mode/lisp")
 ;;(add-to-list 'load-path "~/.emacs.d/site-lisp/org-mode/contrib/lisp")
 
@@ -52,6 +54,14 @@
    (quote
     ("4aee8551b53a43a883cb0b7f3255d6859d766b6c5e14bcb01bed572fcbef4328" "4cf3221feff536e2b3385209e9b9dc4c2e0818a69a1cdb4b522756bcdf4e00a4" default)))
  '(fci-rule-color "#eee8d5")
+ '(safe-local-variable-values
+   (quote
+    ((no-byte-compile t)
+     (ruby-compilation-executable . "ruby")
+     (ruby-compilation-executable . "ruby1.8")
+     (ruby-compilation-executable . "ruby1.9")
+     (ruby-compilation-executable . "rbx")
+     (ruby-compilation-executable . "jruby"))))
  '(vc-annotate-background nil)
  '(vc-annotate-color-map
    (quote

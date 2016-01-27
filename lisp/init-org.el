@@ -4,19 +4,22 @@
 ;;3.1 installing org-mode
 
 ;;input from sanityinc emacs config
-(require-package 'org)
-(require-package 'org-plus-contrib)
-(require-package 'org-pomodoro)
+;;(require-package 'org)
+;;(require-package 'org-plus-contrib)
+;;(require-package 'org-pomodoro)
 (require-package 'bbdb)
-(require-package 'org-fstree)
+;;(require-package 'org-fstree)
 (require-package 'deft)
 (require-package 'smex)
+
+
 
 (when *is-a-mac*
   (require-package 'org-mac-link)
   (require-package 'org-mac-iCal))
 
 ;;4.2 Org-Mode Setup
+(add-to-list 'load-path (expand-file-name "~/.emacs.d/site-lisp/org-mode/lisp"))
 (add-to-list 'auto-mode-alist '("\\.\\(org\\|org_archive\\|txt\\)$" . org-mode))
 
 (require 'org-checklist)
@@ -1876,7 +1879,7 @@ Late deadlines first, then scheduled, then non-late deadlines"
 (setq org-remove-highlights-with-change t)
 
 ;;18.26 Getting Up To Date Org-Mode Info Documentation
-;(add-to-list 'Info-default-directory-list "~/.emacs.d/vendor/org-mode/doc")
+(add-to-list 'Info-default-directory-list "~/.emacs.d/vendor/org-mode/doc")
 
 
 ;;18.27 Prefer Future Dates Or Not?
