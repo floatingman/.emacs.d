@@ -12,7 +12,8 @@
 
 ;; Override the packages with the the git version of Org and other packages
 (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
-
+(add-to-list 'load-path (expand-file-name "~/.emacs.d/site-lisp/org-mode/lisp"))
+(add-to-list 'load-path (expand-file-name "~/.emacs.d/site-lisp/org-mode/contrib/lisp"))
 ;; Load the rest of the packages
 (package-initialize nil)
 (setq package-enable-at-startup nil)
