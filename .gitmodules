@@ -1,0 +1,6 @@
+[submodule "site-lisp/org-mode"]
+	path = site-lisp/org-mode
+	url = git://orgmode.org/org-mode.git
+[submodule "site-lisp/yasnippet-snippets"]
+	path = site-lisp/yasnippet-snippets
+	url = git@github.com:AndreaCrotti/yasnippet-snippets.git
