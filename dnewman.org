@@ -357,7 +357,6 @@ It's best to keep sensitive information in a separate file so you can publish yo
 #+begin_src emacs-lisp
 (load "~/.emacs.secrets" t)
 #+end_src
-
 *** Packages with no config
 #+begin_src emacs-lisp
 (require-package 'wgrep)
@@ -3368,3 +3367,9 @@ Bright-red TODOs
 #+begin_src emacs-lisp :tangle no
 (setenv "PATH" (concat "\"c:/program files/postgresql/9.3/bin;\"" (getenv "PATH")))
 #+end_src
+** Load customization
+#+begin_src emacs-lisp 
+(setq custom-file "~/.emacs.d/.emacs-custom.el")
+(load custom-file)
+#+end_src
+

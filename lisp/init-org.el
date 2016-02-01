@@ -4,11 +4,11 @@
 ;;3.1 installing org-mode
 
 ;;input from sanityinc emacs config
-(require-package 'org)
-(require-package 'org-plus-contrib)
+;;(require-package 'org)
+;;(require-package 'org-plus-contrib)
 (require-package 'org-pomodoro)
 (require-package 'bbdb)
-(require-package 'org-fstree)
+;;(require-package 'org-fstree)
 (require-package 'deft)
 (require-package 'smex)
 
