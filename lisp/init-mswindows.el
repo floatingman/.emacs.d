@@ -11,5 +11,9 @@
   (setq ispell-program-name "C:\\cygwin64\\bin\\aspell.exe")
   (setq find-program "C:\\cygwin64\\bin\\find.exe"
         grep-program "C:\\cygwin64\\bin\\grep.exe")
-  )
+  (defun cygwin-shell ()
+    "Run cygwin bash in shell mode."
+    (interactive)
+    (let ((explicit-shell-file-name "C:/cygwin/bin/bash"))
+      (call-interactively 'shell))))
 (provide 'init-mswindows)
