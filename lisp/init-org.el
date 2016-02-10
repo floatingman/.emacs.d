@@ -10,7 +10,7 @@
 (require-package 'bbdb)
 ;;(require-package 'org-fstree)
 (require-package 'deft)
-(require-package 'smex)
+;;(require-package 'smex)
 
 
 
@@ -69,7 +69,7 @@
 (add-hook 'message-mode-hook '(lambda () (setq fill-column 72))
           'append)
 
-(setq org-agenda-files (quote ("~/personal/org")))
+(setq org-agenda-files (quote ("~/personal/org/")))
 
 
 ;; flyspell mode for spell checking everywhere
@@ -243,7 +243,7 @@
 ;; (setq ido-everywhere t)
 ;; (setq ido-max-directory-size 100000)
 ;; (ido-mode (quote both))
-; Use the current window when visiting files and buffers with ido
+                                        ; Use the current window when visiting files and buffers with ido
 ;; (setq ido-default-file-method 'selected-window)
 ;; (setq ido-default-buffer-method 'selected-window)
 (setq org-indirect-buffer-display 'current-window)
@@ -1912,11 +1912,11 @@ Late deadlines first, then scheduled, then non-late deadlines"
 ;; ;;18.35 Use Smex For M-X Ido-Completion
 ;; (add-to-list 'load-path (expand-file-name "~/.emacs.d"))
 
-(smex-initialize)
+;; (smex-initialize)
 
-(global-set-key (kbd "M-x") 'smex)
-(global-set-key (kbd "C-x x") 'smex)
-(global-set-key (kbd "M-X") 'smex-major-mode-commands)
+;; (global-set-key (kbd "M-x") 'smex)
+;; (global-set-key (kbd "C-x x") 'smex)
+;; (global-set-key (kbd "M-X") 'smex-major-mode-commands)
 
 
 ;;18.37 Use Emacs Bookmarks For Fast Navigation
