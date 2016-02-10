@@ -537,17 +537,25 @@ sentence navigation commands work for me.
 (setq ido-use-filename-at-point nil)
 (setq ido-auto-merge-work-directories-length 0)
 (setq ido-use-virtual-buffers t)
-
+(setq ido-max-directory-size 100000)
+(ido-mode (quote both))
+; Use the current window when visiting files and buffers with ido
+(setq ido-default-file-method 'selected-window)
+ (setq ido-default-buffer-method 'selected-window)
 (when (maybe-require-package 'ido-ubiquitous)
   (ido-ubiquitous-mode t))
 
 ;; Use smex to handle M-x
 (when (maybe-require-package 'smex)
   ;; Change path for ~/.smex-items
+  (smex-initialize)
   (setq smex-save-file (expand-file-name ".smex-items" user-emacs-directory))
-  (global-set-key [remap execute-extended-command] 'smex))
+  (global-set-key [remap execute-extended-command] 'smex)
+  (global-set-key (kbd "M-x") 'smex)
+  (global-set-key (kbd "C-x x") 'smex)
+  (global-set-key (kbd "M-X") 'smex-major-mode-commands))
 
-(require-package 'idomenu)
+  (require-package 'idomenu)
 
 ;; Allow the same buffer to be open in different frames
 (setq ido-default-buffer-method 'selected-window)
@@ -1301,6 +1309,18 @@ With arg N, insert N newlines."
 (guide-key-mode 1)
 (diminish 'guide-key-mode)
 #+end_src
+*** Indenting
+Indent buffer
+#+begin_src emacs-lisp
+(defun indent-buffer ()                                                                                                                                                            
+"Indents an entire buffer using the default intenting scheme."                                                                                                                   
+(interactive)                                                                                                                                                                    
+(save-excursion                                                                                                                                                                  
+(delete-trailing-whitespace)                                                                                                                                                   
+(indent-region (point-min) (point-max) nil)                                                                                                                                    
+(untabify (point-min) (point-max))))     
+#+end_src
+
 *** Hippie expand
 #+begin_src emacs-lisp
 (global-set-key (kbd "M-/") 'hippie-expand)
@@ -1903,7 +1923,8 @@ Compilation
 (define-key global-map "\em" 'make-without-asking)
 #+end_src
 *** Auto-complete
-#+begin_src emacs-lisp 
+Switching back to company mode
+#+begin_src emacs-lisp :tangle no
 (require-package 'auto-complete)
 (require 'auto-complete-config)
 (global-auto-complete-mode t)
@@ -1951,7 +1972,7 @@ Compilation
 (dolist (mode '(log-edit-mode org-mode text-mode haml-mode
                 git-commit-mode
                 sass-mode yaml-mode csv-mode espresso-mode haskell-mode
-                html-mode nxml-mode sh-mode smarty-mode clojure-mode
+                html-mode web-mode nxml-mode sh-mode smarty-mode clojure-mode
                 lisp-mode textile-mode markdown-mode tuareg-mode
                 js3-mode css-mode less-css-mode sql-mode
                 sql-interactive-mode
@@ -1966,6 +1987,41 @@ Compilation
 (setq dabbrev-friend-buffer-function 'sanityinc/dabbrev-friend-buffer)
 
 #+end_src
+*** Company-mode
+#+begin_src emacs-lisp
+(require-package 'company)
+(global-company-mode t)
+;(add-hook 'after-init-hook 'global-company-mode)
+(require-package 'company-ansible)
+(require-package 'company-c-headers)
+(require-package 'company-go)
+(require-package 'company-inf-ruby)
+(require-package 'company-jedi)
+(require-package 'company-math)
+(require-package 'company-restclient)
+(require-package 'company-tern)
+(require-package 'company-web)
+(require-package 'slime-company)
+(require-package 'ac-html-angular)
+(require-package 'ac-ispell)
+(require-package 'ac-php)
+(push 'company-ansible company-backends)
+(push 'company-c-headers company-backends)
+(push 'company-go company-backends)
+(push 'company-inf-ruby company-backends)
+(push 'company-jedi company-backends)
+(push 'company-math company-backends)
+(push 'company-restclient company-backends)
+(push 'company-tern company-backends)
+(push 'company-web company-backends)
+(push 'slime-company company-backends)
+(push 'ac-html-angular company-backends)
+(push 'ac-ispell company-backends)
+(push 'ac-php company-backends)
+
+#+end_src
+
+
 *** Paredit
 #+begin_src emacs-lisp
 (require-package 'paredit)
@@ -2374,7 +2430,9 @@ Compilation
 (defun sanityinc/emacs-lisp-setup ()
   "Enable features useful when working with elisp."
   (set-up-hippie-expand-for-elisp)
-  (ac-emacs-lisp-mode-setup))
+  ;(ac-emacs-lisp-mode-setup)
+)
+
 
 (defconst sanityinc/elispy-modes
   '(emacs-lisp-mode ielm-mode)
@@ -2517,7 +2575,7 @@ redoing web development config to follow Purcell's config
   (tagedit-add-paredit-like-keybindings)
   (add-hook 'sgml-mode-hook (lambda () (tagedit-mode 1))))
 
-(add-auto-mode 'html-mode "\\.(jsp|tmpl|ejs)\\'")
+(add-auto-mode 'html-mode "\\.(jsp|tmpl)\\'")
 
 ;; Note: ERB is configured in init-ruby-mode
 #+end_src
@@ -2685,9 +2743,20 @@ redoing web development config to follow Purcell's config
 **** emmet
 #+begin_src emacs-lisp
 (require-package 'emmet-mode)
-;;(require-package 'company-web)
+(add-hook 'sgml-mode-hook 'emmet-mode)
+(add-hook 'sgml-mode-hook 'emmet-mode)
+#+end_src
+**** Node and EJS
+#+begin_src emacs-lisp
+(require-package 'web-mode)
+(add-to-list 'auto-mode-alist '("\\.ejs\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+
+(setq web-mode-enable-current-column-highlight t)
 #+end_src
 
+
+[2016-02-03 Wed 10:01]
 *** Tab width of 2 is compact and readable
 #+begin_src emacs-lisp
     (setq-default tab-width 2)
@@ -2725,12 +2794,12 @@ couldn't figure things out (ex: syntax errors)."
 *** Snippets
 #+begin_src emacs-lisp
 (require-package 'yasnippet)
-(add-hook 'hippie-expand-try-functions-list 'yas-hippie-try-expand)
-(setq yas-key-syntaxes '("w_" "w_." "^ "))
+;(add-hook 'hippie-expand-try-functions-list 'yas-hippie-try-expand)
+;(setq yas-key-syntaxes '("w_" "w_." "^ "))
 (setq yas-snippet-dirs "~/.emacs.d/site-lisp/yasnippet-snippets")
-(setq yas-expand-only-for-last-commands '(self-insert-command))
+;(setq yas-expand-only-for-last-commands '(self-insert-command))
 (yas-global-mode 1)
-
+;(define-key yas-minor-mode-map (kbd "\t") 'hippie-expand)
 
 
 #+end_src
