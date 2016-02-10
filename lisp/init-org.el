@@ -3,29 +3,24 @@
 ;; in order to update it more easely
 ;;3.1 installing org-mode
 
-;;input from sanityinc emacs config
-;;(require-package 'org)
-;;(require-package 'org-plus-contrib)
 ;;(require-package 'org-pomodoro)
-(require-package 'bbdb)
-;;(require-package 'org-fstree)
-(require-package 'deft)
-;;(require-package 'smex)
+(use-package bbdb-com
+  :load-path "overide/bbdb/lisp"
+  :commands bbdb-create)
+(use-package deft
+	     :ensure t
+	     :bind ("C-x t" . deft))
+(use-package smex
+	     :ensure t)
 
 
 
-(when *is-a-mac*
-  (require-package 'org-mac-link)
-  (require-package 'org-mac-iCal))
 
 ;;4.2 Org-Mode Setup
-(add-to-list 'load-path (expand-file-name "~/.emacs.d/site-lisp/org-mode/lisp"))
 (add-to-list 'auto-mode-alist '("\\.\\(org\\|org_archive\\|txt\\)$" . org-mode))
 
 (require 'org-checklist)
 (require 'org-id)
-(require 'bbdb)
-(require 'bbdb-com)
 (require 'org-crypt)
 (require 'org-protocol)
 (require 'smex)
