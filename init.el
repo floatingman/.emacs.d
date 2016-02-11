@@ -54,12 +54,14 @@
 
 
 ;; load custom config
+
+(use-package init-general)
 (use-package init-org
   :load-path ("override/org-mode/contrib/lisp"
 	      "override/org-mode/lisp")
   :defer 5)
-(use-package init-mswindows :defer t)
-(use-package init-theme :defer t)
+(use-package init-mswindows)
+(use-package init-theme)
 
 ;;; Post initialization
 
