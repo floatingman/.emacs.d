@@ -4,6 +4,7 @@
 ;;3.1 installing org-mode
 
 ;;(require-package 'org-pomodoro)
+  
 (use-package bbdb-com
   :load-path "overide/bbdb/lisp"
   :commands bbdb-create)
@@ -18,7 +19,8 @@
 
 ;;4.2 Org-Mode Setup
 (add-to-list 'auto-mode-alist '("\\.\\(org\\|org_archive\\|txt\\)$" . org-mode))
-
+(require 'cl)
+(require 'org)
 (require 'org-checklist)
 (require 'org-id)
 (require 'org-crypt)

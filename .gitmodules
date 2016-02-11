@@ -1,5 +1,5 @@
-[submodule "site-lisp/org-mode"]
-	path = site-lisp/org-mode
+[submodule "override/org-mode"]
+	path = override/org-mode
 	url = git://orgmode.org/org-mode.git
 [submodule "site-lisp/yasnippet-snippets"]
 	path = site-lisp/yasnippet-snippets

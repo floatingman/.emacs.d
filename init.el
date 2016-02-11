@@ -1,17 +1,29 @@
 ;;; This file bootstraps the configuration, which is divided into
 ;;; a number of other files.
 
-;; Override the packages with the the git version of Org and other packages
+(defconst emacs-start-time (current-time))
+
+(unless noninteractive
+  (message "Loading %s..." load-file-name))
+
+(setq message-log-max 16384)
+
 (eval-and-compile
   (mapc #'(lambda (path)
             (add-to-list 'load-path
                          (expand-file-name path user-emacs-directory)))
-        '("site-lisp" "override" "lisp" "site-lisp/use-package" "")))
+        '("site-lisp" "override" "lisp" "site-lisp/use-package" ))
+
+  (eval-after-load 'advice
+    `(setq ad-redefinition-action 'accept))
+
+  (require 'cl)
+
+  (defvar use-package-verbose t)
+  ;;(defvar use-package-expand-minimally t)
+  (require 'use-package))
 
 
-(add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
-(add-to-list 'load-path (expand-file-name "~/.emacs.d/site-lisp/org-mode/lisp"))
-(add-to-list 'load-path (expand-file-name "~/.emacs.d/site-lisp/org-mode/contrib/lisp"))
 (require 'package)
 (when (< emacs-major-version 24)
   ;; Mainly for ruby-mode
@@ -30,15 +42,13 @@
                                               "https://melpa.org/packages/")))
 
 ;; Load the rest of the packages
-(package-initialize nil)
+;;(package-initialize nil)
 ;(setq package-enable-at-startup nil)
 ;;(org-babel-load-file "~/.emacs.d/dnewman.org")
 ;; install use-package
-(require 'cl)
-(defvar use-package-verbose t)
-(require 'use-package)
-(require 'diminish nil t)                ;; if you use :diminish
-(require 'bind-key)                ;; if you use any :bind variant
+(require 'bind-key)          
+(require 'diminish nil t)
+
 
 (defconst *spell-check-support-enabled* t) ;; Enable with t if you prefer
 (defconst *is-a-mac* (eq system-type 'darwin))
@@ -46,8 +56,28 @@
 (defconst *is-linux* (eq system-type 'gnu/linux))
 (defconst *is-gui* (not (eq window-system nil)))
 
-;; Load some custom configs 
-(require 'init-org) ;; load org-mode
+;; Load some custom configs
+(use-package init-org
+  :load-path ("override/org-mode/contrib/lisp"
+	      "override/org-mode/lisp")
+  :defer 5)
+
+;(require 'init-org) ;; load org-mode
 (require 'init-mswindows)
 
-(provide 'init)
+;;; Post initialization
+
+(when window-system
+  (let ((elapsed (float-time (time-subtract (current-time)
+                                            emacs-start-time))))
+    (message "Loading %s...done (%.3fs)" load-file-name elapsed))
+
+  (add-hook 'after-init-hook
+            `(lambda ()
+               (let ((elapsed (float-time (time-subtract (current-time)
+                                                         emacs-start-time))))
+                 (message "Loading %s...done (%.3fs) [after-init]"
+                          ,load-file-name elapsed)))
+            t))
+
+;;; init.el ends here
