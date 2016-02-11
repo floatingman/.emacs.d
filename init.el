@@ -65,6 +65,8 @@
 (use-package init-dired)
 (use-package init-completion)
 (use-package init-coding-helpers)
+(use-package init-keybinding)
+(use-package init-utils)
 
 ;;; Post initialization
 
