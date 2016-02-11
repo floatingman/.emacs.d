@@ -62,6 +62,9 @@
   :defer 5)
 (use-package init-mswindows)
 (use-package init-theme)
+(use-package init-dired)
+(use-package init-completion)
+(use-package init-coding-helpers)
 
 ;;; Post initialization
 
