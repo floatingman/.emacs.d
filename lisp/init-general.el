@@ -24,4 +24,29 @@
   (menu-bar-mode 1)
   (scroll-bar-mode -1))
 
+
+;;Help
+(use-package guide-key
+  :defer t
+  :diminish guide-key-mode
+  :config
+  (progn
+    (setq guide-key/guide-key-sequence '("C-x r" "C-x 4" "C-c"))
+    (guide-key-mode 1)))
+
+;; Moving between windows
+(use-package windmove
+  :ensure t
+  :defer t
+  :bind
+  (("<f2> <right>" . windmove-right)
+   ("<f2> <left>" . windmove-left)
+   ("<f2> <up>" . windmove-up)
+   ("<f2> <down>" . windmove-down)
+   ))
+
+(use-package switch-window
+  :ensure t
+  :bind (("C-x o" . switch-window)))
+
 (provide 'init-general)
