@@ -25,4 +25,14 @@ point reaches the beginning or end of the buffer, stop there."
 (global-set-key [remap move-beginning-of-line]
 		'my/smarter-move-beginning-of-line)
 
+(defun sanityinc/kill-back-to-indentation ()
+  "Kill from point back to the first non-whitespace character on the line."
+  (interactive)
+  (let ((prev-pos (point)))
+    (back-to-indentation)
+    (kill-region (point) prev-pos)))
+
+(bind-key "C-M-<backspace>" 'sanityinc/kill-back-to-indentation)
+
+
 (provide 'init-functions)

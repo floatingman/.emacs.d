@@ -86,4 +86,23 @@ test-related code is detected."
 :defer t
 :config (setq-default coffee-js-mode 'js2-mode coffee-tab-width 2))
 
+(use-package skewer-mode
+  :ensure t
+  :defer t
+  :config
+  (skewer-setup))
+
+(use-package tern
+  :ensure t
+  :defer t
+  :config
+  (bind-key "C-c C-c" 'compile tern-mode-keymap)
+  (when (eq system-type 'windows-nt) (setq tern-command '("cmd" "/c" "tern")))
+  (add-hook 'js2-mode-hook 'tern-mode))
+
+(use-package company-tern
+  :ensure t
+  :defer t
+  :init (add-to-list 'company-backends 'company-tern))
+
 (provide 'init-javascript)

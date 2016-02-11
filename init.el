@@ -68,6 +68,8 @@
 (use-package init-keybinding)
 (use-package init-utils)
 (use-package init-javascript)
+(use-package init-web)
+(use-package init-elisp)
 ;;; Post initialization
 
 (when window-system

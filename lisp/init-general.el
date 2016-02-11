@@ -49,4 +49,10 @@
   :ensure t
   :bind (("C-x o" . switch-window)))
 
+;;Recent files
+(require 'recentf)
+(setq recentf-max-saved-items 200
+			recentf-max-menu-items 15)
+(recentf-mode)
+
 (provide 'init-general)

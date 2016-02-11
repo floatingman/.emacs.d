@@ -1,4 +1,6 @@
+(setq-default tab-width 2)
 
+(global-set-key (kbd "RET") 'newline-and-indent)
 
 (use-package rainbow-delimiters :ensure t)
 
