@@ -8,47 +8,7 @@
 
 (setq message-log-max 16384)
 
-(eval-and-compile
-  (mapc #'(lambda (path)
-            (add-to-list 'load-path
-                         (expand-file-name path user-emacs-directory)))
-        '("site-lisp" "override" "lisp" "site-lisp/use-package" ))
-
-  (eval-after-load 'advice
-    `(setq ad-redefinition-action 'accept))
-
-  (require 'cl)
-
-  (defvar use-package-verbose t)
-  ;;(defvar use-package-expand-minimally t)
-  (require 'use-package))
-
-
-(require 'package)
-(when (< emacs-major-version 24)
-  ;; Mainly for ruby-mode
-  (add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/")))
-
-;; We include the org repository for completeness, but don't normally
-;; use it.
-(add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/"))
-
-(when (< emacs-major-version 24)
-  (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
-
-;;; Also use Melpa for most packages
-(add-to-list 'package-archives `("melpa" . ,(if (< emacs-major-version 24)
-                                                "http://melpa.org/packages/"
-                                              "https://melpa.org/packages/")))
-
-;; Load the rest of the packages
-;;(package-initialize nil)
-;(setq package-enable-at-startup nil)
-;;(org-babel-load-file "~/.emacs.d/dnewman.org")
-;; install use-package
-(require 'bind-key)          
-(require 'diminish nil t)
-
+;;Setup some variables for use in other config files
 
 (defconst *spell-check-support-enabled* t) ;; Enable with t if you prefer
 (defconst *is-a-mac* (eq system-type 'darwin))
@@ -56,14 +16,50 @@
 (defconst *is-linux* (eq system-type 'gnu/linux))
 (defconst *is-gui* (not (eq window-system nil)))
 
-;; Load some custom configs
+;; Setup user information
+(setq user-full-name "Daniel Newman"
+      user-mail-address "dwnewman78@gmail.com")
+
+;; This sets up the load path so that we can override it
+(package-initialize nil)
+
+
+;; setup load path
+(eval-and-compile
+  (mapc #'(lambda (path)
+            (add-to-list 'load-path
+                         (expand-file-name path user-emacs-directory)))
+        '("site-lisp" "override" "lisp" ))
+
+  (eval-after-load 'advice
+    `(setq ad-redefinition-action 'accept)))
+
+;; Load the rest of the packages
+(package-initialize nil)
+
+(setq package-enable-at-startup nil)
+
+;; package archives
+(require 'init-packages)
+
+;; install use-package
+(unless (package-installed-p 'use-package)
+  (package-install 'use-package))
+(setq use-package-verbose t)
+(require 'use-package)
+(use-package auto-compile
+  :ensure t
+  :config (auto-compile-on-load-mode))
+(setq load-prefer-newer t)
+
+
+;; load custom config
 (use-package init-org
   :load-path ("override/org-mode/contrib/lisp"
 	      "override/org-mode/lisp")
   :defer 5)
-
-;(require 'init-org) ;; load org-mode
-(require 'init-mswindows)
+(use-package init-mswindows :defer t)
+(use-package init-theme :defer t)
 
 ;;; Post initialization
 
@@ -81,3 +77,15 @@
             t))
 
 ;;; init.el ends here
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(safe-local-variable-values (quote ((no-byte-compile t)))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )

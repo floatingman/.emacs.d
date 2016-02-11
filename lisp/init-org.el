@@ -9,10 +9,10 @@
   :load-path "overide/bbdb/lisp"
   :commands bbdb-create)
 (use-package deft
-	     :ensure t
-	     :bind ("C-x t" . deft))
+  :ensure t
+  :bind ("C-x t" . deft))
 (use-package smex
-	     :ensure t)
+  :ensure t)
 
 
 
