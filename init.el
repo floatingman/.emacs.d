@@ -67,7 +67,7 @@
 (use-package init-coding-helpers)
 (use-package init-keybinding)
 (use-package init-utils)
-
+(use-package init-javascript)
 ;;; Post initialization
 
 (when window-system
