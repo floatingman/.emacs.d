@@ -10,7 +10,7 @@
 (use-package web-mode
   :ensure t
   :defer t
-  :mode "\\.html?\\'"
+  :mode "\\.html\\.ejs\\'"
   :config
   (progn
     (setq web-mode-enable-current-element-highlight t)
