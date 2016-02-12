@@ -70,8 +70,9 @@
 (use-package init-javascript)
 (use-package init-web)
 (use-package init-elisp)
+(use-package init-git)
 ;;; Post initialization
-
+(server-start)
 (when window-system
   (let ((elapsed (float-time (time-subtract (current-time)
                                             emacs-start-time))))

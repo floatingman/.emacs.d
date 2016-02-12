@@ -24,4 +24,22 @@
    :defer t :ensure t
    :ensure helm-projectile)
 
+(defun my/recursive-find-file (file &optional directory)
+  "Find the first FILE in DIRECTORY or its parents."
+  (setq directory (or directory (file-name-directory (buffer-file-name)) (pwd)))
+  (if (file-exists-p (expand-file-name file directory))
+      (expand-file-name file directory)
+    (unless (string= directory "/")
+      (my/recursive-find-file file (expand-file-name ".." directory)))))
+
+(defun my/find-tags ()
+  "Set the TAGS file."
+  (set (make-variable-buffer-local 'tags-table-list) nil)
+  (set (make-variable-buffer-local 'tags-file-name)
+       (my/recursive-find-file "TAGS")))
+
+(eval-after-load 'drupal-mode
+  '(progn
+     (add-hook 'drupal-mode-hook 'my/find-tags)))
+
 (provide 'init-coding-helpers)
