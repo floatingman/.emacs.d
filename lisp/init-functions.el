@@ -34,5 +34,10 @@ point reaches the beginning or end of the buffer, stop there."
 
 (bind-key "C-M-<backspace>" 'sanityinc/kill-back-to-indentation)
 
+(defun whitespace-cleanup-all ()
+  (interactive)
+  (setq indent-tab-mode nil)
+  (whitespace-cleanup))
+
 
 (provide 'init-functions)

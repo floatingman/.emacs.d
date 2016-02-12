@@ -236,7 +236,7 @@
 (setq org-refile-allow-creating-parent-nodes (quote confirm))
 
 ; Use IDO for both buffer and file completion and ido-everywhere to t
-(setq org-completion-use-ido t)
+;(setq org-completion-use-ido t)
 ;; (setq ido-everywhere t)
 ;; (setq ido-max-directory-size 100000)
 ;; (ido-mode (quote both))

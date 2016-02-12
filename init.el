@@ -71,6 +71,7 @@
 (use-package init-web)
 (use-package init-elisp)
 (use-package init-git)
+
 ;;; Post initialization
 (server-start)
 (when window-system

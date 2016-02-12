@@ -1,108 +1,48 @@
-(use-package js2-mode
-  :ensure t
-  :config
-  (bind-key "C-c C-c" 'compile js2-mode-map)
-  (add-hook 'js2-mode-hook 'jasminejs-mode))
-
-(use-package coffee-mode
-  :ensure t
-  :config
-  (bind-key "C-c C-c" 'compile coffee-mode-map))
-
-(use-package jasminejs-mode
-  :ensure t
-  :config
-  (add-hook 'jasminejs-mode-hook 'jasminejs-add-snippets-to-yas-snippet-dirs))
-
-(add-to-list 'auto-mode-alist '("\\.js\\'\\|\\.json\\'" . js2-mode))
-
-(defvar my/javascript-test-regexp (concat (regexp-quote "/** Testing **/") "\\(.*\n\\)*")
-	"Regular expression matching testing-related code to remove.
-See `my/copy-javascript-region-or-buffer'.")
-
-(defun my/copy-javascript-region-or-buffer (beg end)
-	"Copy the active region or the buffer, wrapping it in script tags.
-Add a comment with the current filename and skip test-related
-code. See `my/javascript-test-regexp' to change the way
-test-related code is detected."
-	(interactive "r")
-	(unless (region-active-p)
-		(setq beg (point-min) end (point-max)))
-	(kill-new
-	 (concat
-		"<script type=\"text/javascript\">\n"
-		(if (buffer-file-name) (concat "// " (file-name-nondirectory (buffer-file-name)) "\n") "")
-		(replace-regexp-in-string
-		 my/javascript-test-regexp
-		 ""
-		 (buffer-substring (point-min) (point-max))
-		 nil)
-		"\n</script>")))
-
-(defvar my/debug-counter 1)
-(defun my/insert-or-flush-debug (&optional reset beg end)
-  (interactive "pr")
-  (cond
-   ((= reset 4)
-    (save-excursion
-      (flush-lines "console.log('DEBUG: [0-9]+" (point-min) (point-max))
-      (setq my/debug-counter 1)))
-   ((region-active-p)
-    (save-excursion
-      (goto-char end)
-      (insert ");\n")
-      (goto-char beg)
-      (insert (format "console.log('DEBUG: %d', " my/debug-counter))
-      (setq my/debug-counter (1+ my/debug-counter))
-      (js2-indent-line)))
-   (t
-    ;; Wrap the region in the debug
-    (insert (format "console.log('DEBUG: %d');\n" my/debug-counter))
-    (setq my/debug-counter (1+ my/debug-counter))
-    (backward-char 3)
-    (js2-indent-line))))
+(use-package js3-mode
+	:ensure t
+	:defer t
+	:config
+	(progn
+		(setq js3-auto-indent-p t
+					js3-curly-indent-offset 0
+					js3-enter-indents-newline t
+					js3-expr-indent-offset 2
+					js3-indent-on-enter-key t
+					js3-lazy-commas t
+					js3-lazy-dots t
+					js3-lazy-operators t
+					js3-paren-indent-offset 2
+					js3-square-indent-offset 4)
+		(linum-mode 1)))
 
 (use-package js2-mode
-  :ensure t
-  :defer t
-  :commands js2-mode
-  :init
-  (progn
-    (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
-    (setq-default js2-basic-offset 2)
-    (add-to-list 'interpreter-mode-alist (cons "node" 'js2-mode)))
-  :config
-  (progn
-    (js2-imenu-extras-setup)
-    (bind-key "C-x C-e" 'js-send-last-sexp js2-mode-map)
-    (bind-key "C-M-x" 'js-send-last-sexp-and-go js2-mode-map)
-    (bind-key "C-c b" 'js-send-buffer js2-mode-map)
-    (bind-key "C-c d" 'my/insert-or-flush-debug js2-mode-map)
-    (bind-key "C-c C-b" 'js-send-buffer-and-go js2-mode-map)
-    (bind-key "C-c w" 'my/copy-javascript-region-or-buffer js2-mode-map)))
+	:ensure t
+	:defer t
+	:config
+	(progn
+		(add-hook 'js2-mode-hook (lambda () (setq js2-basic-offset 2)))
+		(setq js2-bounce-indent-p t)))
 
-(use-package coffee-mode
-:ensure t
-:defer t
-:config (setq-default coffee-js-mode 'js2-mode coffee-tab-width 2))
-
-(use-package skewer-mode
-  :ensure t
-  :defer t
-  :config
-  (skewer-setup))
 
 (use-package tern
-  :ensure t
-  :defer t
-  :config
-  (bind-key "C-c C-c" 'compile tern-mode-keymap)
-  (when (eq system-type 'windows-nt) (setq tern-command '("cmd" "/c" "tern")))
-  (add-hook 'js2-mode-hook 'tern-mode))
-
+	:ensure t
+	:defer t)
+(add-hook 'js3-mode-hook (lambda () (tern-mode t)))
 (use-package company-tern
-  :ensure t
-  :defer t
-  :init (add-to-list 'company-backends 'company-tern))
+	:ensure t
+	:defer t)
 
-(provide 'init-javascript)
+(use-package nodejs-repl
+	:ensure t
+	:defer t)
+
+(use-package skewer-mode
+	:ensure t
+	:defer t
+	:config
+	(progn
+		(add-hook 'js2-mode-hook 'skewer-mode)
+		(add-hook 'css-mode-hook 'skewer-css-mode)
+		(add-hook 'html-mode-hook 'skewer-html-mode)))
+
+	(provide 'init-javascript)
