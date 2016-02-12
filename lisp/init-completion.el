@@ -1,42 +1,141 @@
-
+;;I'm finicky. I like to switch between company and auto-complete
 (use-package company
+  :disabled t
   :ensure t
   :config
   (add-hook 'prog-mode-hook 'company-mode))
 
+(use-package auto-complete
+  :ensure t
+  :diminish auto-complete-mode
+  :init
+  (use-package pos-tip
+    :ensure t)
+  (ac-config-default)
+  :config
+  (ac-set-trigger-key "<backtab>")
+  (dolist (ac-mode '(text-mode org-mode))
+    (add-to-list 'ac-modes ac-mode))
+  (dolist (ac-mode-hook '(text-mode-hook org-mode-hook prog-mode-hook))
+    (add-hook ac-mode-hook
+	      (lambda ()
+		(setq ac-fuzzy-enable t)
+		(add-to-list 'ac-sources 'ac-source-files-in-current-dir)
+		(add-to-list 'ac-sources 'ac-source-filename)))))
+
+(defun ac-pcomplete ()
+  ;; eshell uses `insert-and-inherit' to insert a \t if no completion
+  ;; can be found, but this must not happen as auto-complete source
+  (flet ((insert-and-inherit (&rest args)))
+    ;; this code is stolen from `pcomplete' in pcomplete.el
+    (let* (tramp-mode ;; do not automatically complete remote stuff
+           (pcomplete-stub)
+           (pcomplete-show-list t) ;; inhibit patterns like * being deleted
+           pcomplete-seen pcomplete-norm-func
+           pcomplete-args pcomplete-last pcomplete-index
+           (pcomplete-autolist pcomplete-autolist)
+           (pcomplete-suffix-list pcomplete-suffix-list)
+           (candidates (pcomplete-completions))
+           (beg (pcomplete-begin))
+           ;; note, buffer text and completion argument may be
+           ;; different because the buffer text may bet transformed
+           ;; before being completed (e.g. variables like $HOME may be
+           ;; expanded)
+           (buftext (buffer-substring beg (point)))
+           (arg (nth pcomplete-index pcomplete-args)))
+      ;; we auto-complete only if the stub is non-empty and matches
+      ;; the end of the buffer text
+      (when (and (not (zerop (length pcomplete-stub)))
+                 (or (string= pcomplete-stub ; Emacs 23
+                              (substring buftext
+                                         (max 0
+                                              (- (length buftext)
+                                                 (length pcomplete-stub)))))
+                     (string= pcomplete-stub ; Emacs 24
+                              (substring arg
+                                         (max 0
+                                              (- (length arg)
+                                                 (length pcomplete-stub)))))))
+        ;; Collect all possible completions for the stub. Note that
+        ;; `candidates` may be a function, that's why we use
+        ;; `all-completions`.
+        (let* ((cnds (all-completions pcomplete-stub candidates))
+               (bnds (completion-boundaries pcomplete-stub
+                                            candidates
+                                            nil
+                                            ""))
+               (skip (- (length pcomplete-stub) (car bnds))))
+          ;; We replace the stub at the beginning of each candidate by
+          ;; the real buffer content.
+          (mapcar #'(lambda (cand) (concat buftext (substring cand skip)))
+                  cnds))))))
+
+(defvar ac-source-pcomplete
+  '((candidates . ac-pcomplete)))
+  
+
 (use-package helm
   :ensure t
   :diminish helm-mode
-  :init
+  :config
   (progn
     (require 'helm-config)
-    (setq helm-candidate-number-limit 100)
-    ;; From https://gist.github.com/antifuchs/9238468
-    (setq helm-idle-delay 0.0 ; update fast sources immediately (doesn't).
-          helm-input-idle-delay 0.01  ; this actually updates things
-                                        ; reeeelatively quickly.
-          helm-yas-display-key-on-candidate t
-          helm-quick-update t
-          helm-M-x-requires-pattern nil
-          helm-ff-skip-boring-files t)
-    (helm-mode))
-  :bind (("C-c h" . helm-mini)
-         ("C-h a" . helm-apropos)
+    (setq helm-input-idle-delay 0.2)
+    (helm-mode)
+    (setq helm-locate-command
+        (case system-type
+          ('gnu/linux "locate -i -r %s")
+          ('berkeley-unix "locate -i %s")
+          ('windows-nt "es %s")
+          ('darwin "mdfind -name %s %s")
+          (t "locate %s")))
+    ;; rebind tab to run persistent action
+    (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action)
+    ;; make TAB works in terminal
+    (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action)
+    ;; list actions using C-z
+    (define-key helm-map (kbd "C-z") 'helm-select-action)
+
+    (when (executable-find "curl")
+      (setq helm-google-suggest-use-curl-p t))
+
+    (setq
+     ;; open helm buffer inside current window, not occupy whole other window
+     helm-split-window-in-side-p t
+     ;; fuzzy matching buffer names when non--nil
+     helm-buffers-fuzzy-matching t
+     ;; move to end or beginning of source when reaching top or bottom of source.
+     helm-move-to-line-cycle-in-source t
+     ;; search for library in `require' and `declare-function' sexp.
+     helm-ff-search-library-in-sexp t
+     ;; scroll 8 lines other window using M-<next>/M-<prior>
+     helm-scroll-amount 8
+     helm-ff-file-name-history-use-recentf t)
+    )
+  :bind (
+	 ("C-c h" . helm-mini)
+	 ("C-x c g" . helm-do-grep)
+	 ("C-h a" . helm-apropos)
          ("C-x C-b" . helm-buffers-list)
          ("C-x b" . helm-buffers-list)
          ("M-y" . helm-show-kill-ring)
          ("M-x" . helm-M-x)
+	 ("C-x C-f" . helm-find-files)
          ("C-x c o" . helm-occur)
          ("C-x c s" . helm-swoop)
          ("C-x c y" . helm-yas-complete)
          ("C-x c Y" . helm-yas-create-snippet-on-region)
-         ("C-x c b" . my/helm-do-grep-book-notes)
-         ("C-x c SPC" . helm-all-mark-rings)))
+	 ("C-x c SPC" . helm-all-mark-rings)))
+
+
 (ido-mode -1) ;; Turn off ido mode in case I enabled it accidentally
 
 (use-package helm-descbinds
   :defer t
   :ensure t
+  :init
+  (progn
+    (helm-descbinds-mode 1))
   :bind (("C-h b" . helm-descbinds)
          ("C-h w" . helm-descbinds)))
 
@@ -54,8 +153,7 @@
  :config
  (progn
    (define-key isearch-mode-map (kbd "M-i") 'helm-swoop-from-isearch)
-   (define-key helm-swoop-map (kbd "M-i") 'helm-multi-swoop-all-from-helm-swoop))
-)
+   (define-key helm-swoop-map (kbd "M-i") 'helm-multi-swoop-all-from-helm-swoop)))
 
 (use-package yasnippet
   :ensure t
@@ -63,119 +161,18 @@
   :init (yas-global-mode)
   :config
   (progn
-    (yas-global-mode)
-    (add-hook 'hippie-expand-try-functions-list 'yas-hippie-try-expand)
-    (setq yas-key-syntaxes '("w_" "w_." "^ "))
-    (setq yas-installed-snippets-dir "~/.emacs.d/site-lisp/yasnippet-snippets")
-    (setq yas-expand-only-for-last-commands nil)
-    (yas-global-mode 1)
-    (bind-key "\t" 'hippie-expand yas-minor-mode-map)
-    (add-to-list 'yas-prompt-functions 'shk-yas/helm-prompt)))
-;;        (global-set-key (kbd "C-c y") (lambda () (interactive)
-;;                                         (yas/load-directory "~/elisp/snippets")))
+		(setq yas-installed-snippets-dir "~/.emacs.d/site-lisp/yasnippet-snippets")
+    (setq yas-prompt-functions
+					'(yas-popup-isearch-prompt
+						yas-no-prompt))
+		(yas-global-mode)))
 
-(defun shk-yas/helm-prompt (prompt choices &optional display-fn)
-  "Use helm to select a snippet. Put this into `yas/prompt-functions.'"
-  (interactive)
-  (setq display-fn (or display-fn 'identity))
-  (if (require 'helm-config)
-      (let (tmpsource cands result rmap)
-        (setq cands (mapcar (lambda (x) (funcall display-fn x)) choices))
-        (setq rmap (mapcar (lambda (x) (cons (funcall display-fn x) x)) choices))
-        (setq tmpsource
-              (list
-               (cons 'name prompt)
-               (cons 'candidates cands)
-               '(action . (("Expand" . (lambda (selection) selection))))
-               ))
-        (setq result (helm-other-buffer '(tmpsource) "*helm-select-yasnippet"))
-        (if (null result)
-            (signal 'quit "user quit!")
-          (cdr (assoc result rmap))))
-    nil))
-
-(setq default-cursor-color "gray")
-(setq yasnippet-can-fire-cursor-color "purple")
-
-;; It will test whether it can expand, if yes, cursor color -> green.
-(defun yasnippet-can-fire-p (&optional field)
-  (interactive)
-  (setq yas--condition-cache-timestamp (current-time))
-  (let (templates-and-pos)
-    (unless (and yas-expand-only-for-last-commands
-                 (not (member last-command yas-expand-only-for-last-commands)))
-      (setq templates-and-pos (if field
-                                  (save-restriction
-                                    (narrow-to-region (yas--field-start field)
-                                                      (yas--field-end field))
-                                    (yas--templates-for-key-at-point))
-                                (yas--templates-for-key-at-point))))
-    (and templates-and-pos (first templates-and-pos))))
-
-(defun my/change-cursor-color-when-can-expand (&optional field)
-  (interactive)
-  (when (eq last-command 'self-insert-command)
-    (set-cursor-color (if (my/can-expand)
-                          yasnippet-can-fire-cursor-color
-                        default-cursor-color))))
-
-(defun my/can-expand ()
-  "Return true if right after an expandable thing."
-  (or (abbrev--before-point) (yasnippet-can-fire-p)))
-
-                                        ; As pointed out by Dmitri, this will make sure it will update color when needed.
-(remove-hook 'post-command-hook 'my/change-cursor-color-when-can-expand)
 
 (defun my/insert-space-or-expand ()
   "For binding to the SPC SPC keychord."
   (interactive)
   (condition-case nil (or (my/hippie-expand-maybe nil) (insert "  "))))
 
-(defun my/hippie-expand-maybe (arg)
-  "Try to expand text before point, using multiple methods.
-The expansion functions in `hippie-expand-try-functions-list' are
-tried in order, until a possible expansion is found.  Repeated
-application of `hippie-expand' inserts successively possible
-expansions.
-With a positive numeric argument, jumps directly to the ARG next
-function in this list.  With a negative argument or just \\[universal-argument],
-undoes the expansion."
-  (interactive "P")
-  (require 'hippie-exp)
-  (if (or (not arg)
-          (and (integerp arg) (> arg 0)))
-      (let ((first (or (= he-num -1)
-                       (not (equal this-command last-command)))))
-        (if first
-            (progn
-              (setq he-num -1)
-              (setq he-tried-table nil)))
-        (if arg
-            (if (not first) (he-reset-string))
-          (setq arg 0))
-        (let ((i (max (+ he-num arg) 0)))
-          (while (not (or (>= i (length hippie-expand-try-functions-list))
-                          (apply (nth i hippie-expand-try-functions-list)
-                                 (list (= he-num i)))))
-            (setq i (1+ i)))
-          (setq he-num i))
-        (if (>= he-num (length hippie-expand-try-functions-list))
-            (progn (setq he-num -1) nil)
-          (if (and hippie-expand-verbose
-                   (not (window-minibuffer-p)))
-              (message "Using %s"
-                       (nth he-num hippie-expand-try-functions-list)))))
-    (if (and (>= he-num 0)
-             (eq (marker-buffer he-string-beg) (current-buffer)))
-        (progn
-          (setq he-num -1)
-          (he-reset-string)
-          (if (and hippie-expand-verbose
-                   (not (window-minibuffer-p)))
-              (message "Undoing expansions"))))))
-
-
-(bind-key "M-/" 'hippie-expand)
 
 (defun sanityinc/dabbrev-friend-buffer (other-buffer)
   (< (buffer-size other-buffer) (* 1 1024 1024)))
@@ -197,5 +194,7 @@ undoes the expansion."
 
 (add-hook 'text-mode-hook 'abbrev-mode)
 (diminish 'abbrev-mode " A")
+
+(setq tab-always-indent 'complete)
 
 (provide 'init-completion)

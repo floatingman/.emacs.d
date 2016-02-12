@@ -12,6 +12,7 @@
   :ensure t
   :bind ("C-x t" . deft))
 (use-package smex
+  :disabled t
   :ensure t)
 
 
