@@ -455,7 +455,8 @@ as the default task."
           (when bh/keep-clock-running
             (bh/clock-in-default-task)))))))
 
-(defvar bh/organization-task-id "a9dcbd77-e45a-44d3-82e9-80867526bd67")
+(defvar bh/organization-task-id "eb155a82-92b2-4f25-a3c6-0304591af2f9")
+;(defvar bh/organization-task-id "a9dcbd77-e45a-44d3-82e9-80867526bd67")
 
 (defun bh/clock-in-organization-task-as-default ()
   (interactive)

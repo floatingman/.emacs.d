@@ -76,4 +76,19 @@ so that it's still active even after you stage a change. Very experimental."
   :ensure t :defer t
   :bind (("C-x v m" . git-messenger:popup-message)))
 
+(use-package git-gutter
+	:ensure t
+	:config
+	(progn
+		(global-git-gutter-mode +1)
+		(git-gutter:linum-setup))
+	:bind (
+				 ("C-x C-g" . git-gutter:toggle)
+				 ("C-x v =" . git-gutter:popup-hunk)
+				 ("C-x p" . git-gutter:previous-hunk)
+				 
+				 )
+
+	)
+
 (provide 'init-git)
