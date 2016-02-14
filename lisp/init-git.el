@@ -76,19 +76,27 @@ so that it's still active even after you stage a change. Very experimental."
   :ensure t :defer t
   :bind (("C-x v m" . git-messenger:popup-message)))
 
-(use-package git-gutter
-	:ensure t
-	:config
-	(progn
-		(global-git-gutter-mode +1)
-		(git-gutter:linum-setup))
-	:bind (
-				 ("C-x C-g" . git-gutter:toggle)
-				 ("C-x v =" . git-gutter:popup-hunk)
-				 ("C-x p" . git-gutter:previous-hunk)
-				 
-				 )
-
-	)
+(use-package git-gutter+
+  :ensure t
+  :init (global-git-gutter+-mode)
+  :config (progn
+            (define-key git-gutter+-mode-map (kbd "C-x n") 'git-gutter+-next-hunk)
+            (define-key git-gutter+-mode-map (kbd "C-x p") 'git-gutter+-previous-hunk)
+            (define-key git-gutter+-mode-map (kbd "C-x v =") 'git-gutter+-show-hunk)
+            (define-key git-gutter+-mode-map (kbd "C-x r") 'git-gutter+-revert-hunks)
+            (define-key git-gutter+-mode-map (kbd "C-x t") 'git-gutter+-stage-hunks)
+            (define-key git-gutter+-mode-map (kbd "C-x c") 'git-gutter+-commit)
+            (define-key git-gutter+-mode-map (kbd "C-x C") 'git-gutter+-stage-and-commit)
+            (define-key git-gutter+-mode-map (kbd "C-x C-y") 'git-gutter+-stage-and-commit-whole-buffer)
+            (define-key git-gutter+-mode-map (kbd "C-x U") 'git-gutter+-unstage-whole-buffer)
+						(setq git-gutter+-modified-sign "  ") ;; two space
+						(setq git-gutter+-added-sign "++")    ;; multiple character is OK
+						(setq git-gutter+-deleted-sign "--")
+						
+						(set-face-background 'git-gutter+-modified "purple") ;; background color
+						(set-face-foreground 'git-gutter+-added "green")
+						(set-face-foreground 'git-gutter+-deleted "red")
+						)
+  :diminish (git-gutter+-mode . "gg"))
 
 (provide 'init-git)
