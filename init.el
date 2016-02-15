@@ -71,7 +71,7 @@
 (use-package init-web)
 (use-package init-elisp)
 (use-package init-git)
-
+(use-package init-spelling)
 ;;; Post initialization
 (server-start)
 (setq custom-file "~/.emacs.d/.emacs-custom.el")
