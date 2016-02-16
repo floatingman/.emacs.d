@@ -9,8 +9,7 @@
 ;;Projects
 (use-package projectile
   :ensure t
-  :defer t
-  :diminish projectile-mode
+	:diminish projectile-mode
   :config
   (progn
     (setq projectile-keymap-prefix (kbd "C-c p"))
@@ -22,7 +21,6 @@
   (projectile-global-mode))
 
 (use-package helm-projectile
-	:defer t
 	:ensure t
 	:ensure helm-projectile)
 
@@ -129,7 +127,10 @@
     (sp-with-modes sp--lisp-modes
       (sp-local-pair "(" nil :bind "C-("))))
 						 
-	
+;; flycheck for all your fly inspection needs
+(use-package flycheck
+	:ensure t
+	:defer t)
 
 
 (provide 'init-coding-helpers)

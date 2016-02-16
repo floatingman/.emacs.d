@@ -26,7 +26,7 @@
 (require 'org-id)
 (require 'org-crypt)
 (require 'org-protocol)
-(require 'smex)
+;;(require 'smex)
 (require 'org-mime)
 ;; Explicitly load required exporters
 (require 'ox-html)

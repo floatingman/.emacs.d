@@ -3,7 +3,6 @@
   :ensure t
   :diminish eldoc-mode
   :commands turn-on-eldoc-mode
-  :defer t
   :init
   (progn
   (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
@@ -25,8 +24,7 @@
 
 (use-package erefactor
   :ensure t
-  :defer t
-  :config
+	:config
   (define-key emacs-lisp-mode-map "\C-c\C-v" erefactor-map))
 
 (use-package paredit :ensure t)

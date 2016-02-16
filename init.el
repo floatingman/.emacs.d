@@ -58,8 +58,7 @@
 (use-package init-general)
 (use-package init-org
   :load-path ("override/org-mode/contrib/lisp"
-	      "override/org-mode/lisp")
-  :defer 2)
+	      "override/org-mode/lisp"))
 (use-package init-mswindows)
 (use-package init-theme)
 (use-package init-dired)

@@ -7,13 +7,14 @@
 
 (use-package auto-complete
   :ensure t
-  :diminish auto-complete-mode
+  :diminish (auto-complete-mode . "AC")
   :init
   (use-package pos-tip
     :ensure t)
   (ac-config-default)
   :config
-  (ac-set-trigger-key "<backtab>")
+  (ac-set-trigger-key "TAB")
+	(ac-set-trigger-key "<tab>")
   (dolist (ac-mode '(text-mode org-mode))
     (add-to-list 'ac-modes ac-mode))
   (dolist (ac-mode-hook '(text-mode-hook org-mode-hook prog-mode-hook))
