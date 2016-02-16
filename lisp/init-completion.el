@@ -1,10 +1,3 @@
-;;I'm finicky. I like to switch between company and auto-complete
-(use-package company
-  :disabled t
-  :ensure t
-  :config
-  (add-hook 'prog-mode-hook 'company-mode))
-
 (use-package auto-complete
   :ensure t
   :diminish (auto-complete-mode . "AC")
@@ -132,7 +125,6 @@
 (ido-mode -1) ;; Turn off ido mode in case I enabled it accidentally
 
 (use-package helm-descbinds
-  :defer t
   :ensure t
   :init
   (progn

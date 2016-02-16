@@ -129,8 +129,7 @@
 						 
 ;; flycheck for all your fly inspection needs
 (use-package flycheck
-	:ensure t
-	:defer t)
+	:ensure t)
 
 
 (provide 'init-coding-helpers)

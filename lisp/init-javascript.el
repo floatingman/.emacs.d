@@ -26,27 +26,19 @@
 
 (use-package tern
 	:ensure t
-	:defer t
 	:config
 	(progn
 		(add-hook 'js-mode-hook (lambda () (tern-mode t)))))
 
 
-(use-package company-tern
-	:disabled t
-	:ensure t
-	:defer t)
-
 (use-package ac-js2
 	:ensure t
-	:defer t
 	:config
 	(progn
 		(add-hook 'js2-mode-hook 'ac-js2-mode)))
 
 (use-package tern-auto-complete
 	:ensure t
-	:defer t
 	:config
 	(progn
 		(require 'tern-auto-complete)
@@ -59,11 +51,10 @@
 
 (use-package nodejs-repl
 	:ensure t
-	:defer t)
+	)
 
 (use-package skewer-mode
 	:ensure t
-	:defer t
 	:config
 	(progn
 		(add-hook 'js2-mode-hook 'skewer-mode)
@@ -86,5 +77,15 @@
 ;; enable flycheck for javascript
 (add-hook 'js-mode-hook
 					(lambda () (flycheck-mode t)))
+
+;;mozrepl needs to be installed in firefox
+(use-package moz
+	:ensure t
+	)
+(autoload 'moz-minor-mode "moz" "Mozilla Minor and Inferior Mozilla Modes" t)
+
+(add-hook 'javascript-mode-hook 'javascript-custom-setup)
+(defun javascript-custom-setup ()
+  (moz-minor-mode 1))
 
 (provide 'init-javascript)

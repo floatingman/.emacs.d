@@ -27,7 +27,6 @@
 
 ;;Help
 (use-package guide-key
-  :defer t
   :diminish guide-key-mode
   :config
   (progn
@@ -37,7 +36,6 @@
 ;; Moving between windows
 (use-package windmove
   :ensure t
-  :defer t
   :bind
   (("<f2> <right>" . windmove-right)
    ("<f2> <left>" . windmove-left)

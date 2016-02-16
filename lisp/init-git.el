@@ -7,7 +7,6 @@
 
 (use-package magit
 	:ensure t
-	:defer t
 	:config
 	(progn
 		(setq magit-diff-options '("-b")) ; ignore whitespace
@@ -70,10 +69,10 @@ so that it's still active even after you stage a change. Very experimental."
   (magit-gh-pulls-reload))
 
 (use-package magit-gh-pulls
-  :ensure t :defer t)
+  :ensure t )
 
 (use-package git-messenger
-  :ensure t :defer t
+  :ensure t
   :bind (("C-x v m" . git-messenger:popup-message)))
 
 (use-package git-gutter+
