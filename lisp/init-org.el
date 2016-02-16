@@ -109,6 +109,7 @@
 (global-set-key (kbd "<S-f5>") 'bh/widen)
 (global-set-key (kbd "<f7>") 'bh/set-truncate-lines)
 (global-set-key (kbd "<f8>") 'org-cycle-agenda-files)
+(global-set-key (kbd "<f9> w") 'dn/clock-in-work-task-as-default)
 (global-set-key (kbd "<f9> <f9>") 'bh/show-org-agenda)
 (global-set-key (kbd "<f9> b") 'bbdb)
 (global-set-key (kbd "<f9> c") 'calendar)
@@ -456,11 +457,16 @@ as the default task."
             (bh/clock-in-default-task)))))))
 
 (defvar bh/organization-task-id "eb155a82-92b2-4f25-a3c6-0304591af2f9")
-;(defvar bh/organization-task-id "a9dcbd77-e45a-44d3-82e9-80867526bd67")
+(defvar dn/work-task-id "a9dcbd77-e45a-44d3-82e9-80867526bd67")
 
 (defun bh/clock-in-organization-task-as-default ()
   (interactive)
   (org-with-point-at (org-id-find bh/organization-task-id 'marker)
+    (org-clock-in '(16))))
+
+(defun dn/clock-in-work-task-as-default ()
+  (interactive)
+  (org-with-point-at (org-id-find dn/work-task-id 'marker)
     (org-clock-in '(16))))
 
 (defun bh/clock-out-maybe ()

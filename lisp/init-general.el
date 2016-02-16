@@ -55,4 +55,7 @@
 			recentf-max-menu-items 15)
 (recentf-mode)
 
+;; reload buffers when file changes on disk
+(global-auto-revert-mode t)
+
 (provide 'init-general)
