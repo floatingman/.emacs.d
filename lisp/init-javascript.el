@@ -17,12 +17,18 @@
 
 (use-package js2-mode
 	:ensure t
+	:mode "\\.json$\\'"
 	:config
 	(progn
 		(add-hook 'js-mode-hook 'js2-minor-mode)
 		(setq js2-highlight-level 3)))
 
 (add-to-list 'auto-mode-alist '("\\.json$" . js-mode))
+
+(use-package js2-refactor
+	:ensure t
+	:mode "\\.js$\\'"
+	)
 
 (use-package tern
 	:ensure t

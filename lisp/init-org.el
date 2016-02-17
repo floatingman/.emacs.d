@@ -3,8 +3,6 @@
 ;; in order to update it more easely
 ;;3.1 installing org-mode
 
-;;(require-package 'org-pomodoro)
-  
 (use-package bbdb-com
   :load-path "overide/bbdb/lisp"
   :commands bbdb-create)
@@ -14,7 +12,11 @@
 (use-package smex
   :disabled t
   :ensure t)
+(use-package org-gcal
+	:ensure t)
 
+(use-package org-pomodoro
+	:ensure t)
 
 
 
@@ -67,7 +69,8 @@
 (add-hook 'message-mode-hook '(lambda () (setq fill-column 72))
           'append)
 
-(setq org-agenda-files (quote ("~/personal/org/")))
+;;4.4 Agenda Setup
+(setq org-agenda-files (quote ("~/personal/org" "~/personal/org/danielnewmandesign")))
 
 
 ;; flyspell mode for spell checking everywhere
@@ -172,8 +175,8 @@
 
 ;;5.1 TODO Keywords
 (setq org-todo-keywords
-      (quote ((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!/!)")
-              (sequence "WAITING(w@/!)" "HOLD(h@/!)" "SOMEDAY(o)" "|" "CANCELLED(c@/!)"))))
+      (quote ((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)")
+              (sequence "WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)"))))
 
 (setq org-todo-keyword-faces
       (quote (("TODO" :foreground "red" :weight bold)
@@ -181,8 +184,7 @@
               ("DONE" :foreground "forest green" :weight bold)
               ("WAITING" :foreground "orange" :weight bold)
               ("HOLD" :foreground "magenta" :weight bold)
-              ("SOMEDAY" :foreground "purple" :weight bold)
-              ("CANCELLED" :foreground "forest green" :weight bold))))
+							("CANCELLED" :foreground "forest green" :weight bold))))
 
 ;;5.2 Fast Todo Selection
 (setq org-use-fast-todo-selection t)
@@ -194,9 +196,9 @@
               ("WAITING" ("WAITING" . t))
               ("HOLD" ("WAITING") ("HOLD" . t))
               (done ("WAITING") ("HOLD"))
-              ("TODO" ("WAITING") ("CANCELLED") ("HOLD") ("SOMEDAY"))
-              ("NEXT" ("WAITING") ("CANCELLED") ("HOLD") ("SOMEDAY"))
-              ("DONE" ("WAITING") ("CANCELLED") ("HOLD") ("SOMEDAY")))))
+              ("TODO" ("WAITING") ("CANCELLED") ("HOLD"))
+              ("NEXT" ("WAITING") ("CANCELLED") ("HOLD"))
+              ("DONE" ("WAITING") ("CANCELLED") ("HOLD")))))
 
 ;;6.1 Capture Templates
 (setq org-directory "~/personal/org")
@@ -221,7 +223,7 @@
   (interactive)
   (save-excursion
     (beginning-of-line 0)
-    (org-remove-empty-drawer-at (point))))
+    (org-remove-empty-drawer-at "LOGBOOK" (point))))
 
 (add-hook 'org-clock-out-hook 'bh/remove-empty-drawer-on-clock-out 'append)
 
@@ -240,14 +242,15 @@
 (setq org-refile-allow-creating-parent-nodes (quote confirm))
 
 ; Use IDO for both buffer and file completion and ido-everywhere to t
-;(setq org-completion-use-ido t)
+;; (setq org-completion-use-ido t)
 ;; (setq ido-everywhere t)
 ;; (setq ido-max-directory-size 100000)
 ;; (ido-mode (quote both))
-                                        ; Use the current window when visiting files and buffers with ido
+; Use the current window when visiting files and buffers with ido
 ;; (setq ido-default-file-method 'selected-window)
 ;; (setq ido-default-buffer-method 'selected-window)
-(setq org-indirect-buffer-display 'current-window)
+; Use the current window for indirect buffer display
+;; (setq org-indirect-buffer-display 'current-window)
 
 ;;;; Refile settings
 ; Exclude DONE state tasks from refile targets
@@ -338,6 +341,7 @@
                        (org-agenda-skip-function 'bh/skip-non-archivable-tasks)
                        (org-tags-match-list-sublevels nil))))
                nil))))
+
 ;;8.4.1 Automatically removing context based tasks with / RET
 
 (defun bh/org-auto-exclude-function (tag)
@@ -504,7 +508,7 @@ A prefix arg forces clock in of the default task."
     (org-with-point-at clock-in-to-task
       (org-clock-in nil))))
 
-;;8.5 Editing Clock Entries
+;;9.5 Editing Clock Entries
 (setq org-time-stamp-rounding-minutes (quote (1 1)))
 
 (setq org-agenda-clock-consistency-checks
@@ -513,6 +517,7 @@ A prefix arg forces clock in of the default task."
               :max-gap 0
               :gap-ok-around ("4:00"))))
 
+;;18.54 Keep clock durations in hours
 (setq org-time-clocksum-format
       '(:hours "%d" :require-hours t :minutes ":%02d" :require-minutes t))
 
@@ -536,29 +541,28 @@ A prefix arg forces clock in of the default task."
         (org-clock-in))
     (org-clock-out)))
 
-;;9.1.1 Verify That The Clock Data Is Complete And Correct
-;; Sometimes I change tasks I'm clocking quickly - this removes clocked tasks with 0:00 duration
-;;duplicate
+;;10.1.1 Verify That The Clock Data Is Complete And Correct
+;; Sometimes I change tasks I'm clocking quickly - this removes clocked tasks with zero duration
 (setq org-clock-out-remove-zero-time-clocks t)
 
-;;9.1.2 Using Clock Reports To Summarize Time Spent
+;;10.1.2 Using Clock Reports To Summarize Time Spent
 ;; Agenda clock report parameters
 (setq org-agenda-clockreport-parameter-plist
       (quote (:link t :maxlevel 5 :fileskip0 t :compact t :narrow 80)))
 
-;;9.2.1 Creating A Task Estimate With Column Mode
+;;10.2.1 Creating A Task Estimate With Column Mode
 ;; Set default column view headings: Task Effort Clock_Summary
 (setq org-columns-default-format "%80ITEM(Task) %10Effort(Effort){:} %10CLOCKSUM")
 
 ;; global Effort estimate values
 ;; global STYLE property values for completion
-(setq org-global-properties (quote (("Effort_ALL" . "0:15 0:30 1:00 2:00 3:00 4:00 5:00 6:00 7:00 8:00")
+(setq org-global-properties (quote (("Effort_ALL" . "0:15 0:30 0:45 1:00 2:00 3:00 4:00 5:00 6:00 0:00")
                                     ("STYLE_ALL" . "habit"))))
-;;9.3 Providing Progress Reports to Others
+;;10.3 Providing Progress Reports to Others
 ;; Agenda log mode items to display (closed and state changes by default)
 (setq org-agenda-log-mode-items (quote (closed state)))
 
-;;10.1 Tags
+;;11.1 Tags
 ; Tags with fast selection keys
 (setq org-tag-alist (quote ((:startgroup)
                             ("@errand" . ?e)
@@ -573,8 +577,7 @@ A prefix arg forces clock in of the default task."
                             ("10000Hours" . ?T)
                             ("CHURCH" . ?R)
                             ("WORK" . ?W)
-                            ("ORG" . ?O)
-                            ("crypt" . ?E)
+														("crypt" . ?E)
                             ("NOTE" . ?n)
                             ("CANCELLED" . ?c)
                             ("FLAGGED" . ??))))
@@ -585,7 +588,7 @@ A prefix arg forces clock in of the default task."
 ; For tag searches ignore tasks with scheduled and deadline dates
 (setq org-agenda-tags-todo-honor-ignore-options t)
 
-;;12 Handling Phone Calls
+;;13 Handling Phone Calls
 
 
 (global-set-key (kbd "<f9> p") 'bh/phone-call)
@@ -622,11 +625,11 @@ A prefix arg forces clock in of the default task."
                        (t "NameOfCaller")))
     (insert caller)))
 
-;;13.1 Weekly Review Process
+;;14.1 Weekly Review Process
 
 (setq org-agenda-span 'day)
 
-;;13.2 Project Definition And Finding Stuck Projects
+;;14.2 Project Definition And Finding Stuck Projects
 
 (setq org-stuck-projects (quote ("" nil nil "")))
 
@@ -884,8 +887,7 @@ Skip project and sub-project tasks, habits, and loose non-project tasks."
         nil
       next-headline)))
 
-;;14.2 Archive Setup
-
+;;15.2 Archive Setup
 (setq org-archive-mark-done nil)
 (setq org-archive-location "%s_archive::* Archived Tasks")
 
@@ -913,7 +915,7 @@ Skip project and sub-project tasks, habits, and loose non-project tasks."
         next-headline))))
 
 ;;16.2 Org-Babel Setup
-(setq org-ditaa-jar-path "~/java/ditaa0_6b.jar")
+;(setq org-ditaa-jar-path "~/java/ditaa0_6b.jar")
 (setq org-plantuml-jar-path "~/java/plantuml.jar")
 
 (add-hook 'org-babel-after-execute-hook 'bh/display-inline-images 'append)
@@ -1886,7 +1888,7 @@ Late deadlines first, then scheduled, then non-late deadlines"
 (setq org-remove-highlights-with-change t)
 
 ;;18.26 Getting Up To Date Org-Mode Info Documentation
-(add-to-list 'Info-default-directory-list "~/.emacs.d/vendor/org-mode/doc")
+(add-to-list 'Info-default-directory-list "~/.emacs.d/override/org-mode/doc")
 
 
 ;;18.27 Prefer Future Dates Or Not?
@@ -2012,27 +2014,20 @@ Late deadlines first, then scheduled, then non-late deadlines"
 
 
 
-;;List of disabled org-mode functions
-
-;;18.51 Task Priorities
-(setq org-enable-priority-commands t)
-(setq org-default-priority ?E)
-(setq org-lowest-priority ?E)
-
-;;18.52 Preserving Source Block Indentation
+;;18.51 Preserving Source Block Indentation
 (setq org-src-preserve-indentation nil)
 (setq org-edit-src-content-indentation 0)
 
-;;18.53 Prevent Editing Invisible Text
+;;18.52 Prevent Editing Invisible Text
 (setq org-catch-invisible-edits 'error)
 
-;;18.54 Use Utf-8 As Default Coding System
+;;18.53 Use Utf-8 As Default Coding System
 (setq org-export-coding-system 'utf-8)
 (prefer-coding-system 'utf-8)
 (set-charset-priority 'unicode)
 (setq default-process-coding-system '(utf-8-unix . utf-8-unix))
 
-;;18.56 Create Unique IDs for Tasks When Linking
+;;18.55 Create Unique IDs for Tasks When Linking
 (setq org-id-link-to-org-use-id 'create-if-interactive-and-no-custom-id)
 
 ;;19.2 Strike-Through Emphasis
@@ -2063,6 +2058,11 @@ Late deadlines first, then scheduled, then non-late deadlines"
               (org-todo "STARTED"))))))))
 
 (add-hook 'org-after-todo-state-change-hook 'bh/mark-parent-tasks-started 'append)
+
+;;19.9 Task Priorities
+(setq org-enable-priority-commands t)
+(setq org-default-priority ?E)
+(setq org-lowest-priority ?E)
 
 ;;20.1 Automatic Hourly Commits
 (run-at-time "00:59" 3600 'org-save-all-org-buffers)
