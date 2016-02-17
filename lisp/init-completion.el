@@ -155,10 +155,7 @@
   :config
   (progn
 		(setq yas-installed-snippets-dir "~/.emacs.d/site-lisp/yasnippet-snippets")
-    (setq yas-prompt-functions
-					'(yas-popup-isearch-prompt
-						yas-no-prompt))
-		(yas-global-mode)))
+		(yas-global-mode 1)))
 
 
 (defun my/insert-space-or-expand ()

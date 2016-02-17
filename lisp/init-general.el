@@ -43,6 +43,14 @@
    ("<f2> <down>" . windmove-down)
    ))
 
+;; Split windows by golden ratio
+(use-package golden-ratio
+	:ensure t
+	:diminish golden-ratio-mode
+	:config
+	(progn
+		(golden-ratio-mode 1)))
+
 (use-package switch-window
   :ensure t
   :bind (("C-x o" . switch-window)))
@@ -55,5 +63,7 @@
 
 ;; reload buffers when file changes on disk
 (global-auto-revert-mode t)
+
+
 
 (provide 'init-general)
