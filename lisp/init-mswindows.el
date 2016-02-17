@@ -14,6 +14,6 @@
   (defun cygwin-shell ()
     "Run cygwin bash in shell mode."
     (interactive)
-    (let ((explicit-shell-file-name "C:/cygwin64/bin/bash"))
+    (let ((explicit-shell-file-name "C:/cygwin64/bin/mintty.exe"))
       (call-interactively 'shell))))
 (provide 'init-mswindows)

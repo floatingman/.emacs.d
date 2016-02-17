@@ -122,7 +122,7 @@
 	 ("C-x c SPC" . helm-all-mark-rings)))
 
 
-(ido-mode -1) ;; Turn off ido mode in case I enabled it accidentally
+;; (ido-mode -1) ;; Turn off ido mode in case I enabled it accidentally
 
 (use-package helm-descbinds
   :ensure t

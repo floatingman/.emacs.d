@@ -10,5 +10,5 @@
 (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/"))
 
 (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))
-(package-refresh-contents)
+;(package-refresh-contents)
 (provide 'init-packages)
