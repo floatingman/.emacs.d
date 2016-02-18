@@ -40,4 +40,11 @@ point reaches the beginning or end of the buffer, stop there."
   (whitespace-cleanup))
 
 
+(defun my/copy-buffer ()
+	"Copy buffer contents to kill ring."
+	(interactive)
+	(kill-new (buffer-substring-no-properties (point-min) (point-max))))
+
+(global-set-key (kbd "C-c w") 'my/copy-buffer)
+
 (provide 'init-functions)
