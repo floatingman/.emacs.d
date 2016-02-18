@@ -30,7 +30,10 @@
 
 (use-package js2-refactor
 	:ensure t
-	:mode "\\.js$\\'"
+	:config
+	(progn
+		(add-hook 'js2-mode #'js2-refactor-mode)
+		(js2r-add-keybindings-with-prefix "C-c C-m"))
 	)
 
 (use-package tern
@@ -66,9 +69,22 @@
 	:ensure t
 	:config
 	(progn
+		(require 'skewer-repl)
 		(add-hook 'js2-mode-hook 'skewer-mode)
 		(add-hook 'css-mode-hook 'skewer-css-mode)
 		(add-hook 'html-mode-hook 'skewer-html-mode)))
+
+(defun skewer-start ()
+  (interactive)
+  (let ((httpd-port 8023))
+    (httpd-start)
+    (message "Ready to skewer the browser. Now jack in with the bookmarklet.")))
+
+(defun skewer-demo ()
+  (interactive)
+  (let ((httpd-port 8024))
+    (run-skewer)
+    (skewer-repl)))
 
 ;; use paredit for javascript
 (defun my-paredit-nonlisp ()
