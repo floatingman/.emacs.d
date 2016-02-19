@@ -20,7 +20,17 @@
   :config
   (projectile-global-mode))
 
-
+(use-package highlight-indentation
+	:ensure t
+	:config
+	(progn
+		(defun toggle-highlight-indentation-mode ()
+			(interactive)
+			(highlight-indentation-mode)
+			(highlight-indentation-current-column-mode))
+		(set-face-background 'highlight-indentation-face "#cc3300")
+		(set-face-background 'highlight-indentation-current-column-face "#4d1300")
+		))
 
 (defun my/recursive-find-file (file &optional directory)
   "Find the first FILE in DIRECTORY or its parents."

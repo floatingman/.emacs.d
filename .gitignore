@@ -85,3 +85,4 @@ rake.cache
 projectile.cache 
 ido.last 
 
+/helm-history

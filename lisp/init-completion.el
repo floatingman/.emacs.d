@@ -156,11 +156,9 @@
 
 (use-package helm-projectile
 	:ensure t
-	:init
+	:config
 	(progn
-		(setq helm-projectile-sources-list (cons 'helm-source-projectile-files-list
-                                         (remove 'helm-source-projectile-files-list 
-																								 helm-projectile-sources-list)))
+		
 		(helm-projectile-on)
 
 		(define-key projectile-mode-map (kbd "C-c p /")
