@@ -64,6 +64,7 @@
 (use-package init-dired)
 (use-package init-completion)
 (use-package init-coding-helpers)
+(use-package init-functions)
 (use-package init-keybinding)
 (use-package init-utils)
 (use-package init-javascript)
@@ -76,6 +77,8 @@
 (server-start)
 (setq custom-file "~/.emacs.d/.emacs-custom.el")
 (load custom-file)
+
+
 (when window-system
   (let ((elapsed (float-time (time-subtract (current-time)
                                             emacs-start-time))))

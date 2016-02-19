@@ -64,6 +64,16 @@
 ;; reload buffers when file changes on disk
 (global-auto-revert-mode t)
 
+;; start emacs maximized
+;; found here http://thestandardoutput.com/posts/how-to-properly-maximize-the-active-emacs-frame-on-startup-on-windows/
+(defun w32-maximize-frame ()
+  "Maximize the current frame (windows only)"
+  (interactive)
+  (w32-send-sys-command 61488))
 
+(if (eq system-type 'windows-nt)
+    (progn
+      (add-hook 'window-setup-hook 'w32-maximize-frame t))
+  (set-frame-parameter nil 'fullscreen 'maximized))
 
 (provide 'init-general)
