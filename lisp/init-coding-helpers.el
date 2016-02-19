@@ -137,7 +137,18 @@
 						 
 ;; flycheck for all your fly inspection needs
 (use-package flycheck
-	:ensure t)
+	:ensure t
+	:config
+	(progn
+		(global-flycheck-mode)))
+
+;; keep code indented when changing things up top
+(use-package aggressive-indent
+	:ensure t
+	:config
+	(progn
+		(global-aggressive-indent-mode 1)))
+
 
 
 (provide 'init-coding-helpers)

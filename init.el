@@ -72,6 +72,8 @@
 (use-package init-git)
 (use-package init-spelling)
 (use-package init-php)
+(use-package init-news)
+(use-package init-editing)
 (use-package init-keybinding)
 ;;; Post initialization
 (server-start)
