@@ -65,7 +65,6 @@
 (use-package init-completion)
 (use-package init-coding-helpers)
 (use-package init-functions)
-(use-package init-keybinding)
 (use-package init-utils)
 (use-package init-javascript)
 (use-package init-web)
@@ -73,6 +72,7 @@
 (use-package init-git)
 (use-package init-spelling)
 (use-package init-php)
+(use-package init-keybinding)
 ;;; Post initialization
 (server-start)
 (setq custom-file "~/.emacs.d/.emacs-custom.el")

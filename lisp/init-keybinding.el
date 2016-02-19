@@ -127,4 +127,10 @@ Repeated invocations toggle between the two most recently open buffers."
 				 ("M-<left>" . smart-backward)
 				 ("M-<right>" . smart-forward)))
 
+;; Duplicate region
+(global-set-key (kbd "C-c d") 'duplicate-current-line-or-region)
+
+;; copy whole buffer into clipboard
+(global-set-key (kbd "C-c w") 'my/copy-buffer)
+
 (provide 'init-keybinding)

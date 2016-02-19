@@ -76,4 +76,7 @@
       (add-hook 'window-setup-hook 'w32-maximize-frame t))
   (set-frame-parameter nil 'fullscreen 'maximized))
 
+;; ask y or n instead of yes or no
+(fset 'yes-or-no-p 'y-or-n-p)
+
 (provide 'init-general)

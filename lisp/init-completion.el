@@ -73,9 +73,24 @@
   :diminish helm-mode
   :config
   (progn
+		(setq helm-ff-transformer-show-only-basename nil
+      helm-adaptive-history-file             "~/.emacs.d/helm-history"
+      helm-yank-symbol-first                 t
+      helm-move-to-line-cycle-in-source      t
+      helm-buffers-fuzzy-matching            t
+      helm-ff-auto-update-initial-value      t)
+		(add-hook 'eshell-mode-hook
+							#'(lambda ()
+									(define-key eshell-mode-map (kbd "TAB") #'helm-esh-pcomplete)
+									(define-key eshell-mode-map (kbd "C-c C-l" #'helm-eshell-history)))
+							)
+		(autoload 'helm-descbinds      "helm-descbinds" t)
+		(autoload 'helm-eshell-history "helm-eshell"    t)
+		(autoload 'helm-esh-pcomplete  "helm-eshell"    t)
+		
     (require 'helm-config)
-    (setq helm-input-idle-delay 0.2)
-    (helm-mode)
+		(helm-mode t)
+		(helm-adaptive-mode t)
     (setq helm-locate-command
         (case system-type
           ('gnu/linux "locate -i -r %s")
@@ -83,46 +98,37 @@
           ('windows-nt "es %s")
           ('darwin "mdfind -name %s %s")
           (t "locate %s")))
-    ;; rebind tab to run persistent action
-    (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action)
-    ;; make TAB works in terminal
-    (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action)
-    ;; list actions using C-z
-    (define-key helm-map (kbd "C-z") 'helm-select-action)
+  
 
     (when (executable-find "curl")
       (setq helm-google-suggest-use-curl-p t))
 
-    (setq
-     ;; open helm buffer inside current window, not occupy whole other window
-     helm-split-window-in-side-p t
-     ;; fuzzy matching buffer names when non--nil
-     helm-buffers-fuzzy-matching t
-     ;; move to end or beginning of source when reaching top or bottom of source.
-     helm-move-to-line-cycle-in-source t
-     ;; search for library in `require' and `declare-function' sexp.
-     helm-ff-search-library-in-sexp t
-     ;; scroll 8 lines other window using M-<next>/M-<prior>
-     helm-scroll-amount 8
-     helm-ff-file-name-history-use-recentf t)
+		(define-key org-mode-map (kbd "C-x c o h") #'helm-org-headlines)
+    
     )
   :bind (
-	 ("C-c h" . helm-mini)
-	 ("C-x c g" . helm-do-grep)
-	 ("C-h a" . helm-apropos)
-         ("C-x C-b" . helm-buffers-list)
-         ("C-x b" . helm-buffers-list)
-         ("M-y" . helm-show-kill-ring)
-         ("M-x" . helm-M-x)
-	 ("C-x C-f" . helm-find-files)
-         ("C-x c o" . helm-occur)
-         ("C-x c s" . helm-swoop)
-         ("C-x c y" . helm-yas-complete)
-         ("C-x c Y" . helm-yas-create-snippet-on-region)
-	 ("C-x c SPC" . helm-all-mark-rings)))
+				("C-x b" . helm-mini)
+				("C-x C-b" . helm-buffers-list)
+				("C-x c g" . helm-do-grep)
+				("C-h a" . helm-apropos)
+				("C-h i" . helm-info-emacs)
+				("M-y" . helm-show-kill-ring)
+        ("M-x" . helm-M-x)
+				("C-x C-f" . helm-find-files)
+        ("C-x c o" . helm-occur)
+        ("M-s o" . helm-swoop)
+        ("C-x c y" . helm-yas-complete)
+        ("C-x c Y" . helm-yas-create-snippet-on-region)
+				("C-x c SPC" . helm-all-mark-rings)
+				("C-x C-r" . helm-recentf)
+				("M-s /" . helm-multi-swoop)
+				("C-x c!" . helm-calcul-expression)
+				("C-x c:" . helm-eval-expression-with-eldoc)
+				("M-o" . helm-previous-source)
+				))
 
 
-;; (ido-mode -1) ;; Turn off ido mode in case I enabled it accidentally
+ (ido-mode -1) ;; Turn off ido mode in case I enabled it accidentally
 
 (use-package helm-descbinds
   :ensure t
@@ -147,6 +153,29 @@
  (progn
    (define-key isearch-mode-map (kbd "M-i") 'helm-swoop-from-isearch)
    (define-key helm-swoop-map (kbd "M-i") 'helm-multi-swoop-all-from-helm-swoop)))
+
+(use-package helm-projectile
+	:ensure t
+	:init
+	(progn
+		(setq helm-projectile-sources-list (cons 'helm-source-projectile-files-list
+                                         (remove 'helm-source-projectile-files-list 
+																								 helm-projectile-sources-list)))
+		(helm-projectile-on)
+
+		(define-key projectile-mode-map (kbd "C-c p /")
+			#'(lambda ()
+					(interactive)
+					(helm-ag (projectile-project-root))))
+		)
+	)
+
+(use-package helm-ag
+	:ensure t
+	:bind(
+				("M-s s" . helm-ag)))
+
+
 
 (use-package yasnippet
   :ensure t

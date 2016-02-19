@@ -20,9 +20,7 @@
   :config
   (projectile-global-mode))
 
-(use-package helm-projectile
-	:ensure t
-	:ensure helm-projectile)
+
 
 (defun my/recursive-find-file (file &optional directory)
   "Find the first FILE in DIRECTORY or its parents."
