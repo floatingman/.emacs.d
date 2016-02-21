@@ -1,3 +1,8 @@
+;;; init-editing --- Summary
+
+;;; Commentary:
+
+;;; Code:
 (use-package markdown-mode
 	:ensure t
 	:config
@@ -21,5 +26,16 @@
 
 (add-to-list 'flycheck-checkers 'proselint)
 
+;;make writing posts in org-mode look more better
+(remove-hook 'text-mode-hook #'turn-on-auto-fill)
+(add-hook 'text-mode-hook 'turn-on-visual-line-mode)
+(add-hook 'text-mode-hook (lambda () (set-fill-column 80)))
+
+(use-package visual-fill-column
+	:ensure t
+	:config
+	(progn
+		(global-visual-fill-column-mode)))
 
 (provide 'init-editing)
+;;; init-editing.el ends here
