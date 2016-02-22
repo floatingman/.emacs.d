@@ -74,6 +74,7 @@
 (use-package init-php)
 (use-package init-news)
 (use-package init-editing)
+(use-package init-chat)
 (use-package init-keybinding)
 ;;; Post initialization
 (server-start)
