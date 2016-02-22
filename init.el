@@ -81,6 +81,7 @@
 (setq custom-file "~/.emacs.d/.emacs-custom.el")
 (load custom-file)
 
+(add-hook 'after-init-hook #'global-flycheck-mode)
 
 (when window-system
   (let ((elapsed (float-time (time-subtract (current-time)
