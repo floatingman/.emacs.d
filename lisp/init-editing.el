@@ -29,7 +29,8 @@
 ;;make writing posts in org-mode look more better
 (remove-hook 'text-mode-hook #'turn-on-auto-fill)
 (add-hook 'text-mode-hook 'turn-on-visual-line-mode)
-(add-hook 'text-mode-hook (lambda () (set-fill-column 80)))
+(add-hook 'markdown-mode-hook (lambda () (set-fill-column 80)))
+(add-hook 'org-mode-hook (lambda () (set-fill-column 120)))
 
 (use-package visual-fill-column
 	:ensure t

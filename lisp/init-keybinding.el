@@ -102,12 +102,10 @@ Repeated invocations toggle between the two most recently open buffers."
     (key-chord-define-global "jw"     'switch-window)
     (key-chord-define-global "jl"     'avy-goto-line)
     (key-chord-define-global "j."     'join-lines/body)
-    ;(key-chord-define-global "jZ"     'avy-zap-to-char)
-    (key-chord-define-global "FF"     'find-file)
+		(key-chord-define-global "FF"     'find-file)
     (key-chord-define-global "qq"     'my/quantified-hydra/body)
     (key-chord-define-global "hh"     'my/key-chord-commands/body)
     (key-chord-define-global "xx"     'er/expand-region)
-    (key-chord-define-global "  "     'my/insert-space-or-expand)
     (key-chord-define-global "JJ"     'my/switch-to-previous-buffer)))
 
 ;; quickly jump to different points in current view

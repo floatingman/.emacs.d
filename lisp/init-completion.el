@@ -185,12 +185,6 @@
 		(yas-global-mode 1)))
 
 
-(defun my/insert-space-or-expand ()
-  "For binding to the SPC SPC keychord."
-  (interactive)
-  (condition-case nil (or (my/hippie-expand-maybe nil) (insert "  "))))
-
-
 (defun sanityinc/dabbrev-friend-buffer (other-buffer)
   (< (buffer-size other-buffer) (* 1 1024 1024)))
 (setq dabbrev-friend-buffer-function 'sanityinc/dabbrev-friend-buffer)
