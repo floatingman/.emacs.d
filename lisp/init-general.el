@@ -79,4 +79,38 @@
 ;; ask y or n instead of yes or no
 (fset 'yes-or-no-p 'y-or-n-p)
 
+;; no splash screen
+(setq inhibit-splash-screen t)
+
+;; set default columns to 80 and tabs to 2
+(setq-default fill-column 80)
+(setq-default default-tab-width 2)
+(setq-default indent-tabs-mode nil)
+
+;;make unique buffer names when creating duplicate buffers
+(use-package uniquify
+  :config
+  (setq uniquify-buffer-name-style 'post-forward-angle-brackets))  ;; buffernames that are foo<1>, foo<2> are hard to read. This makes them foo|dir  foo|otherdir
+(setq desktop-load-locked-desktop "ask") ;; sometimes desktop is locked, ask if we want to load it.
+(desktop-save-mode 1) ;; auto-save buffer state on close for a later time.
+
+
+;;setup good pasteing real good
+(setq kill-ring-max 100) 
+(setq x-select-enable-clipboard t) 
+(setq select-active-regions t) 
+(setq save-interprogram-paste-before-kill 1) 
+(setq yank-pop-change-selection t)
+
+;; ignore case when completeing file names
+(setq read-file-name-completion-ignore-case t)
+
+;;display time and load on modeline
+(setq
+ ;; don't display info about mail
+ display-time-mail-function (lambda () nil)
+ ;; update every 15 seconds instead of 60 seconds
+ display-time-interval 15)
+(display-time-mode 1)
+
 (provide 'init-general)

@@ -1,3 +1,4 @@
+;;; Code:
 (defun start-irc ()
   (interactive)
   (when (file-exists-p "~/.ercpass")
@@ -69,6 +70,20 @@
 								 (if (not (= 1 arg))
 										 (call-interactively 'erc)
 									 (erc :server ,server :port ,port :nick ,nick)))))
+
+			(defmacro asf-erc-bouncer-connect (command server port nick ssl pass)
+				"Create interactive command `command', for connecting to an IRC server. The
+   command uses interactive mode if passed an argument."
+				(fset command
+							`(lambda (arg)
+								 (interactive "p")
+								 (if (not (= 1 arg))
+										 (call-interactively 'erc)
+									 (let ((erc-connect-function ',(if ssl
+																										 'erc-open-ssl-stream
+																									 'open-network-stream)))
+										 (erc :server ,server :port ,port :nick ,nick :password ,pass))))))
+			
 			(defun bitlbee-identify () 
 				"If we're on the bitlbee server, send the identify command to the #bitlbee channel."
 				(when (and (= 6667 erc-session-port)
@@ -81,6 +96,8 @@
 
 	(de-erc-connect erc-freenode "irc.freenode.net" 6667 "floatingman")
 	(de-erc-connect erc-bitlbee "thenewmans.no-ip.org" 6667 "floatingman")
+	(asf-erc-bouncer-connect erc-freenode "irc.freenode.net" 6667 "floatingman" t freenode-password)
+	(asf-erc-bouncer-connect erc-gitter "irc.gitter.im" 6667 "floatingman" nil gitter-password)
 	
 	(use-package ercn
 		:ensure t
@@ -103,5 +120,5 @@
 	)
 
 
-
 (provide 'init-chat)
+;;; init-chat ends here

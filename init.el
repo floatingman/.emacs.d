@@ -6,6 +6,10 @@
 (unless noninteractive
   (message "Loading %s..." load-file-name))
 
+;; turn on emacs debugging when starting, turn it off later
+(setq debug-on-error t)
+(setq debug-on-quit t)
+
 (setq message-log-max 16384)
 
 ;;Setup some variables for use in other config files
@@ -82,6 +86,10 @@
 (load custom-file)
 
 (add-hook 'after-init-hook #'global-flycheck-mode)
+
+;; turn off debugging after emacs starts
+(setq debug-on-error nil)
+(setq debug-on-quit nil)
 
 (when window-system
   (let ((elapsed (float-time (time-subtract (current-time)

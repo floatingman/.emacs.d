@@ -38,5 +38,8 @@
 	(progn
 		(global-visual-fill-column-mode)))
 
+(use-package fill-column-indicator
+	:ensure t)
+
 (provide 'init-editing)
 ;;; init-editing.el ends here
