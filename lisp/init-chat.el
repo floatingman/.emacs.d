@@ -9,7 +9,7 @@
 																			 "#org-mode"
 																			 "#emacs"
 																			 "#emacs-beginners")
-																			("thenewmans.no-ip.org"
+																			("shockwave"
 																			 "#BeWell_MS"
 																			 "#BeWell_DevOps"
 																			 "#BeWell_General"
@@ -17,9 +17,7 @@
 																			 "#KornerShop_QA"
 																			 "#QA_Perf_Testing"
 																			 "#ProdRelease"
-																			 "#Random"))
-				erc-server "irc.freenode.net"
-				erc-nick "floatingman")
+																			 "#Random")))
   (defun erc-cmd-OPME ()
     "Request chanserv to op me."
     (erc-message "PRIVMSG"
