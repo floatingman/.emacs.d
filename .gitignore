@@ -88,3 +88,4 @@ ido.last
 /helm-history
 /.elfeed
 
+/.emacs-secrets.el
