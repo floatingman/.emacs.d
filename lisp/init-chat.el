@@ -94,7 +94,7 @@
 		)
 
 
-	(de-erc-connect erc-freenode "irc.freenode.net" 6667 "floatingman")
+	;; (de-erc-connect erc-freenode "irc.freenode.net" 6667 "floatingman")
 	(de-erc-connect erc-bitlbee "thenewmans.no-ip.org" 6667 "floatingman")
 	(asf-erc-bouncer-connect erc-freenode "irc.freenode.net" 6667 "floatingman" t freenode-password)
 	(asf-erc-bouncer-connect erc-gitter "irc.gitter.im" 6667 "floatingman" nil gitter-password)
