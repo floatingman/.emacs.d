@@ -1,8 +1,8 @@
 ;;; Code:
 (defun start-irc ()
   (interactive)
-  (when (file-exists-p "~/.ercpass")
-    (load-file "~/.ercpass"))
+  (when (file-exists-p "~/personal/.ercpass")
+    (load-file "~/personal/.ercpass"))
 
 
 	;; following Sacha Chua and http://writequit.org/org/settings.html#sec-1-13
@@ -44,11 +44,7 @@
 																					 "#org-mode"
 																					 "#emacs"
 																					 "#emacs-beginners"))
-
-
 						)
-
-			
 
 			(defun erc-cmd-OPME ()
 				"Request chanserv to op me."

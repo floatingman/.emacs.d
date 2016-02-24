@@ -82,7 +82,7 @@
 (use-package init-keybinding)
 ;;; Post initialization
 (server-start)
-(setq custom-file "~/.emacs.d/.emacs-custom.el")
+(setq custom-file "~/personal/.emacs-custom.el")
 (load custom-file)
 
 (add-hook 'after-init-hook #'global-flycheck-mode)
