@@ -74,16 +74,21 @@
   :config
   (progn
 		(setq helm-ff-transformer-show-only-basename nil
-      helm-adaptive-history-file             "~/.emacs.d/helm-history"
-      helm-yank-symbol-first                 t
-      helm-move-to-line-cycle-in-source      t
-      helm-buffers-fuzzy-matching            t
-      helm-ff-auto-update-initial-value      t)
-		(add-hook 'eshell-mode-hook
+          helm-adaptive-history-file             "~/.emacs.d/helm-history"
+          helm-yank-symbol-first                 t
+          helm-move-to-line-cycle-in-source      t
+          helm-buffers-fuzzy-matching            t
+          helm-ff-auto-update-initial-value      t)
+
+    (autoload 'helm-descbinds      "helm-descbinds" t)
+		(autoload 'helm-eshell-history "helm-eshell"    t)
+		(autoload 'helm-esh-pcomplete  "helm-eshell"    t)
+
+    (add-hook 'eshell-mode-hook
 							#'(lambda ()
 									(define-key eshell-mode-map (kbd "TAB") #'helm-esh-pcomplete)
-									(define-key eshell-mode-map (kbd "C-c C-l" #'helm-eshell-history)))
-							)
+									(define-key eshell-mode-map (kbd "C-c C-l") #'helm-eshell-history)))
+    
 		(autoload 'helm-descbinds      "helm-descbinds" t)
 		(autoload 'helm-eshell-history "helm-eshell"    t)
 		(autoload 'helm-esh-pcomplete  "helm-eshell"    t)
@@ -92,13 +97,13 @@
 		(helm-mode t)
 		(helm-adaptive-mode t)
     (setq helm-locate-command
-        (case system-type
-          ('gnu/linux "locate -i -r %s")
-          ('berkeley-unix "locate -i %s")
-          ('windows-nt "es %s")
-          ('darwin "mdfind -name %s %s")
-          (t "locate %s")))
-  
+          (case system-type
+            ('gnu/linux "locate -i -r %s")
+            ('berkeley-unix "locate -i %s")
+            ('windows-nt "es %s")
+            ('darwin "mdfind -name %s %s")
+            (t "locate %s")))
+    
 
     (when (executable-find "curl")
       (setq helm-google-suggest-use-curl-p t))
@@ -107,28 +112,28 @@
     
     )
   :bind (
-				("C-x b" . helm-mini)
-				("C-x C-b" . helm-buffers-list)
-				("C-x c g" . helm-do-grep)
-				("C-h a" . helm-apropos)
-				("C-h i" . helm-info-emacs)
-				("M-y" . helm-show-kill-ring)
-        ("M-x" . helm-M-x)
-				("C-x C-f" . helm-find-files)
-        ("C-x c o" . helm-occur)
-        ("M-s o" . helm-swoop)
-        ("C-x c y" . helm-yas-complete)
-        ("C-x c Y" . helm-yas-create-snippet-on-region)
-				("C-x c SPC" . helm-all-mark-rings)
-				("C-x C-r" . helm-recentf)
-				("M-s /" . helm-multi-swoop)
-				("C-x c!" . helm-calcul-expression)
-				("C-x c:" . helm-eval-expression-with-eldoc)
-				("M-o" . helm-previous-source)
-				))
+         ("C-x b" . helm-mini)
+         ("C-x C-b" . helm-buffers-list)
+         ("C-x c g" . helm-do-grep)
+         ("C-h a" . helm-apropos)
+         ("C-h i" . helm-info-emacs)
+         ("M-y" . helm-show-kill-ring)
+         ("M-x" . helm-M-x)
+         ("C-x C-f" . helm-find-files)
+         ("C-x c o" . helm-occur)
+         ("M-s o" . helm-swoop)
+         ("C-x c y" . helm-yas-complete)
+         ("C-x c Y" . helm-yas-create-snippet-on-region)
+         ("C-x c SPC" . helm-all-mark-rings)
+         ("C-x C-r" . helm-recentf)
+         ("M-s /" . helm-multi-swoop)
+         ("C-x c!" . helm-calcul-expression)
+         ("C-x c:" . helm-eval-expression-with-eldoc)
+         ("M-o" . helm-previous-source)
+         ))
 
 
- (ido-mode -1) ;; Turn off ido mode in case I enabled it accidentally
+(ido-mode -1) ;; Turn off ido mode in case I enabled it accidentally
 
 (use-package helm-descbinds
   :ensure t
