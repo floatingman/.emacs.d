@@ -40,7 +40,6 @@
                          ("https://www.schneier.com/blog/atom.xml" security)
                          ("http://krebsonsecurity.com/feed/" security)
                          ("http://irreal.org/blog/?feed=rss2" programming lisp scheme emacs)
-                         ("http://sachachua.com/blog/feed/" emacs)
                          ("http://blog.ioactive.com/feeds/posts/default" security)
                          ("http://emacsredux.com/atom.xml" emacs)
                          ("http://batsov.com/atom.xml" emacs clojure lisp)
