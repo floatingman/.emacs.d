@@ -113,4 +113,20 @@
  display-time-interval 15)
 (display-time-mode 1)
 
+;; find out what commands I use most frequently.
+(use-package keyfreq
+  :ensure t
+  :config
+  (progn
+    (setq keyfreq-excluded-commands
+          '(self-insert-command
+            abort-recursive-edit
+            forward-char
+            backward-char
+            previous-line
+            next-line))
+    (keyfreq-mode 1)
+    (keyfreq-autosave-mode 1)))
+
+
 (provide 'init-general)
