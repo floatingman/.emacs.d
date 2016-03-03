@@ -19,28 +19,43 @@
 	:ensure t
 	:config
 	(progn
-		(add-hook 'js-mode-hook 'js2-minor-mode)
-		(setq js2-highlight-level 3)
-		(add-to-list 'auto-mode-alist '("\\.json$" . js2-mode))
-		(add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
+    (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
 		(add-to-list 'interpreter-mode-alist '("node" . js2-mode))
-		)
+    (setq-default
+     js-indent-level 2
+     js2-basic-offset 2
+     ;; Supress js2 mode errors
+     js2-mode-show-parse-errors nil
+     js2-mode-show-strict-warnings)
+    )
 	)
+
+(eval-after-load
+    'flycheck
+  (lambda ()
+    (flycheck-add-mode 'javascript-eslint 'js2-mode)
+    ;; Disable jshint
+    (setq-default
+     flycheck-disabled-checkers
+     (append flycheck-disabled-checkers
+             '(javascript-jshint)))))
+
+
 
 
 (use-package js2-refactor
 	:ensure t
 	:config
 	(progn
-		(add-hook 'js2-mode #'js2-refactor-mode)
-		(js2r-add-keybindings-with-prefix "C-c C-m"))
+    (add-hook 'js2-mode-hook (lambda () (js2-refactor-mode t)))
+    (js2r-add-keybindings-with-prefix "C-c C-m"))
 	)
 
 (use-package tern
 	:ensure t
 	:config
 	(progn
-		(add-hook 'js-mode-hook (lambda () (tern-mode t)))))
+		(add-hook 'js2-mode-hook (lambda () (tern-mode t)))))
 
 
 (use-package ac-js2
@@ -112,5 +127,8 @@
 (add-hook 'javascript-mode-hook 'javascript-custom-setup)
 (defun javascript-custom-setup ()
   (moz-minor-mode 1))
+
+(use-package json-mode
+  :ensure t)
 
 (provide 'init-javascript)
