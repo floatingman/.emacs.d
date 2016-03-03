@@ -80,10 +80,6 @@
           helm-buffers-fuzzy-matching            t
           helm-ff-auto-update-initial-value      t)
 
-    (autoload 'helm-descbinds      "helm-descbinds" t)
-		(autoload 'helm-eshell-history "helm-eshell"    t)
-		(autoload 'helm-esh-pcomplete  "helm-eshell"    t)
-
     (add-hook 'eshell-mode-hook
 							#'(lambda ()
 									(define-key eshell-mode-map (kbd "TAB") #'helm-esh-pcomplete)
