@@ -69,4 +69,6 @@
     )
   )
 
+(setq nntp-authinfo-file "~/personal/.authinfo")
+
 (provide 'init-news)
