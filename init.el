@@ -79,6 +79,7 @@
 (use-package init-news)
 (use-package init-editing)
 (use-package init-chat)
+(when *is-linux* (use-package init-mail))
 (use-package init-keybinding)
 ;;; Post initialization
 (server-start)

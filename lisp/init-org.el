@@ -208,6 +208,8 @@
 (setq org-capture-templates
       (quote (("t" "todo" entry (file "~/personal/org/refile.org")
                "* TODO %?\n%U\n%a\n" :clock-in t :clock-resume t)
+              ("m" "mail" entry (file "~/personal/org/refile.org")
+               "* NEXT Respond to %:from on %:subject\nSCHEDULED: %t\n%U\n%a\n" :clock-in t :clock-resume t :immediate-finish t)
               ("n" "note" entry (file "~/personal/org/refile.org")
                "* %? :NOTE:\n%U\n%a\n" :clock-in t :clock-resume t)
               ("j" "Journal" entry (file+datetree "~/personal/org/diary.org")

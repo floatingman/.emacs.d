@@ -2,6 +2,11 @@
 (use-package lush-theme  :ensure t)
 (use-package color-theme-solarized :ensure t)
 
+(use-package powerline
+  :ensure t
+  :config
+  (progn (powerline-default-theme)))
+
 (defun my/setup-color-theme()
   (interactive)
   (lush-theme))
