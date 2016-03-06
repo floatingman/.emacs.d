@@ -5,7 +5,9 @@
 (use-package powerline
   :ensure t
   :config
-  (progn (powerline-default-theme)))
+  (progn (powerline-default-theme)
+         (setq powerline-default-separator 'slant)))
+
 
 (defun my/setup-color-theme()
   (interactive)

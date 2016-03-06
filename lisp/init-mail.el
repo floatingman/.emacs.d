@@ -4,7 +4,7 @@
 (require 'mu4e)
 
 ;; default
-;;(setq mu4e-maildir "~/Maildir")
+(setq mu4e-maildir "~/personal/Maildir")
 
 (setq mu4e-drafts-folder "/[Gmail].Drafts")
 (setq mu4e-sent-folder   "/[Gmail].Sent Mail")
