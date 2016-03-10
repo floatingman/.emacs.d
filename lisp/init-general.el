@@ -5,7 +5,7 @@
 (setq version-control t)
 (setq vc-make-backup-files t)
 (setq auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t)))
-
+(setq temporary-file-directory "~/.emacs.d/tmp/")
 ;;History
 (setq savehist-file "~/.emacs.d/savehist")
 (savehist-mode 1)
