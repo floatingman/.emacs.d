@@ -41,7 +41,7 @@
   "http://www.danlovesprogramming.com\n"))
 
 ;; sending mail -- replace USERNAME with your gmail username
-;; also, make sure the gnutls command line utils are installed
+;; Also, make sure the gnutls command line utils are installed
 ;; package 'gnutls-bin' in Debian/Ubuntu
 
 (require 'smtpmail)
