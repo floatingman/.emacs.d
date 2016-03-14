@@ -50,6 +50,13 @@
 (define-key dired-mode-map (vector 'remap 'end-of-buffer) 'dired-jump-to-bottom)
 (define-key dired-mode-map (vector 'remap 'smart-down) 'dired-jump-to-bottom)
 
+;; peep-dired seems cool
+(use-package peep-dired
+  :ensure t
+  :defer t ; don't acccess `dired-mode-map' until `peep-dired' is loaded
+  :bind (:map dired-mode-map
+              ("P" . peep-dired)))
+
 ;; Delete with C-x C-k to match file buffers and magit
 (define-key dired-mode-map (kbd "C-x C-k") 'dired-do-delete)
 (provide 'init-dired)
