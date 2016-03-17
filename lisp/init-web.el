@@ -39,6 +39,8 @@
 (use-package scss-mode
   :ensure t
   :defer t
-  :mode (("\\.scss\\'" . scss-mode)))
+  :mode (("\\.scss\\'" . scss-mode))
+  :config
+  (progn (setq scss-sass-command (expand-file-name "~/.rvm/gems/ruby-2.2.1/bin/sass"))))
 
 (provide 'init-web)
