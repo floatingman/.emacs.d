@@ -17,10 +17,11 @@
 
 (use-package js2-mode
 	:ensure t
+  :defer t
+  :mode (("\\.js\\'" . js2-mode))
 	:config
 	(progn
-    (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
-		(add-to-list 'interpreter-mode-alist '("node" . js2-mode))
+    (add-to-list 'interpreter-mode-alist '("node" . js2-mode))
     (setq-default
      js-indent-level 2
      js2-basic-offset 2
@@ -45,7 +46,8 @@
 
 (use-package js2-refactor
 	:ensure t
-	:config
+  :defer t
+  :config
 	(progn
     (add-hook 'js2-mode-hook (lambda () (js2-refactor-mode t)))
     (js2r-add-keybindings-with-prefix "C-c C-m"))
@@ -53,7 +55,8 @@
 
 (use-package tern
 	:ensure t
-	:config
+  :defer t
+  :config
 	(progn
 		(add-hook 'js2-mode-hook (lambda () (tern-mode t)))))
 
@@ -64,12 +67,14 @@
   (interactive)
   (delete-process "Tern"))
 
-(use-package nodejs-repl
-	:ensure t
+(use-package nodejs-repl 
+  :ensure t
+  :defer t
 	)
 
 (use-package skewer-mode
 	:ensure t
+  :defer t
 	:config
 	(progn
 		(require 'skewer-repl)
@@ -96,10 +101,11 @@
   (set (make-local-variable 'paredit-space-for-delimiter-predicates)
        '((lambda (endp delimiter) nil)))
   (paredit-mode 1))
-(add-hook 'js-mode-hook 'my-paredit-nonlisp)
-	
-(define-key js-mode-map "{" 'paredit-open-curly)
-(define-key js-mode-map "}" 'paredit-close-curly-and-newline)
+;; maybe not just paredit for javascript? trying out smartparen
+;; (add-hook 'js-mode-hook 'my-paredit-nonlisp)
+
+;; (define-key js-mode-map "{" 'paredit-open-curly)
+;; (define-key js-mode-map "}" 'paredit-close-curly-and-newline)
 
 
 ;; enable flycheck for javascript
@@ -116,7 +122,8 @@
 (defun javascript-custom-setup ()
   (moz-minor-mode 1))
 
-(use-package json-mode
-  :ensure t)
+(use-package json-mode 
+  :ensure t
+  :defer t)                             
 
 (provide 'init-javascript)

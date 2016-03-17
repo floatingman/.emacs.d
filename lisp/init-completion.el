@@ -90,7 +90,9 @@
 (use-package company
   :ensure t
   :defer 2
-  :bind ("<C-tab>" . company-complete))
+  :bind ("<C-tab>" . company-complete)
+  :config
+  (add-hook 'after-init-hook 'global-company-mode))
 
 (use-package helm
   :ensure t

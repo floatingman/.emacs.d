@@ -1,5 +1,5 @@
 (defun my/web-mode-hook ()
-  (setq web-mode-enable-auto-pairing nil))
+  (setq web-mode-enable-auto-pairing 1))
 
 (defun my/sp-web-mode-is-code-context (id action context)
   (when (and (eq action 'insert)
@@ -10,25 +10,35 @@
 
 (use-package web-mode
   :ensure t
-  :mode "\\.html\\'|\\.ejs\\'"
+  :mode (("\\.html\\'"       . web-mode)
+         ("\\.ejs\\'"        . web-mode)
+         ("\\.html\\.erb\\'" . web-mode)
+         ("\\.mustache\\'"   . web-mode)
+         ("\\.jinja\\'"      . web-mode)
+         ("\\.php\\'"        . web-mode))
+  :defer t
   :config
   (progn
+    (setq web-mode-markup-indent-offset 2)
+    (setq web-mode-code-indent-offset 2)
     (setq web-mode-enable-current-element-highlight t)
-    (setq web-mode-ac-sources-alist
-          '(("css" . (ac-source-css-property ac-source-emmet-css-snippets))
-            ("html" . (ac-source-emmet-html-aliases ac-source-emmet-html-snippets ac-source-words-in-buffer ac-source-abbrev))
-            ("php" . (ac-source-words-in-buffer
-                      ac-source-words-in-same-mode-buffers
-                      ac-source-dictionary))))))
+    (setq web-mode-enable-auto-pairing 1)))
 
 (use-package emmet-mode
   :ensure t
+  :defer t
   :config
   (add-hook 'css-mode-hook  'emmet-mode)
-	(add-hook 'web-mode-hook 'emmet-mode)
+  (add-hook 'web-mode-hook 'emmet-mode)
   )
 
 (use-package web-beautify
+  :defer t
 	:ensure t)
+
+(use-package scss-mode
+  :ensure t
+  :defer t
+  :mode (("\\.scss\\'" . scss-mode)))
 
 (provide 'init-web)
