@@ -1,72 +1,96 @@
-(use-package auto-complete
+;; (use-package auto-complete
+;;   :ensure t
+;;   :diminish (auto-complete-mode . "AC")
+;;   :init
+;;   (use-package pos-tip
+;;     :ensure t)
+;;   (ac-config-default)
+;;   :config
+;;   (ac-set-trigger-key "TAB")
+;; 	(ac-set-trigger-key "<tab>")
+;;   (dolist (ac-mode '(text-mode org-mode))
+;;     (add-to-list 'ac-modes ac-mode))
+;;   (dolist (ac-mode-hook '(text-mode-hook org-mode-hook prog-mode-hook))
+;;     (add-hook ac-mode-hook
+;; 	      (lambda ()
+;; 		(setq ac-fuzzy-enable t)
+;; 		(add-to-list 'ac-sources 'ac-source-files-in-current-dir)
+;; 		(add-to-list 'ac-sources 'ac-source-filename)))))
+
+;; (defun ac-pcomplete ()
+;;   ;; eshell uses `insert-and-inherit' to insert a \t if no completion
+;;   ;; can be found, but this must not happen as auto-complete source
+;;   (flet ((insert-and-inherit (&rest args)))
+;;     ;; this code is stolen from `pcomplete' in pcomplete.el
+;;     (let* (tramp-mode ;; do not automatically complete remote stuff
+;;            (pcomplete-stub)
+;;            (pcomplete-show-list t) ;; inhibit patterns like * being deleted
+;;            pcomplete-seen pcomplete-norm-func
+;;            pcomplete-args pcomplete-last pcomplete-index
+;;            (pcomplete-autolist pcomplete-autolist)
+;;            (pcomplete-suffix-list pcomplete-suffix-list)
+;;            (candidates (pcomplete-completions))
+;;            (beg (pcomplete-begin))
+;;            ;; note, buffer text and completion argument may be
+;;            ;; different because the buffer text may bet transformed
+;;            ;; before being completed (e.g. variables like $HOME may be
+;;            ;; expanded)
+;;            (buftext (buffer-substring beg (point)))
+;;            (arg (nth pcomplete-index pcomplete-args)))
+;;       ;; we auto-complete only if the stub is non-empty and matches
+;;       ;; the end of the buffer text
+;;       (when (and (not (zerop (length pcomplete-stub)))
+;;                  (or (string= pcomplete-stub ; Emacs 23
+;;                               (substring buftext
+;;                                          (max 0
+;;                                               (- (length buftext)
+;;                                                  (length pcomplete-stub)))))
+;;                      (string= pcomplete-stub ; Emacs 24
+;;                               (substring arg
+;;                                          (max 0
+;;                                               (- (length arg)
+;;                                                  (length pcomplete-stub)))))))
+;;         ;; Collect all possible completions for the stub. Note that
+;;         ;; `candidates` may be a function, that's why we use
+;;         ;; `all-completions`.
+;;         (let* ((cnds (all-completions pcomplete-stub candidates))
+;;                (bnds (completion-boundaries pcomplete-stub
+;;                                             candidates
+;;                                             nil
+;;                                             ""))
+;;                (skip (- (length pcomplete-stub) (car bnds))))
+;;           ;; We replace the stub at the beginning of each candidate by
+;;           ;; the real buffer content.
+;;           (mapcar #'(lambda (cand) (concat buftext (substring cand skip)))
+;;                   cnds))))))
+
+;; (defvar ac-source-pcomplete
+;;   '((candidates . ac-pcomplete)))
+
+;; ;autocomplete backends
+;; (use-package ac-html :ensure t)
+;; (use-package ac-emmet :ensure t)
+;; (use-package ac-html-angular :ensure t)
+;; (use-package ac-html-bootstrap :ensure t)
+;; (use-package ac-html-csswatcher :ensure t)
+;; (use-package ac-js2
+;; 	:ensure t
+;;   :defer t
+;; 	:config 
+;; 	(progn
+;; 		(add-hook 'js2-mode-hook 'ac-js2-mode)))
+
+;; (use-package tern-auto-complete
+;; 	:ensure t
+;; 	:config
+;; 	(progn
+;; 		(require 'tern-auto-complete)
+;; 		(tern-ac-setup)))
+
+(use-package company
   :ensure t
-  :diminish (auto-complete-mode . "AC")
-  :init
-  (use-package pos-tip
-    :ensure t)
-  (ac-config-default)
-  :config
-  (ac-set-trigger-key "TAB")
-	(ac-set-trigger-key "<tab>")
-  (dolist (ac-mode '(text-mode org-mode))
-    (add-to-list 'ac-modes ac-mode))
-  (dolist (ac-mode-hook '(text-mode-hook org-mode-hook prog-mode-hook))
-    (add-hook ac-mode-hook
-	      (lambda ()
-		(setq ac-fuzzy-enable t)
-		(add-to-list 'ac-sources 'ac-source-files-in-current-dir)
-		(add-to-list 'ac-sources 'ac-source-filename)))))
-
-(defun ac-pcomplete ()
-  ;; eshell uses `insert-and-inherit' to insert a \t if no completion
-  ;; can be found, but this must not happen as auto-complete source
-  (flet ((insert-and-inherit (&rest args)))
-    ;; this code is stolen from `pcomplete' in pcomplete.el
-    (let* (tramp-mode ;; do not automatically complete remote stuff
-           (pcomplete-stub)
-           (pcomplete-show-list t) ;; inhibit patterns like * being deleted
-           pcomplete-seen pcomplete-norm-func
-           pcomplete-args pcomplete-last pcomplete-index
-           (pcomplete-autolist pcomplete-autolist)
-           (pcomplete-suffix-list pcomplete-suffix-list)
-           (candidates (pcomplete-completions))
-           (beg (pcomplete-begin))
-           ;; note, buffer text and completion argument may be
-           ;; different because the buffer text may bet transformed
-           ;; before being completed (e.g. variables like $HOME may be
-           ;; expanded)
-           (buftext (buffer-substring beg (point)))
-           (arg (nth pcomplete-index pcomplete-args)))
-      ;; we auto-complete only if the stub is non-empty and matches
-      ;; the end of the buffer text
-      (when (and (not (zerop (length pcomplete-stub)))
-                 (or (string= pcomplete-stub ; Emacs 23
-                              (substring buftext
-                                         (max 0
-                                              (- (length buftext)
-                                                 (length pcomplete-stub)))))
-                     (string= pcomplete-stub ; Emacs 24
-                              (substring arg
-                                         (max 0
-                                              (- (length arg)
-                                                 (length pcomplete-stub)))))))
-        ;; Collect all possible completions for the stub. Note that
-        ;; `candidates` may be a function, that's why we use
-        ;; `all-completions`.
-        (let* ((cnds (all-completions pcomplete-stub candidates))
-               (bnds (completion-boundaries pcomplete-stub
-                                            candidates
-                                            nil
-                                            ""))
-               (skip (- (length pcomplete-stub) (car bnds))))
-          ;; We replace the stub at the beginning of each candidate by
-          ;; the real buffer content.
-          (mapcar #'(lambda (cand) (concat buftext (substring cand skip)))
-                  cnds))))))
-
-(defvar ac-source-pcomplete
-  '((candidates . ac-pcomplete)))
-  
+  :defer 2
+  :bind ("<C-tab>" . company-complete))
 
 (use-package helm
   :ensure t
@@ -108,24 +132,24 @@
     
     )
   :bind (
-         ("C-x b" . helm-mini)
-         ("C-x C-b" . helm-buffers-list)
-         ("C-x c g" . helm-do-grep)
-         ("C-h a" . helm-apropos)
-         ("C-h i" . helm-info-emacs)
-         ("M-y" . helm-show-kill-ring)
-         ("M-x" . helm-M-x)
-         ("C-x C-f" . helm-find-files)
-         ("C-x c o" . helm-occur)
-         ("M-s o" . helm-swoop)
-         ("C-x c y" . helm-yas-complete)
-         ("C-x c Y" . helm-yas-create-snippet-on-region)
+         ("C-x b"     . helm-mini)
+         ("C-x C-b"   . helm-buffers-list)
+         ("C-x c g"   . helm-do-grep)
+         ("C-h a"     . helm-apropos)
+         ("C-h i"     . helm-info-emacs)
+         ("M-y"       . helm-show-kill-ring)
+         ("M-x"       . helm-M-x)
+         ("C-x C-f"   . helm-find-files)
+         ("C-x c o"   . helm-occur)
+         ("M-s o"     . helm-swoop)
+         ("C-x c y"   . helm-yas-complete)
+         ("C-x c Y"   . helm-yas-create-snippet-on-region)
          ("C-x c SPC" . helm-all-mark-rings)
-         ("C-x C-r" . helm-recentf)
-         ("M-s /" . helm-multi-swoop)
-         ("C-x c!" . helm-calcul-expression)
-         ("C-x c:" . helm-eval-expression-with-eldoc)
-         ("M-o" . helm-previous-source)
+         ("C-x C-r"   . helm-recentf)
+         ("M-s /"     . helm-multi-swoop)
+         ("C-x c!"    . helm-calcul-expression)
+         ("C-x c:"    . helm-eval-expression-with-eldoc)
+         ("M-o"       . helm-previous-source)
          ))
 
 

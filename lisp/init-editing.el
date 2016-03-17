@@ -22,7 +22,7 @@
   ((warning line-start (file-name) ":" line ":" column ": "
 						(id (one-or-more (not (any " "))))
 						(message) line-end))
-  :modes (org-mode text-mode markdown-mode gfm-mode))
+  :modes (text-mode markdown-mode gfm-mode))
 
 (add-to-list 'flycheck-checkers 'proselint)
 

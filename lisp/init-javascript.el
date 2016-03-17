@@ -58,18 +58,6 @@
 		(add-hook 'js2-mode-hook (lambda () (tern-mode t)))))
 
 
-(use-package ac-js2
-	:ensure t
-	:config
-	(progn
-		(add-hook 'js2-mode-hook 'ac-js2-mode)))
-
-(use-package tern-auto-complete
-	:ensure t
-	:config
-	(progn
-		(require 'tern-auto-complete)
-		(tern-ac-setup)))
 
 ;; kill the tern server if auto reload stops working
 (defun delete-tern-process ()
