@@ -200,6 +200,22 @@
 	:bind(
 				("M-s s" . helm-ag)))
 
+(use-package helm-css-scss
+  :ensure t
+  :config
+  (progn
+    (setq helm-css-scss-insert-close-comment-depth 2)
+    (setq helm-css-scss-split-with-multiple-windows nil)
+    (setq helm-css-scss-split-direction 'split-window-vertically)
+    (dolist ($hook '(css-mode-hook scss-mode-hook less-css-mode-hook))
+      (add-hook
+       $hook (lambda ()
+               (local-set-key (kbd "s-i") 'helm-css-scss)
+               (local-set-key (kbd "s-I") 'helm-css-scss-back-to-last-point))))
+    (define-key isearch-mode-map (kbd "s-i") 'helm-css-scss-from-isearch)
+    (define-key helm-css-scss-map (kbd "s-i") 'helm-css-scss-multi-from-helm-css-scss)
+    ))
+
 
 
 (use-package yasnippet
