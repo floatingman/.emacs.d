@@ -1,8 +1,10 @@
+(require 'package)
+(setq package-enable-at-startup nil)
 
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
 
 ;; Mainly for ruby-mode
-;(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
+(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
 
 
 ;; We include the org repository for completeness, but don't normally
@@ -10,5 +12,13 @@
 (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/"))
 
 (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))
-;(package-refresh-contents)
+
+(package-initialize)
+
+;; Bootstrap `use-package'
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+
+;; (package-refresh-contents)
 (provide 'init-packages)

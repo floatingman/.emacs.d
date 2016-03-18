@@ -38,19 +38,10 @@
   (eval-after-load 'advice
     `(setq ad-redefinition-action 'accept)))
 
-;; Load the rest of the packages
-(package-initialize nil)
-
-(setq package-enable-at-startup nil)
 
 ;; package archives
 (require 'init-packages)
 
-;; install use-package
-(unless (package-installed-p 'use-package)
-  (package-install 'use-package))
-(setq use-package-verbose t)
-(require 'use-package)
 (use-package auto-compile
   :ensure t
   :config (auto-compile-on-load-mode))
