@@ -1,101 +1,10 @@
-;; (use-package auto-complete
-;;   :ensure t
-;;   :diminish (auto-complete-mode . "AC")
-;;   :init
-;;   (use-package pos-tip
-;;     :ensure t)
-;;   (ac-config-default)
-;;   :config
-;;   (ac-set-trigger-key "TAB")
-;; 	(ac-set-trigger-key "<tab>")
-;;   (dolist (ac-mode '(text-mode org-mode))
-;;     (add-to-list 'ac-modes ac-mode))
-;;   (dolist (ac-mode-hook '(text-mode-hook org-mode-hook prog-mode-hook))
-;;     (add-hook ac-mode-hook
-;; 	      (lambda ()
-;; 		(setq ac-fuzzy-enable t)
-;; 		(add-to-list 'ac-sources 'ac-source-files-in-current-dir)
-;; 		(add-to-list 'ac-sources 'ac-source-filename)))))
-
-;; (defun ac-pcomplete ()
-;;   ;; eshell uses `insert-and-inherit' to insert a \t if no completion
-;;   ;; can be found, but this must not happen as auto-complete source
-;;   (flet ((insert-and-inherit (&rest args)))
-;;     ;; this code is stolen from `pcomplete' in pcomplete.el
-;;     (let* (tramp-mode ;; do not automatically complete remote stuff
-;;            (pcomplete-stub)
-;;            (pcomplete-show-list t) ;; inhibit patterns like * being deleted
-;;            pcomplete-seen pcomplete-norm-func
-;;            pcomplete-args pcomplete-last pcomplete-index
-;;            (pcomplete-autolist pcomplete-autolist)
-;;            (pcomplete-suffix-list pcomplete-suffix-list)
-;;            (candidates (pcomplete-completions))
-;;            (beg (pcomplete-begin))
-;;            ;; note, buffer text and completion argument may be
-;;            ;; different because the buffer text may bet transformed
-;;            ;; before being completed (e.g. variables like $HOME may be
-;;            ;; expanded)
-;;            (buftext (buffer-substring beg (point)))
-;;            (arg (nth pcomplete-index pcomplete-args)))
-;;       ;; we auto-complete only if the stub is non-empty and matches
-;;       ;; the end of the buffer text
-;;       (when (and (not (zerop (length pcomplete-stub)))
-;;                  (or (string= pcomplete-stub ; Emacs 23
-;;                               (substring buftext
-;;                                          (max 0
-;;                                               (- (length buftext)
-;;                                                  (length pcomplete-stub)))))
-;;                      (string= pcomplete-stub ; Emacs 24
-;;                               (substring arg
-;;                                          (max 0
-;;                                               (- (length arg)
-;;                                                  (length pcomplete-stub)))))))
-;;         ;; Collect all possible completions for the stub. Note that
-;;         ;; `candidates` may be a function, that's why we use
-;;         ;; `all-completions`.
-;;         (let* ((cnds (all-completions pcomplete-stub candidates))
-;;                (bnds (completion-boundaries pcomplete-stub
-;;                                             candidates
-;;                                             nil
-;;                                             ""))
-;;                (skip (- (length pcomplete-stub) (car bnds))))
-;;           ;; We replace the stub at the beginning of each candidate by
-;;           ;; the real buffer content.
-;;           (mapcar #'(lambda (cand) (concat buftext (substring cand skip)))
-;;                   cnds))))))
-
-;; (defvar ac-source-pcomplete
-;;   '((candidates . ac-pcomplete)))
-
-;; ;autocomplete backends
-;; (use-package ac-html :ensure t)
-;; (use-package ac-emmet :ensure t)
-;; (use-package ac-html-angular :ensure t)
-;; (use-package ac-html-bootstrap :ensure t)
-;; (use-package ac-html-csswatcher :ensure t)
-;; (use-package ac-js2
-;; 	:ensure t
-;;   :defer t
-;; 	:config 
-;; 	(progn
-;; 		(add-hook 'js2-mode-hook 'ac-js2-mode)))
-
-;; (use-package tern-auto-complete
-;; 	:ensure t
-;; 	:config
-;; 	(progn
-;; 		(require 'tern-auto-complete)
-;; 		(tern-ac-setup)))
-
 (use-package company
-  :ensure t
   :defer 2
   :bind ("<C-tab>" . company-complete)
   :config
   (add-hook 'after-init-hook 'global-company-mode))
 
 (use-package helm
-  :ensure t
   :diminish helm-mode
   :config
   (progn
@@ -158,7 +67,6 @@
 (ido-mode -1) ;; Turn off ido mode in case I enabled it accidentally
 
 (use-package helm-descbinds
-  :ensure t
   :init
   (progn
     (helm-descbinds-mode 1))
@@ -166,23 +74,21 @@
          ("C-h w" . helm-descbinds)))
 
 (use-package helm-swoop
- :ensure t
- :bind
- (("C-S-s" . helm-swoop)
-  ("M-i" . helm-swoop)
-  ("M-s s" . helm-swoop)
-  ("M-s M-s" . helm-swoop)
-  ("M-I" . helm-swoop-back-to-last-point)
-  ("C-c M-i" . helm-multi-swoop)
-  ("C-x M-i" . helm-multi-swoop-all)
-  )
- :config
- (progn
-   (define-key isearch-mode-map (kbd "M-i") 'helm-swoop-from-isearch)
-   (define-key helm-swoop-map (kbd "M-i") 'helm-multi-swoop-all-from-helm-swoop)))
+  :bind
+  (("C-S-s" . helm-swoop)
+   ("M-i" . helm-swoop)
+   ("M-s s" . helm-swoop)
+   ("M-s M-s" . helm-swoop)
+   ("M-I" . helm-swoop-back-to-last-point)
+   ("C-c M-i" . helm-multi-swoop)
+   ("C-x M-i" . helm-multi-swoop-all)
+   )
+  :config
+  (progn
+    (define-key isearch-mode-map (kbd "M-i") 'helm-swoop-from-isearch)
+    (define-key helm-swoop-map (kbd "M-i") 'helm-multi-swoop-all-from-helm-swoop)))
 
 (use-package helm-projectile
-	:ensure t
 	:config
 	(progn
 		
@@ -196,12 +102,10 @@
 	)
 
 (use-package helm-ag
-	:ensure t
 	:bind(
 				("M-s s" . helm-ag)))
 
 (use-package helm-css-scss
-  :ensure t
   :config
   (progn
     (setq helm-css-scss-insert-close-comment-depth 2)
@@ -219,7 +123,6 @@
 
 
 (use-package yasnippet
-  :ensure t
   :diminish yas-minor-mode
   :init (yas-global-mode)
   :config

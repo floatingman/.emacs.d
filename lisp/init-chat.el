@@ -7,8 +7,7 @@
 
 	;; following Sacha Chua and http://writequit.org/org/settings.html#sec-1-13
 	(use-package erc
-		:ensure t 
-		:config
+    :config
 		(progn
 			(setq erc-fill-column 78
 						erc-server-coding-system '(utf-8 . utf-8)
@@ -96,8 +95,7 @@
 	(asf-erc-bouncer-connect erc-gitter "irc.gitter.im" 6667 "floatingman" nil gitter-password)
 	
 	(use-package ercn
-		:ensure t
-		:config
+    :config
 		(progn
 			(setq ercn-notify-rules
 						'((current-nick . all)

@@ -35,7 +35,7 @@ Repeated invocations toggle between the two most recently open buffers."
   (interactive)
   (goto-char (random (point-max))))
 
-(use-package hydra :ensure t
+(use-package hydra
   :config
   (defhydra my/goto-random-char-hydra ()
     ("r" my/goto-random-char))
@@ -88,7 +88,6 @@ Repeated invocations toggle between the two most recently open buffers."
 
 ;; going to try out this key chord thing
 (use-package key-chord
-  :ensure t
   :init
   (progn
     (fset 'key-chord-define 'my/key-chord-define)
@@ -109,18 +108,16 @@ Repeated invocations toggle between the two most recently open buffers."
     (key-chord-define-global "JJ"     'my/switch-to-previous-buffer)))
 
 ;; quickly jump to different points in current view
-(use-package avy :ensure t)
+(use-package avy)
   ;; I use the jj key-chord for this; see the definitions for key-chord
 (use-package avy-zap
-  :ensure t
   :bind
   (("M-z" . avy-zap-up-to-char-dwim)
    ("M-Z" . avy-zap-to-char-dwim)))
 
 ;; use smart-forward
 (use-package smart-forward
-	:ensure t
-	:bind (( "M-<up>" . smart-up)
+  :bind (( "M-<up>" . smart-up)
 				 ("M-<down>" . smart-down)
 				 ("M-<left>" . smart-backward)
 				 ("M-<right>" . smart-forward)))

@@ -1,13 +1,12 @@
 
 (use-package "eldoc"
-  :ensure t
   :diminish eldoc-mode
   :commands turn-on-eldoc-mode
   :init
   (progn
-  (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
-  (add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
-  (add-hook 'ielm-mode-hook 'turn-on-eldoc-mode)))
+    (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
+    (add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
+    (add-hook 'ielm-mode-hook 'turn-on-eldoc-mode)))
 
 ;; C-c C-v l : elint current buffer in clean environment.
 ;; C-c C-v L : elint current buffer by multiple emacs binaries.
@@ -23,15 +22,10 @@
 ;; C-c C-v ? : Display flymake elint warnings/errors
 
 (use-package erefactor
-  :ensure t
 	:config
   (define-key emacs-lisp-mode-map "\C-c\C-v" erefactor-map))
 
-(use-package paredit :ensure t)
-(use-package redshank
-  :disabled t
-  :defer t
-  :init (add-hook 'emacs-lisp-mode-hook 'redshank-mode))
+(use-package paredit)
 
 (define-key emacs-lisp-mode-map (kbd "C-c .") 'find-function-at-point)
 (bind-key "C-c f" 'find-function)

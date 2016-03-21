@@ -20,6 +20,10 @@
 (defconst *is-linux* (eq system-type 'gnu/linux))
 (defconst *is-gui* (not (eq window-system nil)))
 
+
+;;(defvar my/background 'light)
+(defvar my/background 'dark)
+
 ;; Setup user information
 (setq user-full-name "Daniel Newman"
       user-mail-address "dwnewman78@gmail.com")
@@ -37,6 +41,7 @@
 
   (eval-after-load 'advice
     `(setq ad-redefinition-action 'accept)))
+
 
 
 ;; package archives

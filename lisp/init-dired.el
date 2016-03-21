@@ -3,7 +3,6 @@
 
 ;; Make dired less verbose
 (use-package dired-details
-	:ensure t
 	:config
 	(progn
 		(setq-default dired-details-hidden-string "--- ")
@@ -52,7 +51,6 @@
 
 ;; peep-dired seems cool
 (use-package peep-dired
-  :ensure t
   :defer t ; don't acccess `dired-mode-map' until `peep-dired' is loaded
   :bind (:map dired-mode-map
               ("P" . peep-dired)))
