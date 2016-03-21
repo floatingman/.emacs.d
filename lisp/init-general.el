@@ -186,5 +186,13 @@ file to write to."
 ;; syntax higlighting in all buffers
 (global-font-lock-mode t)
 
+;; dial back emacs garbage collection
+(setq gc-cons-threshold (* 100 1024 1024)) ;; 100 mb
+;; Allow font-lock-mode to do background parsing
+(setq jit-lock-stealth-time 1
+      ;; jit-lock-stealth-load 200
+      jit-lock-chunk-size 1000
+      jit-lock-defer-time 0.05)
+
 
 (provide 'init-general)
