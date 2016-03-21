@@ -183,5 +183,8 @@ file to write to."
     (setq visible-mark-max 2)
     (setq visible-mark-faces `(visible-mark-face1 visible-mark-face2))))
 
+;; syntax higlighting in all buffers
+(global-font-lock-mode t)
+
 
 (provide 'init-general)
