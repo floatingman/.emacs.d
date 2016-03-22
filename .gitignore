@@ -89,3 +89,4 @@ ido.last
 /.elfeed
 
 /.emacs-secrets.el
+/tmp

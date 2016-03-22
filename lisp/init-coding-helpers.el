@@ -146,6 +146,21 @@
 	(progn
 		(global-aggressive-indent-mode 1)))
 
+(setq vc-handled-backends '(SVN Git))
 
+(defun my/add-watchwords ()
+  "Highlight FIXME, TODO, and NOCOMMIT in code"
+  (font-lock-add-keywords
+   nil '(("\\<\\(FIXME\\|TODO\\|NOCOMMIT\\)\\>"
+          1 '((:foreground "#d7a3ad") (:weight bold)) t))))
+
+(defun my/turn-on-hl-line-mode ()
+  "Turn on hl-line-mode"
+  (interactive)
+  (hl-line-mode 1))
+
+(add-hook 'prog-mode-hook #'my/add-watchwords)
+(add-hook 'prog-mode-hook #'my/turn-on-hl-line-mode)
+(add-hook 'org-mode-hook #'my/turn-on-hl-line-mode)
 
 (provide 'init-coding-helpers)

@@ -15,18 +15,13 @@
           helm-buffers-fuzzy-matching            t
           helm-ff-auto-update-initial-value      t)
 
-    (add-hook 'eshell-mode-hook
-							#'(lambda ()
-									(define-key eshell-mode-map (kbd "TAB") #'helm-esh-pcomplete)
-									(define-key eshell-mode-map (kbd "C-c C-l") #'helm-eshell-history)))
+    (autoload 'helm-descbinds      "helm-descbinds" t)
+    (autoload 'helm-eshell-history "helm-eshell"    t)
+    (autoload 'helm-esh-pcomplete  "helm-eshell"    t)
     
-		(autoload 'helm-descbinds      "helm-descbinds" t)
-		(autoload 'helm-eshell-history "helm-eshell"    t)
-		(autoload 'helm-esh-pcomplete  "helm-eshell"    t)
-		
     (require 'helm-config)
-		(helm-mode t)
-		(helm-adaptive-mode t)
+    (helm-mode t)
+    (helm-adaptive-mode t)
     (setq helm-locate-command
           (case system-type
             ('gnu/linux "locate -i -r %s")
@@ -39,7 +34,7 @@
     (when (executable-find "curl")
       (setq helm-google-suggest-use-curl-p t))
 
-		(define-key org-mode-map (kbd "C-x c o h") #'helm-org-headlines)
+    (define-key org-mode-map (kbd "C-x c o h") #'helm-org-headlines)
     
     )
   :bind (
@@ -123,12 +118,11 @@
 
 
 (use-package yasnippet
+  :defer t
   :diminish yas-minor-mode
-  :init (yas-global-mode)
-  :config
-  (progn
-		(setq yas-installed-snippets-dir "~/.emacs.d/site-lisp/yasnippet-snippets")
-		(yas-global-mode 1)))
+  :init (progn
+          (yas-global-mode 1)
+          (yas-reload-all)))
 
 
 (defun sanityinc/dabbrev-friend-buffer (other-buffer)

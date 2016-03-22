@@ -1,7 +1,7 @@
 ;;Backups
-
+(setq delete-auto-save-files t)
 (setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
-(setq delete-old-versions -1)
+(setq delete-old-versions t)
 (setq version-control t)
 (setq vc-make-backup-files t)
 (setq auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t)))
@@ -16,7 +16,7 @@
       '(kill-ring
         search-ring
         regexp-search-ring))
-
+(setq-default save-place t)
 ;; Window configuration
 ;; (when window-system
 ;;  (tooltip-mode -1)
@@ -35,7 +35,6 @@
 
 ;; Moving between windows
 (use-package windmove
-  :ensure t
   :bind
   (("<f2> <right>" . windmove-right)
    ("<f2> <left>" . windmove-left)
@@ -45,14 +44,12 @@
 
 ;; Split windows by golden ratio
 (use-package golden-ratio
-	:ensure t
-	:diminish golden-ratio-mode
+  :diminish golden-ratio-mode
 	:config
 	(progn
 		(golden-ratio-mode 1)))
 
 (use-package switch-window
-  :ensure t
   :bind (("C-x o" . switch-window)))
 
 ;;Recent files found at awesome site http://writequit.org/org/settings.html
@@ -107,6 +104,8 @@ file to write to."
 
 ;; reload buffers when file changes on disk
 (global-auto-revert-mode t)
+;; be quiet about reverting files
+(setq auto-revert-verbose nil)
 
 ;; start emacs maximized
 ;; found here http://thestandardoutput.com/posts/how-to-properly-maximize-the-active-emacs-frame-on-startup-on-windows/
@@ -131,9 +130,6 @@ file to write to."
   :config
   (setq uniquify-buffer-name-style 'post-forward-angle-brackets))  ;; buffernames that are foo<1>, foo<2> are hard to read. This makes them foo|dir  foo|otherdir
 
-
-
-
 ;;setup good pasteing real good
 (setq kill-ring-max 100) 
 (setq x-select-enable-clipboard t) 
@@ -154,7 +150,6 @@ file to write to."
 
 ;; find out what commands I use most frequently.
 (use-package keyfreq
-  :ensure t
   :config
   (progn
     (setq keyfreq-excluded-commands
@@ -256,5 +251,63 @@ file to write to."
 ;; require a new line at the end of file
 (setq require-final-newline t)
 
+;; use regex for searching cause it's fun
+(global-set-key (kbd "C-s") 'isearch-forward-regexp)
+(global-set-key (kbd "C-r") 'isearch-backward-regexp)
+(global-set-key (kbd "M-%") 'query-replace-regexp)
+
+;; end sentences with single space
+(setq sentence-end-double-space nil)
+
+;; split windows awesomer
+(setq split-height-threshold nil)
+(setq split-width-threshold 180)
+
+;; rescan for changes in imenu
+(set-default 'imenu-auto-rescan t)
+
+;; make random randomer
+(random t)
+
+;; use unified diffs
+(setq diff-switches "-u")
+
+;; make them symbols pretty
+(when (boundp 'global-prettify-symbols-mode)
+  (add-hook 'emacs-lisp-mode-hook
+            (lambda ()
+              (push '("lambda" . ?λ) prettify-symbols-alist)))
+  (add-hook 'clojure-mode-hook
+            (lambda ()
+              (push '("fn" . ?ƒ) prettify-symbols-alist)))
+  (global-prettify-symbols-mode +1))
+
+;; prefer newer files over elc
+(setq load-prefer-newer t)
+
+;; use winner move to undo window configurations with C-c LEFT
+(use-package winner
+  :init (winner-mode 1))
+
+;; quit emacs superfast when the fuzz shows up
+(defun my/quit-emacs-unconditionally ()
+  (interactive)
+  (my-quit-emacs '(4)))
+
+(define-key special-event-map (kbd "<sigusr1>") #'my/quit-emacs-unconditionally)
+
+;; Change the clipboard settings to better integrate into Linux:
+(setq x-select-enable-clipboard t)
+;; Treat clipboard input as UTF-8 string first; compound text next, etc.
+(setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
+
+;; save whatever is in the clipboard before replacing it with the emacs text
+(setq save-interprogram-paste-before-kill t)
+
+(use-package saveplace
+  :defer t
+  :init
+  (setq-default save-place t)
+  (setq save-place-file (expand-file-name ".places" user-emacs-directory)))
 
 (provide 'init-general)

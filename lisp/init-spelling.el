@@ -1,57 +1,41 @@
+;; Standard location of personal dictionary
+(setq ispell-personal-dictionary "~/.flydict")
+
+;; Mostly taken from
+;; http://blog.binchen.org/posts/what-s-the-best-spell-check-set-up-in-emacs.html
+;; if (aspell installed) { use aspell }
+;; else if (hunspell installed) { use hunspell }
+;; whatever spell checker I use, I always use English dictionary
+(setq ispell-program-name (executable-find "aspell"))
+(setq ispell-extra-args
+      (list "--sug-mode=fast" ;; ultra|fast|normal|bad-spellers
+            "--lang=en_US"
+            "--ignore=3"))
+
+;; hunspell
+;; (setq ispell-program-name "hunspell")
+;; ;; just reset dictionary to the safe one "en_US" for hunspell.
+;; ;; if we need use different dictionary, we specify it in command line arguments
+;; (setq ispell-local-dictionary "en_US")
+;; (setq ispell-local-dictionary-alist
+;;       '(("en_US" "[[:alpha:]]" "[^[:alpha:]]" "[']" nil nil nil utf-8)))
+
+(add-to-list 'ispell-skip-region-alist '("[^\000-\377]+"))
+(add-to-list 'ispell-skip-region-alist '(":\\(PROPERTIES\\|LOGBOOK\\):" . ":END:"))
+(add-to-list 'ispell-skip-region-alist '("#\\+BEGIN_SRC" . "#\\+END_SRC"))
+(add-to-list 'ispell-skip-region-alist '("#\\+BEGIN_EXAMPLE" . "#\\+END_EXAMPLE"))
+
+(defun my/enable-flyspell-prog-mode ()
+  (interactive)
+  (flyspell-prog-mode))
+
 (use-package flyspell
-	:ensure t
-	:bind (("C-c i b". flyspell-buffer)
-				 ("C-c i f" . flyspell-mode))
-	:init
-	(use-package ispell
-		:ensure t
-		:bind (("C-c i c" . ispell-comments-and-strings)
-					 ("C-c i d" . ispell-change-dictionary)
-					 ("C-c i k" . ispell-kill-ispell)
-					 ("C-c i m" . ispell-message)
-					 ("C-c i r" . ispell-region)))
-	:config
-	(unbind-key "C-." flyspell-mode-map))
-
-;; found at http://endlessparentheses.com/ispell-and-abbrev-the-perfect-auto-correct.html
-(define-key ctl-x-map "\C-i"
-  #'endless/ispell-word-then-abbrev)
-
-(defun endless/ispell-word-then-abbrev (p)
-  "Call `ispell-word', then create an abbrev for it.
-With prefix P, create local abbrev. Otherwise it will
-be global.
-If there's nothing wrong with the word at point, keep
-looking for a typo until the beginning of buffer. You can
-skip typos you don't want to fix with `SPC', and you can
-abort completely with `C-g'."
-  (interactive "P")
-  (let (bef aft)
-    (save-excursion
-      (while (if (setq bef (thing-at-point 'word))
-                 ;; Word was corrected or used quit.
-                 (if (ispell-word nil 'quiet)
-                     nil ; End the loop.
-                   ;; Also end if we reach `bob'.
-                   (not (bobp)))
-               ;; If there's no word at point, keep looking
-               ;; until `bob'.
-               (not (bobp)))
-        (backward-word))
-      (setq aft (thing-at-point 'word)))
-    (if (and aft bef (not (equal aft bef)))
-        (let ((aft (downcase aft))
-              (bef (downcase bef)))
-          (define-abbrev
-            (if p local-abbrev-table global-abbrev-table)
-            bef aft)
-          (message "\"%s\" now expands to \"%s\" %sally"
-                   bef aft (if p "loc" "glob")))
-      (user-error "No typo at or before point"))))
-
-(setq save-abbrevs 'silently)
-(setq-default abbrev-mode t)
-
-
+  :defer t
+  :diminish ""
+  :init (add-hook 'prog-mode-hook #'my/enable-flyspell-prog-mode)
+  :config
+  (use-package helm-flyspell
+    :init
+    (define-key flyspell-mode-map (kbd "M-S") 'helm-flyspell-correct)))
 
 (provide 'init-spelling)

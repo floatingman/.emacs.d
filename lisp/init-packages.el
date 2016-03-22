@@ -3,16 +3,6 @@
 
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
 
-;; Mainly for ruby-mode
-;(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
-
-
-;; We include the org repository for completeness, but don't normally
-;; use it.
-;(add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/"))
-
-;(add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))
-
 (package-initialize)
 
 ;; Bootstrap `use-package'
@@ -29,7 +19,7 @@
                  erc-hl-nicks ercn alert twittering-mode
 
                  ;; dired
-                 dired-details peep-dired dired+ popwin
+                 peep-dired dired+ popwin
 
                  ;; utils
                  engine-mode undo-tree
@@ -38,7 +28,7 @@
                  erefactor paredit
 
                  ;; keybinding 
-                 key-chord avy avy-zap smart-forward
+                 hydra guide-key key-chord avy avy-zap smart-forward
 
                  ;; markup language
                  markdown-mode markdown-mode+ yaml-mode zencoding-mode adoc-mode
@@ -55,7 +45,15 @@
 
                  ;; news
                  elfeed
-                 
+
+                 ;; window mgmt
+                 golden-ratio switch-window windmove
+
+                 ;;general
+                 keyfreq
+
+                 ;; eshell
+                 eshell-prompt-extras
                  
                  ))
 

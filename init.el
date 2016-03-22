@@ -69,6 +69,7 @@
 (use-package init-javascript)
 (use-package init-web)
 (use-package init-elisp)
+(use-package init-shell)
 (use-package init-git)
 (use-package init-spelling)
 (use-package init-php)
@@ -77,8 +78,21 @@
 (use-package init-chat)
 (when *is-linux* (use-package init-mail))
 (use-package init-keybinding)
+(use-package init-reading)
+
 ;;; Post initialization
-(server-start)
+;; start a server only in text mode
+(use-package server
+  :config
+  (progn
+    (when (not (window-system))
+      (if (server-running-p server-name)
+          nil
+        (server-start)))))
+
+(when (window-system)
+  (setenv "EMACS_GUI" "t"))
+
 (setq custom-file "~/personal/.emacs-custom.el")
 (load custom-file)
 

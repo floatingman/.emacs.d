@@ -105,4 +105,57 @@ region-end is used."
         (forward-char -1))
       (duplicate-region num (point-at-bol) (1+ (point-at-eol))))))
 
+;; special os specific functions
+(when (eq system-type 'gnu/linux)
+  (setq dired-listing-switches "-lFaGh1v --group-directories-first")
+  (defun yank-to-x-clipboard ()
+    (interactive)
+    (if (region-active-p)
+        (progn
+          (shell-command-on-region (region-beginning) (region-end) "xsel -i -b")
+          (message "Yanked region to clipboard!")
+          (deactivate-mark))
+      (message "No region active; can't yank to clipboard!")))
+
+  (global-set-key (kbd "C-M-w") 'yank-to-x-clipboard)
+  ;; suspend-frame isn't working on Linux?
+  (global-unset-key (kbd "C-z"))
+  (global-unset-key (kbd "C-x C-z")))
+
+(when (eq system-type 'darwin)
+  (setq ns-use-native-fullscreen nil)
+  ;; brew install coreutils
+  (if (executable-find "gls")
+      (progn
+        (setq insert-directory-program "gls")
+        (setq dired-listing-switches "-lFaGh1v --group-directories-first"))
+    (setq dired-listing-switches "-ahlF"))
+  (defun copy-from-osx ()
+    "Handle copy/paste intelligently on osx."
+    (let ((pbpaste (purecopy "/usr/bin/pbpaste")))
+      (if (and (eq system-type 'darwin)
+               (file-exists-p pbpaste))
+          (let ((tramp-mode nil)
+                (default-directory "~"))
+            (shell-command-to-string pbpaste)))))
+
+  (defun paste-to-osx (text &optional push)
+    (let ((process-connection-type nil))
+      (let ((proc (start-process "pbcopy" "*Messages*" "/usr/bin/pbcopy")))
+        (process-send-string proc text)
+        (process-send-eof proc))))
+  (setq interprogram-cut-function 'paste-to-osx
+        interprogram-paste-function 'copy-from-osx)
+
+  (defun move-file-to-trash (file)
+    "Use `trash' to move FILE to the system trash.
+When using Homebrew, install it using \"brew install trash\"."
+    (call-process (executable-find "trash")
+                  nil 0 nil
+                  file))
+
+  ;; Trackpad scrolling
+  (global-set-key [wheel-up] 'previous-line)
+  (global-set-key [wheel-down] 'next-line))
+
 (provide 'init-functions)
