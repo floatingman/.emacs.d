@@ -194,5 +194,29 @@ file to write to."
       jit-lock-chunk-size 1000
       jit-lock-defer-time 0.05)
 
+;; fix an issue with line-numbers breaking
+(setq line-number-display-limit-width 10000)
+
+;; make gnutil safer
+(setq gnutls-min-prime-bits 4096)
+
+;; fix scrolling
+(setq scroll-conservatively 10000
+      scroll-preserve-screen-position t)
+
+;; increase keystroke completion 
+(setq echo-keystrokes 0.4)
+
+;; don't warn about opening files unless they're over 25mb
+(setq large-file-warning-threshold (* 25 1024 1024))
+
+;; disable marks when changing focus
+(transient-mark-mode 1)
+
+;; don't show empty lines
+(setq-default indicate-empty-lines nil)
+(setq-default indicate-buffer-boundaries nil)
+
+
 
 (provide 'init-general)
