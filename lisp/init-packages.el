@@ -23,7 +23,7 @@
 (defvar my/install-packages
   '(
     ;; package management
-    use-package
+    use-package auto-compile
     
     ;; themeing
     rainbow-mode leuven-theme dakrone-theme color-identifiers-mode
@@ -87,7 +87,7 @@
     web-mode emmet-mode web-beautify scss-mode
 
     ;; org
-    org htmlize gnuplot-mode gnuplot org-alert org-present org-bullets deft org-pomodoro
+    htmlize gnuplot-mode gnuplot org-alert org-present org-bullets deft org-pomodoro
     
     ))
 

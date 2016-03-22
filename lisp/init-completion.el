@@ -34,7 +34,7 @@
     (when (executable-find "curl")
       (setq helm-google-suggest-use-curl-p t))
 
-    (define-key org-mode-map (kbd "C-x c o h") #'helm-org-headlines)
+
     
     )
   :bind (

@@ -25,6 +25,17 @@
 ;;  (scroll-bar-mode -1))
 
 
+;; setup path
+(use-package exec-path-from-shell
+  :defer t
+  :init
+  (progn
+    (setq exec-path-from-shell-variables '("JAVA_HOME"
+                                           "PATH"
+                                           "WORKON_HOME"
+                                           "MANPATH"))
+    (exec-path-from-shell-initialize)))
+
 ;;Help
 (use-package guide-key
   :diminish guide-key-mode
@@ -161,17 +172,6 @@ file to write to."
             next-line))
     (keyfreq-mode 1)
     (keyfreq-autosave-mode 1)))
-
-(defface visible-mark-active ;; put this before (use-package visible-mark)
-  '((((type tty) (class mono)))
-    (t (:background "magenta"))) "")
-
-(use-package visible-mark
-  :init (global-visible-mark-mode 1)
-  :config
-  (progn
-    (setq visible-mark-max 2)
-    (setq visible-mark-faces `(visible-mark-face1 visible-mark-face2))))
 
 ;; syntax higlighting in all buffers
 (global-font-lock-mode t)

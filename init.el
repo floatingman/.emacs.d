@@ -10,8 +10,6 @@
 (unless noninteractive
   (message "Loading %s..." load-file-name))
 
-
-
 (setq message-log-max 16384)
 
 ;;Setup some variables for use in other config files
@@ -26,9 +24,16 @@
 (setq cedetpath "override/cedet/cedet-devel-load.el")
 (when (file-exists-p (expand-file-name cedetpath user-emacs-directory))
   (load-file (expand-file-name cedetpath user-emacs-directory))
-             ;; Use the full Java 1.5 grammar to parse Java files
-             (autoload 'wisent-java-default-setup "semantic/wisent/java"
-               "Hook run to setup Semantic in `java-mode'." nil nil))
+  ;; Use the full Java 1.5 grammar to parse Java files
+  (autoload 'wisent-java-default-setup "semantic/wisent/java"
+    "Hook run to setup Semantic in `java-mode'." nil nil))
+
+;; load development version of org-mode
+(setq orgpath "override/org-mode/lisp/org.el")
+(when (file-exists-p (expand-file-name orgpath user-emacs-directory))
+  (add-to-list 'load-path "~/.emacs.d/override/org-mode/lisp")
+  (add-to-list 'load-path "~/.emacs.d/override/org-mode/contrib/lisp")
+  (require 'org))
 
 ;;(defvar my/background 'light)
 (defvar my/background 'dark)
@@ -57,7 +62,6 @@
 (require 'init-packages)
 
 (use-package auto-compile
-  :ensure t
   :config (auto-compile-on-load-mode))
 (setq load-prefer-newer t)
 
