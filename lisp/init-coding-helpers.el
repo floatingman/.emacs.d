@@ -5,8 +5,7 @@
 
 ;;Projects
 (use-package projectile
-  :ensure t
-	:diminish projectile-mode
+  :diminish projectile-mode
   :config
   (progn
     (setq projectile-keymap-prefix (kbd "C-c p"))
@@ -18,8 +17,7 @@
   (projectile-global-mode))
 
 (use-package highlight-indentation
-	:ensure t
-	:config
+  :config
 	(progn
 		(defun toggle-highlight-indentation-mode ()
 			(interactive)
@@ -48,7 +46,6 @@
      (add-hook 'drupal-mode-hook 'my/find-tags)))
 
 (use-package smartparens
-	:ensure t
 	:config
 	(progn
 		(require 'smartparens-config)
@@ -134,15 +131,13 @@
 						 
 ;; flycheck for all your fly inspection needs
 (use-package flycheck
-	:ensure t
-	:config
+  :config
 	(progn
 		(global-flycheck-mode)))
 
 ;; keep code indented when changing things up top
 (use-package aggressive-indent
-	:ensure t
-	:config
+  :config
 	(progn
 		(global-aggressive-indent-mode 1)))
 

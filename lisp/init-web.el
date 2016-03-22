@@ -9,7 +9,6 @@
 
 
 (use-package web-mode
-  :ensure t
   :mode (("\\.html\\'"       . web-mode)
          ("\\.ejs\\'"        . web-mode)
          ("\\.html\\.erb\\'" . web-mode)
@@ -25,7 +24,6 @@
     (setq web-mode-enable-auto-pairing 1)))
 
 (use-package emmet-mode
-  :ensure t
   :defer t
   :config
   (add-hook 'css-mode-hook  'emmet-mode)
@@ -33,11 +31,9 @@
   )
 
 (use-package web-beautify
-  :defer t
-	:ensure t)
+  :defer t)
 
 (use-package scss-mode
-  :ensure t
   :defer t
   :mode (("\\.scss\\'" . scss-mode))
   :config

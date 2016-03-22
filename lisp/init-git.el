@@ -6,8 +6,7 @@
       (call-interactively 'magit-log-edit))
 
 (use-package magit
-	:ensure t
-	:config
+  :config
 	(progn
 		(setq magit-diff-options '("-b")) ; ignore whitespace
 		(define-key magit-mode-map "#gg" 'endless/load-gh-pulls-mode)
@@ -41,23 +40,23 @@ so that it's still active even after you stage a change. Very experimental."
 				ad-do-it))
 
 		(defadvice magit-insert-staged-changes (around sacha activate)
-          "Limit to `my/magit-limit-to-directory' if specified."
-          (if my/magit-limit-to-directory
-              (let ((no-commit (not (magit-git-success "log" "-1" "HEAD"))))
-                (when (or no-commit (magit-anything-staged-p))
-                  (let ((magit-current-diff-range (cons "HEAD" 'index))
-                        (base (if no-commit
-                                  (magit-git-string "mktree")
-                                "HEAD"))
-                        (magit-diff-options (append '("--cached") magit-diff-options)))
-                    (magit-git-insert-section (staged "Staged changes:")
-                        (apply-partially #'magit-wash-raw-diffs t)
-                      "diff-index" "--cached" base "--" my/magit-limit-to-directory))))
-            ad-do-it)))
-      :bind (("C-x v d" . magit-status)
-             ("C-x v C-d" . my/magit-status-in-directory)
-             ("C-x v p" . magit-push)
-             ("C-x v c" . my/magit-commit-all)))
+      "Limit to `my/magit-limit-to-directory' if specified."
+      (if my/magit-limit-to-directory
+          (let ((no-commit (not (magit-git-success "log" "-1" "HEAD"))))
+            (when (or no-commit (magit-anything-staged-p))
+              (let ((magit-current-diff-range (cons "HEAD" 'index))
+                    (base (if no-commit
+                              (magit-git-string "mktree")
+                            "HEAD"))
+                    (magit-diff-options (append '("--cached") magit-diff-options)))
+                (magit-git-insert-section (staged "Staged changes:")
+                                          (apply-partially #'magit-wash-raw-diffs t)
+                                          "diff-index" "--cached" base "--" my/magit-limit-to-directory))))
+        ad-do-it)))
+  :bind (("C-x v d" . magit-status)
+         ("C-x v C-d" . my/magit-status-in-directory)
+         ("C-x v p" . magit-push)
+         ("C-x v c" . my/magit-commit-all)))
 
 ;; From http://endlessparentheses.com/merging-github-pull-requests-from-emacs.html
 (defun endless/load-gh-pulls-mode ()
@@ -69,14 +68,12 @@ so that it's still active even after you stage a change. Very experimental."
   (magit-gh-pulls-reload))
 
 (use-package magit-gh-pulls
-  :ensure t )
+  )
 
 (use-package git-messenger
-  :ensure t
   :bind (("C-x v m" . git-messenger:popup-message)))
 
 (use-package git-gutter+
-  :ensure t
   :init (global-git-gutter+-mode)
   :config (progn
             (define-key git-gutter+-mode-map (kbd "C-x n") 'git-gutter+-next-hunk)

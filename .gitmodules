@@ -1,12 +1,6 @@
-[submodule "override/org-mode"]
-	path = override/org-mode
-	url = git://orgmode.org/org-mode.git
 [submodule "site-lisp/yasnippet-snippets"]
 	path = site-lisp/yasnippet-snippets
 	url = git@github.com:AndreaCrotti/yasnippet-snippets.git
-[submodule "override/bbdb"]
-	path = override/bbdb
-	url = git://git.savannah.nongnu.org/bbdb.git
 [submodule "override/cedet"]
 	path = override/cedet
 	url = http://git.code.sf.net/p/cedet/git

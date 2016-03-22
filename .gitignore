@@ -90,3 +90,4 @@ ido.last
 
 /.emacs-secrets.el
 /tmp
+srecode-map.el

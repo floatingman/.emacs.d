@@ -1,14 +1,16 @@
 ;;; This file bootstraps the configuration, which is divided into
 ;;; a number of other files.
 
+;; turn on emacs debugging when starting, turn it off later
+(setq debug-on-error t)
+(setq debug-on-quit t)
+
 (defconst emacs-start-time (current-time))
 
 (unless noninteractive
   (message "Loading %s..." load-file-name))
 
-;; turn on emacs debugging when starting, turn it off later
-(setq debug-on-error t)
-(setq debug-on-quit t)
+
 
 (setq message-log-max 16384)
 
@@ -20,6 +22,13 @@
 (defconst *is-linux* (eq system-type 'gnu/linux))
 (defconst *is-gui* (not (eq window-system nil)))
 
+;; Load a development version of CEDET instead of built-in one
+(setq cedetpath "override/cedet/cedet-devel-load.el")
+(when (file-exists-p (expand-file-name cedetpath user-emacs-directory))
+  (load-file (expand-file-name cedetpath user-emacs-directory))
+             ;; Use the full Java 1.5 grammar to parse Java files
+             (autoload 'wisent-java-default-setup "semantic/wisent/java"
+               "Hook run to setup Semantic in `java-mode'." nil nil))
 
 ;;(defvar my/background 'light)
 (defvar my/background 'dark)
@@ -56,9 +65,7 @@
 ;; load custom config
 
 (use-package init-general)
-(use-package init-org
-  :load-path ("override/org-mode/contrib/lisp"
-	      "override/org-mode/lisp"))
+(use-package init-org)
 (use-package init-mswindows)
 (use-package init-theme)
 (use-package init-dired)
