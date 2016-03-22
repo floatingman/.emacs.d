@@ -14,15 +14,15 @@
 (setq savehist-save-minibuffer-history 1)
 (setq savehist-additional-variables
       '(kill-ring
-	search-ring
-	regexp-search-ring))
+        search-ring
+        regexp-search-ring))
 
 ;; Window configuration
-(when window-system
-  (tooltip-mode -1)
-  (tool-bar-mode -1)
-  (menu-bar-mode 1)
-  (scroll-bar-mode -1))
+;; (when window-system
+;;  (tooltip-mode -1)
+;;  (tool-bar-mode -1)
+;;  (menu-bar-mode 1)
+;;  (scroll-bar-mode -1))
 
 
 ;;Help
@@ -120,11 +120,6 @@ file to write to."
       (add-hook 'window-setup-hook 'w32-maximize-frame t))
   (set-frame-parameter nil 'fullscreen 'maximized))
 
-;; ask y or n instead of yes or no
-(fset 'yes-or-no-p 'y-or-n-p)
-
-;; no splash screen
-(setq inhibit-splash-screen t)
 
 ;; set default columns to 80 and tabs to 2
 (setq-default fill-column 80)
@@ -135,8 +130,8 @@ file to write to."
 (use-package uniquify
   :config
   (setq uniquify-buffer-name-style 'post-forward-angle-brackets))  ;; buffernames that are foo<1>, foo<2> are hard to read. This makes them foo|dir  foo|otherdir
-(setq desktop-load-locked-desktop "ask") ;; sometimes desktop is locked, ask if we want to load it.
-(desktop-save-mode 1) ;; auto-save buffer state on close for a later time.
+
+
 
 
 ;;setup good pasteing real good
@@ -217,6 +212,49 @@ file to write to."
 (setq-default indicate-empty-lines nil)
 (setq-default indicate-buffer-boundaries nil)
 
+;; turn off all the modes
+(when (functionp 'menu-bar-mode)
+  (menu-bar-mode -1))
+(when (functionp 'set-scroll-bar-mode)
+  (set-scroll-bar-mode 'nil))
+(when (functionp 'mouse-wheel-mode)
+  (mouse-wheel-mode -1))
+(when (functionp 'tooltip-mode)
+  (tooltip-mode -1))
+(when (functionp 'tool-bar-mode)
+  (tool-bar-mode -1))
+(when (functionp 'blink-cursor-mode)
+  (blink-cursor-mode -1))
+
+;; no beeping no startup messages
+(setq ring-bell-function (lambda ()))
+(setq inhibit-startup-message t
+      initial-major-mode 'fundamental-mode)
+
+;; ignore case when completing filenames
+(setq read-file-name-completion-ignore-case t)
+
+;; y or n to answer questions that trouble me so
+(defalias 'yes-or-no-p 'y-or-n-p)
+
+;; confirm quiting
+(when (window-system)
+  (setq confirm-kill-emacs 'yes-or-no-p))
+
+;; make moving around long lines easy
+(setq line-move-visual t)
+
+;; hide that mouse
+(setq make-pointer-invisible t)
+
+;; fix weird color issues
+(setq system-uses-terminfo nil)
+
+;; resolve symlinks
+(setq-default find-file-visit-truename t)
+
+;; require a new line at the end of file
+(setq require-final-newline t)
 
 
 (provide 'init-general)

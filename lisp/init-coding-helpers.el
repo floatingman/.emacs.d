@@ -2,9 +2,6 @@
 
 (global-set-key (kbd "RET") 'newline-and-indent)
 
-(use-package rainbow-delimiters :ensure t)
-
-(column-number-mode 1)
 
 ;;Projects
 (use-package projectile
