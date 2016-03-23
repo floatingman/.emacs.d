@@ -29,16 +29,16 @@
                 rainbow-mode leuven-theme dakrone-theme color-identifiers-mode
                 nyan-mode color-theme-sanityinc-tomorrow apropospriate-theme
                 material-theme smart-mode-line beacon aurora-theme moe-theme
-                spaceline solarized-theme
+                spaceline solarized-theme tao-theme
 
                 ;; misc
-                diminish gist async sx exec-path-from-shell bbdb symon scpaste
+                diminish gist async sx exec-path-from-shell bbdb symon scpaste anzu
                 
                 ;; chat
                 erc-hl-nicks ercn alert twittering-mode
 
                 ;; code-helpers
-                projectile highlight-indentation smartparens flycheck aggressive-indent
+                projectile highlight-indentation smartparens flycheck aggressive-indent smart-tab
                 
                 ;; dired
                 peep-dired dired+ popwin
@@ -59,11 +59,11 @@
                 visual-fill-column fill-column-indicator
 
                 ;; autocomplete
-                fuzzy popup company yasnippet auto-complete
+                fuzzy popup company yasnippet auto-complete company-quickhelp
 
                 ;; helm
                 helm helm-descbinds helm-swoop helm-projectile helm-ag helm-css-scss helm-gtags helm-ls-git
-                helm-flycheck helm-flyspell helm-dash
+                helm-flycheck helm-flyspell helm-flx
 
                 ;; highlighting
                 idle-highlight-mode
@@ -91,6 +91,9 @@
 
                 ;; org
                 htmlize gnuplot-mode gnuplot org-alert org-present org-bullets deft org-pomodoro
+
+                ;; eww
+                eww-lnum
                 
                 ))
 

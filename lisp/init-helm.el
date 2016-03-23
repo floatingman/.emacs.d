@@ -27,9 +27,6 @@
 
     (when (executable-find "curl")
       (setq helm-google-suggest-use-curl-p t))
-
-
-    
     )
   :bind (
          ("C-x b"     . helm-mini)
@@ -52,9 +49,6 @@
          ("M-o"       . helm-previous-source)
          ))
 
-
-(ido-mode -1) ;; Turn off ido mode in case I enabled it accidentally
-
 (use-package helm-descbinds
   :init
   (progn
@@ -64,31 +58,30 @@
 
 (use-package helm-swoop
   :bind
-  (("C-S-s" . helm-swoop)
-   ("M-i" . helm-swoop)
-   ("M-s s" . helm-swoop)
-   ("M-s M-s" . helm-swoop)
-   ("M-I" . helm-swoop-back-to-last-point)
-   ("C-c M-i" . helm-multi-swoop)
-   ("C-x M-i" . helm-multi-swoop-all)
-   )
+  (("M-i" . helm-swoop)
+   ("M-I" . helm-swoop-back-to-last-)
+   ("C-c M-i" . helm-multi-swoop))
   :config
-  (progn
-    (define-key isearch-mode-map (kbd "M-i") 'helm-swoop-from-isearch)
-    (define-key helm-swoop-map (kbd "M-i") 'helm-multi-swoop-all-from-helm-swoop)))
+  ;; When doing isearch, hand the word over to helm-swoop
+  (define-key isearch-mode-map (kbd "M-i") 'helm-swoop-from-isearch)
+  ;; From helm-swoop to helm-multi-swoop-all
+  (define-key helm-swoop-map (kbd "M-i") 'helm-multi-swoop-all-from-helm-swoop)
+  ;; Save buffer when helm-multi-swoop-edit complete
+  (setq helm-multi-swoop-edit-save t
+        ;; If this value is t, split window inside the current window
+        helm-swoop-split-with-multiple-windows t
+        ;; Split direcion. 'split-window-vertically or 'split-window-horizontally
+        helm-swoop-split-direction 'split-window-vertically
+        ;; If nil, you can slightly boost invoke speed in exchange for text color
+        helm-swoop-speed-or-color nil))
 
 (use-package helm-projectile
-	:config
-	(progn
-		
-		(helm-projectile-on)
-
-		(define-key projectile-mode-map (kbd "C-c p /")
-			#'(lambda ()
-					(interactive)
-					(helm-ag (projectile-project-root))))
-		)
-	)
+	:init
+  (use-package grep) ;; required for helm-ag to work properly
+  (setq projectile-completion-system 'helm)
+  ;; no fuzziness for projectile-helm
+  (setq helm-projectile-fuzzy-match nil)
+  (helm-projectile-on))
 
 (use-package helm-ag
 	:bind(
@@ -109,5 +102,10 @@
     (define-key helm-css-scss-map (kbd "s-i") 'helm-css-scss-multi-from-helm-css-scss)
     ))
 
+(use-package helm-c-yasnippet
+  :ensure nil
+  :disabled t
+  :bind
+  (("M-=" . helm-yas-complete)))
 
 (provide 'init-helm)

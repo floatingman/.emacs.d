@@ -56,9 +56,15 @@
 ;; Split windows by golden ratio
 (use-package golden-ratio
   :diminish golden-ratio-mode
+  :defer t
 	:config
-	(progn
-		(golden-ratio-mode 1)))
+	(defun my/helm-alive-p ()
+    (if (boundp 'helm-alive-p)
+        (symbol-value 'helm-alive-p)))
+  (add-to-list 'golden-ratio-exclude-modes #'messages-buffer-mode)
+  (add-to-list 'golden-ratio-exclude-modes #'fundamental-mode)
+  ;; Inhibit helm
+  (add-to-list 'golden-ratio-inhibit-functions #'my/helm-alive-p))
 
 (use-package switch-window
   :bind (("C-x o" . switch-window)))
@@ -309,5 +315,22 @@ file to write to."
   :init
   (setq-default save-place t)
   (setq save-place-file (expand-file-name ".places" user-emacs-directory)))
+
+;; shows the number of search hits in the modeline
+(use-package anzu
+  :defer t
+  :bind ("M-%" . anzu-query-replace-regexp)
+  :config
+  (progn
+    (use-package thingatpt)
+    (setq anzu-mode-lighter "")
+    (set-face-attribute 'anzu-mode-line nil :foreground "yellow")))
+
+(add-hook 'prog-mode-hook #'anzu-mode)
+(add-hook 'org-mode-hook #'anzu-mode)
+
+
+(use-package helm-flx
+  :init (helm-flx-mode +1))
 
 (provide 'init-general)

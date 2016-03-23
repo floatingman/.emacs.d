@@ -91,7 +91,7 @@
 (when *is-linux* (use-package init-mail))
 (use-package init-keybinding)
 (use-package init-reading)
-
+(use-package init-browsing)
 ;;; Post initialization
 ;; start a server only in text mode
 (use-package server
