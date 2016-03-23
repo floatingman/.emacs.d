@@ -81,6 +81,7 @@
 (use-package init-web)
 (use-package init-elisp)
 (use-package init-shell)
+(use-package init-helm)
 (use-package init-git)
 (use-package init-spelling)
 (use-package init-php)
