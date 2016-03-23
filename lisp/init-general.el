@@ -333,4 +333,10 @@ file to write to."
 (use-package helm-flx
   :init (helm-flx-mode +1))
 
+(use-package idle-highlight-mode
+  :init
+  (add-hook 'java-mode-hook #'idle-highlight-mode)
+  (add-hook 'emacs-lisp-mode-hook #'idle-highlight-mode)
+  (add-hook 'clojure-lisp-mode-hook #'idle-highlight-mode))
+
 (provide 'init-general)

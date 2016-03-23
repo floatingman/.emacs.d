@@ -38,7 +38,10 @@
                 erc-hl-nicks ercn alert twittering-mode
 
                 ;; code-helpers
-                projectile highlight-indentation smartparens flycheck aggressive-indent smart-tab
+                projectile highlight-indentation smartparens smart-tab
+
+                ;; flycheck
+                flycheck flycheck-tip flycheck-haskell flycheck-pos-tip
                 
                 ;; dired
                 peep-dired dired+ popwin
@@ -47,7 +50,7 @@
                 engine-mode undo-tree
 
                 ;; lisp
-                erefactor paredit
+                paredit elisp-slime-nav
 
                 ;; keybinding 
                 hydra guide-key key-chord avy avy-zap smart-forward

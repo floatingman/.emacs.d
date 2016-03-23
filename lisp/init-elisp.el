@@ -1,60 +1,62 @@
+(defun my/turn-on-paredit-and-eldoc ()
+  (interactive)
+  (paredit-mode 1)
+  (eldoc-mode 1))
 
-(use-package "eldoc"
+(add-hook 'emacs-lisp-mode-hook #'my/turn-on-paredit-and-eldoc)
+(add-hook 'ielm-mode-hook #'my/turn-on-paredit-and-eldoc)
+
+(use-package eldoc
   :diminish eldoc-mode
-  :commands turn-on-eldoc-mode
-  :init
-  (progn
-    (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
-    (add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
-    (add-hook 'ielm-mode-hook 'turn-on-eldoc-mode)))
+  :config
+  (setq eldoc-idle-delay 0.3)
+  (set-face-attribute 'eldoc-highlight-function-argument nil
+                      :underline t :foreground "green"
+                      :weight 'bold))
 
-;; C-c C-v l : elint current buffer in clean environment.
-;; C-c C-v L : elint current buffer by multiple emacs binaries.
-;;             See `erefactor-lint-emacsen'
-;; C-c C-v r : Rename symbol in current buffer.
-;;             Resolve `let' binding as long as i can.
-;; C-c C-v R : Rename symbol in requiring modules and current buffer.
-;; C-c C-v h : Highlight current symbol in this buffer
-;;             and suppress `erefacthr-highlight-mode'.
-;; C-c C-v d : Dehighlight all by above command.
-;; C-c C-v c : Switch prefix bunch of symbols.
-;;             ex: '(hoge-var hoge-func) -> '(foo-var foo-func)
-;; C-c C-v ? : Display flymake elint warnings/errors
+;;Change the faces for elisp regex grouping:
+(set-face-foreground 'font-lock-regexp-grouping-backslash "#ff1493")
+(set-face-foreground 'font-lock-regexp-grouping-construct "#ff8c00")
 
-(use-package erefactor
-	:config
-  (define-key emacs-lisp-mode-map "\C-c\C-v" erefactor-map))
+(defun ielm-other-window ()
+  "Run ielm on other window"
+  (interactive)
+  (switch-to-buffer-other-window
+   (get-buffer-create "*ielm*"))
+  (call-interactively 'ielm))
 
-(use-package paredit)
+(define-key emacs-lisp-mode-map (kbd "C-c C-z") 'ielm-other-window)
+(define-key lisp-interaction-mode-map (kbd "C-c C-z") 'ielm-other-window)
 
-(define-key emacs-lisp-mode-map (kbd "C-c .") 'find-function-at-point)
-(bind-key "C-c f" 'find-function)
+(use-package elisp-slime-nav
+  :diminish elisp-slime-nav-mode
+  :init (add-hook 'emacs-lisp-mode-hook #'elisp-slime-nav-mode))
 
 (defun my/sort-sexps-in-region (beg end)
-    "Can be handy for sorting out duplicates.
+  "Can be handy for sorting out duplicates.
 Sorts the sexps from BEG to END. Leaves the point at where it
 couldn't figure things out (ex: syntax errors)."
-    (interactive "r")
-    (let ((input (buffer-substring beg end))
-          list last-point form result)
-      (save-restriction
-        (save-excursion
-          (narrow-to-region beg end)
-          (goto-char (point-min))
-          (setq last-point (point-min))
-          (setq form t)
-          (while (and form (not (eobp)))
-            (setq form (ignore-errors (read (current-buffer))))
-            (when form
-              (add-to-list
-               'list
-               (cons
-                (prin1-to-string form)
-                (buffer-substring last-point (point))))
-              (setq last-point (point))))
-          (setq list (sort list (lambda (a b) (string< (car a) (car b)))))
-          (delete-region (point-min) (point))
-          (insert (mapconcat 'cdr list "\n"))))))
+  (interactive "r")
+  (let ((input (buffer-substring beg end))
+        list last-point form result)
+    (save-restriction
+      (save-excursion
+        (narrow-to-region beg end)
+        (goto-char (point-min))
+        (setq last-point (point-min))
+        (setq form t)
+        (while (and form (not (eobp)))
+          (setq form (ignore-errors (read (current-buffer))))
+          (when form
+            (add-to-list
+             'list
+             (cons
+              (prin1-to-string form)
+              (buffer-substring last-point (point))))
+            (setq last-point (point))))
+        (setq list (sort list (lambda (a b) (string< (car a) (car b)))))
+        (delete-region (point-min) (point))
+        (insert (mapconcat 'cdr list "\n"))))))
 
 (bind-key "M-:" 'pp-eval-expression)
 
@@ -67,6 +69,6 @@ couldn't figure things out (ex: syntax errors)."
 
 (bind-key "C-x C-e" 'sanityinc/eval-last-sexp-or-region emacs-lisp-mode-map)
 
-
+(define-key lisp-mode-shared-map (kbd "RET") 'reindent-then-newline-and-indent)
 
 (provide 'init-elisp)

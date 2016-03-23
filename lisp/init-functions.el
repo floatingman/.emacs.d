@@ -158,4 +158,154 @@ When using Homebrew, install it using \"brew install trash\"."
   (global-set-key [wheel-up] 'previous-line)
   (global-set-key [wheel-down] 'next-line))
 
+(defun untabify-buffer ()
+  (interactive)
+  (untabify (point-min) (point-max)))
+
+(defun indent-buffer ()
+  (interactive)
+  (indent-region (point-min) (point-max)))
+
+(defvar bad-cleanup-modes '(python-mode yaml-mode)
+  "List of modes where `cleanup-buffer' should not be used")
+
+(defun cleanup-buffer ()
+  "Perform a bunch of operations on the whitespace content of a
+buffer. If the buffer is one of the `bad-cleanup-modes' then no
+re-indenting and untabification is done."
+  (interactive)
+  (unless (member major-mode bad-cleanup-modes)
+    (progn
+      (indent-buffer)
+      (untabify-buffer)))
+  (delete-trailing-whitespace))
+
+;; Perform general cleanup.
+(global-set-key (kbd "C-c n") #'cleanup-buffer)
+
+(defun browse-last-url-in-brower ()
+  (interactive)
+  (save-excursion
+    (let ((ffap-url-regexp
+           (concat
+            "\\("
+            "news\\(post\\)?:\\|mailto:\\|file:"
+            "\\|"
+            "\\(ftp\\|https?\\|telnet\\|gopher\\|www\\|wais\\)://"
+            "\\).")))
+      (ffap-next t t))))
+
+(global-set-key (kbd "C-c u") 'browse-last-url-in-brower)
+
+(defun number-rectangle (start end format-string from)
+  "Delete (don't save) text in the region-rectangle, then number it."
+  (interactive
+   (list (region-beginning) (region-end)
+         (read-string "Number rectangle: "
+                      (if (looking-back "^ *") "%d. " "%d"))
+         (read-number "From: " 1)))
+  (save-excursion
+    (goto-char start)
+    (setq start (point-marker))
+    (goto-char end)
+    (setq end (point-marker))
+    (delete-rectangle start end)
+    (goto-char start)
+    (loop with column = (current-column)
+          while (and (<= (point) end) (not (eobp)))
+          for i from from   do
+          (move-to-column column t)
+          (insert (format format-string i))
+          (forward-line 1)))
+  (goto-char start))
+
+(global-set-key (kbd "C-x r N") 'number-rectangle)
+
+(defun lod ()
+  "Well. This is disappointing."
+  (interactive)
+  (insert "ಠ_ಠ"))
+
+(global-set-key (kbd "C-c M-d") #'lod)
+
+(defun my/narrow-or-widen-dwim (p)
+  "If the buffer is narrowed, it widens. Otherwise, it narrows intelligently.
+Intelligently means: region, org-src-block, org-subtree, or defun,
+whichever applies first.
+Narrowing to org-src-block actually calls `org-edit-src-code'.
+
+With prefix P, don't widen, just narrow even if buffer is already
+narrowed."
+  (interactive "P")
+  (declare (interactive-only))
+  (cond ((and (buffer-narrowed-p) (not p)) (widen))
+        ((region-active-p)
+         (narrow-to-region (region-beginning) (region-end)))
+        ((derived-mode-p 'org-mode)
+         ;; `org-edit-src-code' is not a real narrowing command.
+         ;; Remove this first conditional if you don't want it.
+         (cond ((org-in-src-block-p)
+                (org-edit-src-code)
+                (delete-other-windows))
+               ((org-at-block-p)
+                (org-narrow-to-block))
+               (t (org-narrow-to-subtree))))
+        (t (narrow-to-defun))))
+
+(defun xah-forward-block (&optional φn)
+  "Move cursor forward to the beginning of next text block.
+A text block is separated by blank lines. In most major modes,
+this is similar to `forward-paragraph', but this command's
+behavior is the same regardless of syntax table."
+  (interactive "p")
+  (search-forward-regexp "\n[\t\n ]*\n+" nil "NOERROR" φn))
+
+(defun xah-backward-block (&optional φn)
+  "Move cursor backward to previous text block.
+See: `xah-forward-block'"
+  (interactive "p")
+  (dotimes (ξn φn) (if (search-backward-regexp "\n[\t\n ]*\n+" nil "NOERROR")
+                       (progn
+                         (skip-chars-backward "\n\t "))
+                     (progn (goto-char (point-min))))))
+
+(global-set-key (kbd "<C-up>") 'xah-backward-block)
+(global-set-key (kbd "<C-down>") 'xah-forward-block)
+
+(defcustom smart-to-ascii '(("\x201C" . "\"")
+                            ("\x201D" . "\"")
+                            ("\x2018" . "'")
+                            ("\x2019" . "'")
+                            ;; en-dash
+                            ("\x2013" . "-")
+                            ;; em-dash
+                            ("\x2014" . "-"))
+  "Map of smart quotes to their replacements"
+  :type '(repeat (cons (string :tag "Smart Character  ")
+                       (string :tag "Ascii Replacement"))))
+
+(defun my/smart-to-ascii (beg end)
+  "Replace smart quotes and dashes with their ASCII equivalents"
+  (interactive "r")
+  (format-replace-strings smart-to-ascii
+                          nil beg end))
+
+(defun sudoec (file)
+  (interactive)
+  (find-file (concat "/sudo::" (expand-file-name file))))
+
+(defun transpose-buffers (arg)
+  "Transpose the buffers shown in two windows."
+  (interactive "p")
+  (let ((selector (if (>= arg 0) 'next-window 'previous-window)))
+    (while (/= arg 0)
+      (let ((this-win (window-buffer))
+            (next-win (window-buffer (funcall selector))))
+        (set-window-buffer (selected-window) next-win)
+        (set-window-buffer (funcall selector) this-win)
+        (select-window (funcall selector)))
+      (setq arg (if (plusp arg) (1- arg) (1+ arg))))))
+
+(global-set-key (kbd "C-x 4 t") 'transpose-buffers)
+
 (provide 'init-functions)

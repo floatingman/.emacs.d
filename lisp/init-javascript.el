@@ -1,20 +1,3 @@
-;; (use-package js3-mode
-;; 	:ensure t
-;; 	:defer t
-;; 	:config
-;; 	(progn
-;; 		(setq js3-auto-indent-p t
-;; 					js3-curly-indent-offset 0
-;; 					js3-enter-indents-newline t
-;; 					js3-expr-indent-offset 2
-;; 					js3-indent-on-enter-key t
-;; 					js3-lazy-commas t
-;; 					js3-lazy-dots t
-;; 					js3-lazy-operators t
-;; 					js3-paren-indent-offset 2
-;; 					js3-square-indent-offset 4)
-;; 		(linum-mode 1)))
-
 (use-package js2-mode
 	:ensure t
   :defer t
@@ -93,20 +76,6 @@
   (let ((httpd-port 8024))
     (run-skewer)
     (skewer-repl)))
-
-;; use paredit for javascript
-(defun my-paredit-nonlisp ()
-  "Turn on paredit mode for non-lisps."
-  (interactive)
-  (set (make-local-variable 'paredit-space-for-delimiter-predicates)
-       '((lambda (endp delimiter) nil)))
-  (paredit-mode 1))
-;; maybe not just paredit for javascript? trying out smartparen
-;; (add-hook 'js-mode-hook 'my-paredit-nonlisp)
-
-;; (define-key js-mode-map "{" 'paredit-open-curly)
-;; (define-key js-mode-map "}" 'paredit-close-curly-and-newline)
-
 
 ;; enable flycheck for javascript
 (add-hook 'js-mode-hook

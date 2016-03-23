@@ -1,20 +1,4 @@
-;; (require 'find-dired)
-;; (setq find-ls-option '("-print0 | xargs -0 ls -ld" . "-ld"))
-
-;; ;; Move files between split panes
-;; (setq dired-dwim-target t)
-
-
-;; ;; Reload dired after making changes
-;; (--each '(dired-do-rename
-;;           dired-do-copy
-;;           dired-create-directory
-;;           wdired-abort-changes)
-;;         (eval `(defadvice ,it (after revert-buffer activate)
-;;                  (revert-buffer))))
-
 (defun my/dired-mode-hook ()
-  (my/turn-on-hl-line-mode)
   (toggle-truncate-lines 1))
 
 (use-package dired

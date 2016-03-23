@@ -60,6 +60,9 @@
 
 ;; package archives
 (require 'init-packages)
+(setq custom-file "~/personal/.emacs-custom.el")
+(when (file-exists-p custom-file)
+  (load custom-file))
 
 (use-package auto-compile
   :config (auto-compile-on-load-mode))
@@ -80,6 +83,7 @@
 (use-package init-javascript)
 (use-package init-web)
 (use-package init-elisp)
+(use-package init-clojure)
 (use-package init-shell)
 (use-package init-helm)
 (use-package init-git)
@@ -105,8 +109,6 @@
 (when (window-system)
   (setenv "EMACS_GUI" "t"))
 
-(setq custom-file "~/personal/.emacs-custom.el")
-(load custom-file)
 
 (add-hook 'after-init-hook #'global-flycheck-mode)
 
