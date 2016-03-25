@@ -41,6 +41,9 @@
      ;; java
      malabar-mode groovy-mode javap-mode emacs-eclim java-imports
 
+     ;; python
+     hy-mode virtualenvwrapper
+
      ;; flycheck
      flycheck flycheck-tip flycheck-haskell flycheck-pos-tip
   

@@ -92,4 +92,9 @@
   :config
   (setq symon-sparkline-type 'bounded))
 
+(add-to-list
+ 'comint-preoutput-filter-functions
+ (lambda (output)
+   (replace-regexp-in-string "\\[0-9]+[GK]" "" output)))
+
 (provide 'init-theme)

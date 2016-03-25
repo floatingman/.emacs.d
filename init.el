@@ -85,6 +85,8 @@
 (use-package init-elisp)
 (use-package init-clojure)
 (use-package init-shell)
+(use-package init-java)
+(use-package init-python)
 (use-package init-helm)
 (use-package init-git)
 (use-package init-spelling)

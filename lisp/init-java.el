@@ -109,3 +109,5 @@
 ;; Make emacs' compile recognize gradle output
 (add-to-list 'compilation-error-regexp-alist
              '("^.*:compileJava\(.*\):\([0-9]+\)\(.\)" 1 2 3))
+
+(provide 'init-java)
