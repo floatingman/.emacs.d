@@ -128,6 +128,4 @@ Repeated invocations toggle between the two most recently open buffers."
 ;; copy whole buffer into clipboard
 (global-set-key (kbd "C-c w") 'my/copy-buffer)
 
-(global-set-key (kbd "C-c h") 'toggle-highlight-indentation-mode)
-
 (provide 'init-keybinding)

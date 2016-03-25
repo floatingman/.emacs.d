@@ -308,4 +308,72 @@ See: `xah-forward-block'"
 
 (global-set-key (kbd "C-x 4 t") 'transpose-buffers)
 
+
+(global-set-key (kbd "C-x +") 'balance-windows-area)
+
+(global-set-key (kbd "C-x C-l") 'toggle-truncate-lines)
+
+(defun my/turn-on-viewing-mode ()
+  "Turn on the viewing mode, to make looking through logs easier"
+  (interactive)
+  (view-mode 1)
+  (hl-line-mode 1))
+
+;; join on killing lines
+(defun kill-and-join-forward (&optional arg)
+  "If at end of line, join with following; otherwise kill line.
+Deletes whitespace at join."
+  (interactive "P")
+  (if (and (eolp) (not (bolp)))
+      (delete-indentation t)
+    (kill-line arg)))
+
+(global-set-key (kbd "C-k") 'kill-and-join-forward)
+
+;; join line to next line
+(global-set-key (kbd "M-j")
+                (lambda ()
+                  (interactive)
+                  (join-line -1)))
+
+;; Completion that uses many different methods to find options.
+(global-set-key (kbd "M-/") 'hippie-expand)
+
+;; Font size
+(define-key global-map (kbd "C-+") 'text-scale-increase)
+(define-key global-map (kbd "C--") 'text-scale-decrease)
+
+;; Use regex searches by default.
+(global-set-key (kbd "C-s") 'isearch-forward-regexp)
+(global-set-key (kbd "\C-r") 'isearch-backward-regexp)
+
+(global-set-key (kbd "C-c y") 'bury-buffer)
+(global-set-key (kbd "C-c r") 'revert-buffer)
+
+;; Start eshell or switch to it if it's active.
+(global-set-key (kbd "C-x m") 'eshell)
+
+;; Start a regular shell if you prefer that.
+(global-set-key (kbd "C-x C-m") 'shell)
+
+;; If you want to be able to M-x without meta (phones, etc)
+(global-set-key (kbd "C-c C-x") 'execute-extended-command)
+
+;; Activate occur easily inside isearch
+(define-key isearch-mode-map (kbd "C-o")
+  (lambda () (interactive)
+    (let ((case-fold-search isearch-case-fold-search))
+      (occur (if isearch-regexp isearch-string (regexp-quote isearch-string))))))
+
+;; ==== Window switching ====
+(defun my/other-window-backwards ()
+  (interactive)
+  (other-window -1))
+
+(global-set-key (kbd "M-'") 'other-window)
+(global-set-key (kbd "M-\"") 'my/other-window-backwards)
+(global-set-key (kbd "H-'") 'other-window)
+(global-set-key [C-tab] 'other-window)
+(global-set-key [C-S-tab] 'my/other-window-backwards)
+
 (provide 'init-functions)

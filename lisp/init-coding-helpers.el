@@ -37,17 +37,6 @@
   :config
   (projectile-global-mode))
 
-(use-package highlight-indentation
-  :config
-	(progn
-		(defun toggle-highlight-indentation-mode ()
-			(interactive)
-			(highlight-indentation-mode)
-			(highlight-indentation-current-column-mode))
-		(set-face-background 'highlight-indentation-face "#cc3300")
-		(set-face-background 'highlight-indentation-current-column-face "#4d1300")
-		))
-
 (defun my/recursive-find-file (file &optional directory)
   "Find the first FILE in DIRECTORY or its parents."
   (setq directory (or directory (file-name-directory (buffer-file-name)) (pwd)))
@@ -189,5 +178,16 @@
 
 (use-package subword
   :diminish subword-mode)
+
+(use-package log4j-mode
+  :init (add-hook #'log4j-mode-hook #'my/turn-on-viewing-mode))
+
+(use-package bookmark+
+  :defer 10
+  :config
+  (progn
+    (setq bookmark-version-control t
+          ;; auto-save bookmarks
+          bookmark-save-flag 1)))
 
 (provide 'init-coding-helpers)

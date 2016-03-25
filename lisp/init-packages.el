@@ -5,12 +5,6 @@
                          ("melpa-stable" . "http://stable.melpa.org/packages/")
                          ("gnu" . "http://elpa.gnu.org/packages/")))
 
-
-;; Bootstrap `use-package'
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
-
 (when (boundp 'package-pinned-packages)
   (setq package-pinned-packages
         '((cider . "melpa-stable")
@@ -22,89 +16,93 @@
 
 (defvar my/install-packages
   '(
+
     ;; package management
     use-package auto-compile
-                
-                ;; themeing
-                rainbow-mode leuven-theme dakrone-theme color-identifiers-mode
-                nyan-mode color-theme-sanityinc-tomorrow apropospriate-theme
-                material-theme smart-mode-line beacon aurora-theme moe-theme
-                spaceline solarized-theme tao-theme
+  
+     ;; themeing
+     rainbow-mode leuven-theme dakrone-theme color-identifiers-mode
+     nyan-mode color-theme-sanityinc-tomorrow apropospriate-theme
+     material-theme smart-mode-line beacon aurora-theme moe-theme
+     spaceline solarized-theme tao-theme
 
-                ;; misc
-                diminish gist async sx exec-path-from-shell bbdb symon scpaste anzu
-                
-                ;; chat
-                erc-hl-nicks ercn alert twittering-mode
+     ;; misc
+     diminish gist async sx exec-path-from-shell bbdb symon scpaste anzu bookmark+
 
-                ;; code-helpers
-                projectile highlight-indentation smartparens smart-tab
+     ;; logs
+     log4j-mode logstash-conf
+  
+     ;; chat
+     erc-hl-nicks ercn alert twittering-mode
 
-                ;; java
-                malabar-mode groovy-mode javap-mode emacs-eclim java-imports
+     ;; code-helpers
+     projectile smartparens smart-tab ggtags
 
-                ;; flycheck
-                flycheck flycheck-tip flycheck-haskell flycheck-pos-tip
-                
-                ;; dired
-                peep-dired dired+ popwin
+     ;; java
+     malabar-mode groovy-mode javap-mode emacs-eclim java-imports
 
-                ;; utils
-                engine-mode undo-tree
+     ;; flycheck
+     flycheck flycheck-tip flycheck-haskell flycheck-pos-tip
+  
+     ;; dired
+     peep-dired dired+ popwin
 
-                ;; lisp
-                paredit elisp-slime-nav
+     ;; utils
+     engine-mode undo-tree
 
-                ;; keybinding 
-                hydra guide-key key-chord avy avy-zap smart-forward
+     ;; lisp
+     paredit elisp-slime-nav
 
-                ;; markup language
-                markdown-mode markdown-mode+ yaml-mode zencoding-mode adoc-mode
+     ;; keybinding 
+     hydra guide-key key-chord avy avy-zap smart-forward
 
-                ;; editing
-                visual-fill-column fill-column-indicator
+     ;; markup language
+     markdown-mode markdown-mode+ yaml-mode zencoding-mode adoc-mode
 
-                ;; autocomplete
-                fuzzy popup company yasnippet auto-complete company-quickhelp
+     ;; editing
+     visual-fill-column fill-column-indicator
 
-                ;; helm
-                helm helm-descbinds helm-swoop helm-projectile helm-ag helm-css-scss helm-gtags helm-ls-git
-                helm-flycheck helm-flyspell helm-flx
+     ;; autocomplete
+     fuzzy popup company yasnippet auto-complete company-quickhelp
 
-                ;; highlighting
-                idle-highlight-mode
+     ;; helm
+     helm helm-descbinds helm-swoop helm-projectile helm-ag helm-css-scss helm-gtags helm-ls-git
+     helm-flycheck helm-flyspell helm-flx
 
-                ;; javascript
-                tern json-mode js2-mode js2-refactor nodejs-repl skewer-mode moz
-                
-                ;; news
-                elfeed
+     ;; highlighting
+     idle-highlight-mode
+     
+     ;; javascript
+     tern json-mode js2-mode js2-refactor nodejs-repl skewer-mode
+     
+     ;; news
+     elfeed
 
-                ;; window mgmt
-                golden-ratio switch-window windmove
+     ;; window mgmt
+     golden-ratio switch-window windmove
+     
+     ;;general
+     keyfreq
 
-                ;;general
-                keyfreq
+     ;; eshell
+     eshell-prompt-extras
 
-                ;; eshell
-                eshell-prompt-extras
+     ;; clojure
+     clojure-mode clojure-mode-extra-font-locking cider paredit paren-face ac-cider
 
-                ;; clojure
-                clojure-mode clojure-mode-extra-font-locking cider paredit paren-face ac-cider
+     ;; git
+     magit magit-gh-pulls git-messenger git-gutter+ with-editor git-timemachine
 
-                ;; git
-                magit magit-gh-pulls git-messenger git-gutter+ with-editor git-timemachine
+     ;; web
+     web-mode emmet-mode web-beautify scss-mode
 
-                ;; web
-                web-mode emmet-mode web-beautify scss-mode
+     ;; org
+     htmlize gnuplot-mode gnuplot org-alert org-present org-bullets deft org-pomodoro
 
-                ;; org
-                htmlize gnuplot-mode gnuplot org-alert org-present org-bullets deft org-pomodoro
-
-                ;; eww
-                eww-lnum
-                
-                ))
+     ;; eww
+     eww-lnum
+  
+     ))
 
 (defvar packages-refreshed? nil)
 
@@ -113,9 +111,16 @@
     (unless packages-refreshed?
       (package-refresh-contents)
       (setq packages-refreshed? t))
-    (package-install pack)))
+    (unwind-protect
+        (condition-case ex
+            (package-install pack)
+          ('error (message "Failed to install package [%s], caught exception: [%s]"
+                           pack ex)))
+      (message "Installed %s" pack))))
 
+;; Load use-package, used for loading packages everywhere else
+(require 'use-package)
+;; Set to t to debug package loading or nil to disable
 (setq use-package-verbose nil)
 
-;; (package-refresh-contents)
 (provide 'init-packages)

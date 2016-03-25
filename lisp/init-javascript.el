@@ -23,9 +23,6 @@
      (append flycheck-disabled-checkers
              '(javascript-jshint)))))
 
-
-
-
 (use-package js2-refactor
   :defer t
   :config
@@ -75,18 +72,6 @@
 ;; enable flycheck for javascript
 (add-hook 'js-mode-hook
 					(lambda () (flycheck-mode t)))
-
-;;mozrepl needs to be installed in firefox
-(use-package moz
-  :config
-  (autoload 'moz-minor-mode "moz" "Mozilla Minor and Inferior Mozilla Modes" t)
-  (add-hook 'javascript-mode-hook 'javascript-custom-setup)
-  (defun javascript-custom-setup ()
-    (moz-minor-mode 1))
-	)
-
-
-
 
 (use-package json-mode 
   :defer t)                             
