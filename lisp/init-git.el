@@ -1,80 +1,52 @@
-  (defun my/magit-commit-all ()
-      "Publish the current file and commit all the current changes."
-      (interactive)
-			(magit-status default-directory)
-      (magit-stage-all)
-      (call-interactively 'magit-log-edit))
-
 (use-package magit
+  :bind (("M-g M-g" . magit-status)
+         ("C-x g" . magit-status))
+  :init (add-hook 'magit-mode-hook 'hl-line-mode)
   :config
-	(progn
-		(setq magit-diff-options '("-b")) ; ignore whitespace
-		(define-key magit-mode-map "#gg" 'endless/load-gh-pulls-mode)
-		(defvar my/magit-limit-to-directory nil "Limit magit status to a specific directory.")
-		(defun my/magit-status-in-directory (directory)
-			"Displays magit status limited to DIRECTORY.
-Uses the current `default-directory', or prompts for a directory
-if called with a prefix argument. Sets `my/magit-limit-to-directory'
-so that it's still active even after you stage a change. Very experimental."
-			(interactive (list ( expand-file-name
-													 (if current-prefix-arg
-															 (read-directory-name "Directory: ")
-														 default-directory))))
-			(setq my/magit-limit-to-directory directory)
-			(magit-status directory))
-		(defadvice magit-insert-untracked-files (around sacha activate)
-			(if my/magit-limit-to-directory
-					(magit-with-section (section untracked 'untracked "Untracked files:" t)
-															(let ((files (cl-mapcan
-																						(lambda (f)
-																							(when (eq (aref f 0) ??) (list f)))
-																						(magit-git-lines
-																						 "status" "--porcelain" "--" my/magit-limit-to-directory))))
-																(if (not files)
-																		(setq section nil)
-																	(dolist (file files)
-																		(setq file (magit-decode-git-path (substring file 3)))
-																		(magit-with-section (section file file)
-																												(insert "\t" file "\n")))
-																	(insert "\n"))))
-				ad-do-it))
+  (setenv "GIT_PAGER" "")
+  (if (file-exists-p  "/usr/local/bin/emacsclient")
+      (setq magit-emacsclient-executable "/usr/local/bin/emacsclient")
+    (setq magit-emacsclient-executable (executable-find "emacsclient")))
+  (defun my/magit-browse ()
+    "Browse to the project's github URL, if available"
+    (interactive)
+    (let ((url (with-temp-buffer
+                 (unless (zerop (call-process-shell-command
+                                 "git remote -v" nil t))
+                   (error "Failed: 'git remote -v'"))
+                 (goto-char (point-min))
+                 (when (re-search-forward
+                        "github\\.com[:/]\\(.+?\\)\\.git" nil t)
+                   (format "https://github.com/%s" (match-string 1))))))
+      (unless url
+        (error "Can't find repository URL"))
+      (browse-url url)))
 
-		(defadvice magit-insert-staged-changes (around sacha activate)
-      "Limit to `my/magit-limit-to-directory' if specified."
-      (if my/magit-limit-to-directory
-          (let ((no-commit (not (magit-git-success "log" "-1" "HEAD"))))
-            (when (or no-commit (magit-anything-staged-p))
-              (let ((magit-current-diff-range (cons "HEAD" 'index))
-                    (base (if no-commit
-                              (magit-git-string "mktree")
-                            "HEAD"))
-                    (magit-diff-options (append '("--cached") magit-diff-options)))
-                (magit-git-insert-section (staged "Staged changes:")
-                                          (apply-partially #'magit-wash-raw-diffs t)
-                                          "diff-index" "--cached" base "--" my/magit-limit-to-directory))))
-        ad-do-it)))
-  :bind (("C-x v d" . magit-status)
-         ("C-x v C-d" . my/magit-status-in-directory)
-         ("C-x v p" . magit-push)
-         ("C-x v c" . my/magit-commit-all)))
+  (define-key magit-mode-map (kbd "C-c C-b") #'my/magit-browse)
+  ;; Magit has its own binding, so re-bind them
+  (bind-key "M-1" #'my/create-or-switch-to-eshell-1 magit-mode-map)
+  (bind-key "M-2" #'my/create-or-switch-to-eshell-2 magit-mode-map)
+  (bind-key "M-3" #'my/create-or-switch-to-eshell-3 magit-mode-map)
+  (bind-key "M-4" #'my/create-or-switch-to-eshell-4 magit-mode-map))
 
-;; From http://endlessparentheses.com/merging-github-pull-requests-from-emacs.html
-(defun endless/load-gh-pulls-mode ()
-  "Start `magit-gh-pulls-mode' only after a manual request."
-  (interactive)
-  (require 'magit-gh-pulls)
-  (add-hook 'magit-mode-hook 'turn-on-magit-gh-pulls)
-  (magit-gh-pulls-mode 1)
-  (magit-gh-pulls-reload))
+(use-package magit-gh-pulls)
 
-(use-package magit-gh-pulls
-  )
-
-(use-package git-messenger
-  :bind (("C-x v m" . git-messenger:popup-message)))
+(use-package git-gutter
+  :defer t
+  :bind (("C-x =" . git-gutter:popup-hunk)
+         ("C-c P" . git-gutter:previous-hunk)
+         ("C-c N" . git-gutter:next-hunk)
+         ("C-x p" . git-gutter:previous-hunk)
+         ("C-x n" . git-gutter:next-hunk)
+         ("C-c G" . git-gutter:popup-hunk))
+  :diminish ""
+  :init
+  (add-hook 'prog-mode-hook 'git-gutter-mode)
+  (add-hook 'org-mode-hook 'git-gutter-mode))
 
 (use-package git-gutter+
   :defer t
+  :disabled t
   :bind (("C-x n" . git-gutter+-next-hunk)
          ("C-x p" . git-gutter+-previous-hunk)
          ("C-x v =" . git-gutter+-show-hunk)

@@ -91,7 +91,7 @@
      clojure-mode clojure-mode-extra-font-locking cider paredit paren-face ac-cider
 
      ;; git
-     magit magit-gh-pulls git-messenger git-gutter+ with-editor git-timemachine
+     magit magit-gh-pulls git-gutter+ with-editor git-timemachine git-gutter
 
      ;; web
      web-mode emmet-mode web-beautify scss-mode
