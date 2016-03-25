@@ -1,5 +1,4 @@
 (use-package js2-mode
-	:ensure t
   :defer t
   :mode (("\\.js\\'" . js2-mode))
 	:config
@@ -28,7 +27,6 @@
 
 
 (use-package js2-refactor
-	:ensure t
   :defer t
   :config
 	(progn
@@ -37,7 +35,6 @@
 	)
 
 (use-package tern
-	:ensure t
   :defer t
   :config
 	(progn
@@ -51,12 +48,10 @@
   (delete-process "Tern"))
 
 (use-package nodejs-repl 
-  :ensure t
   :defer t
 	)
 
 (use-package skewer-mode
-	:ensure t
   :defer t
 	:config
 	(progn
@@ -83,16 +78,17 @@
 
 ;;mozrepl needs to be installed in firefox
 (use-package moz
-	:ensure t
+  :config
+  (autoload 'moz-minor-mode "moz" "Mozilla Minor and Inferior Mozilla Modes" t)
+  (add-hook 'javascript-mode-hook 'javascript-custom-setup)
+  (defun javascript-custom-setup ()
+    (moz-minor-mode 1))
 	)
-(autoload 'moz-minor-mode "moz" "Mozilla Minor and Inferior Mozilla Modes" t)
 
-(add-hook 'javascript-mode-hook 'javascript-custom-setup)
-(defun javascript-custom-setup ()
-  (moz-minor-mode 1))
+
+
 
 (use-package json-mode 
-  :ensure t
   :defer t)                             
 
 (provide 'init-javascript)

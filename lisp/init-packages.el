@@ -40,6 +40,9 @@
                 ;; code-helpers
                 projectile highlight-indentation smartparens smart-tab
 
+                ;; java
+                malabar-mode groovy-mode javap-mode emacs-eclim java-imports
+
                 ;; flycheck
                 flycheck flycheck-tip flycheck-haskell flycheck-pos-tip
                 
@@ -70,6 +73,9 @@
 
                 ;; highlighting
                 idle-highlight-mode
+
+                ;; javascript
+                tern json-mode js2-mode js2-refactor nodejs-repl skewer-mode moz
                 
                 ;; news
                 elfeed
