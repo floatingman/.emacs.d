@@ -94,7 +94,7 @@
 (use-package init-news)
 (use-package init-editing)
 (use-package init-chat)
-(when *is-linux* (use-package init-mail))
+;;(when *is-linux* (use-package init-mail))
 (use-package init-keybinding)
 (use-package init-reading)
 (use-package init-browsing)
