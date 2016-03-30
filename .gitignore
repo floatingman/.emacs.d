@@ -85,3 +85,9 @@ rake.cache
 projectile.cache 
 ido.last 
 
+/helm-history
+/override/cedet/
+/override/org-mode/
+/srecode-map.el
+/tmp/
+
