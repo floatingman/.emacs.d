@@ -312,6 +312,31 @@
   (add-hook 'emacs-lisp-mode-hook #'idle-highlight-mode)
   (add-hook 'clojure-lisp-mode-hook #'idle-highlight-mode))
 
+(use-package beacon
+  :diminish beacon-mode
+  :init (beacon-mode 1)
+  :config
+  (add-to-list 'beacon-dont-blink-major-modes 'eshell-mode))
 
+(use-package eyebrowse
+  :init
+  (progn
+    (defun my/create-eyebrowse-setup ()
+      (interactive)
+      "Create a default window config, if none is present"
+      (when (not (eyebrowse--window-config-present-p 2))
+        ;; there's probably a better way to do this, creating two workspaces
+        (eyebrowse-switch-to-window-config-2)
+        (eyebrowse-switch-to-window-config-1)))
+    (setq eyebrowse-wrap-around t
+          eyebrowse-new-workspace t)
+    (eyebrowse-mode 1)
+    (global-set-key (kbd "C-'") 'eyebrowse-next-window-config)
+    (add-hook 'after-init-hook #'my/create-eyebrowse-setup)))
+
+(use-package smartscan
+     :init (add-hook #'prog-mode-hook #'smartscan-mode)
+     :config
+     (bind-key "M-'" #'other-window smartscan-map))
 
 (provide 'init-general)

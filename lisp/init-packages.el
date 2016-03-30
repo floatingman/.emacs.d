@@ -39,7 +39,7 @@
      sauron
 
      ;; code-helpers
-     projectile smartparens smart-tab ggtags
+     projectile smartparens smart-tab ggtags smartscan eyebrowse
 
      ;; java
      malabar-mode groovy-mode javap-mode emacs-eclim java-imports
