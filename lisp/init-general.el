@@ -175,6 +175,10 @@
 ;; don't warn about opening files unless they're over 25mb
 (setq large-file-warning-threshold (* 25 1024 1024))
 
+
+;; when I select a region and start typing
+(delete-selection-mode 1)
+
 ;; disable marks when changing focus
 (transient-mark-mode 1)
 
