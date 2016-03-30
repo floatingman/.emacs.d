@@ -113,6 +113,26 @@
 	(sit-for 1)
 	)
 
+(use-package sauron
+  :init
+  (setq sauron-max-line-length 120
+        sauron-watch-patterns '("floatingman" "zygocat")
+        sauron-watch-nicks '("floatingman" "zygocat")
+        sauron-frame-geometry "120x48+0+0")
+  ;; filter out IRC spam
+  (defun tsp/hide-irc-user-spam (origin priority msg &optional properties)
+    (or (string-match "^*** Users" msg)))
+  (defun tsp/hide-tweet-counts (origin priority msg &optional properties)
+    (or (string-match "^[0-9]+ new tweets" msg)))
+  (add-hook 'sauron-event-block-functions #'tsp/hide-irc-user-spam)
+  (add-hook 'sauron-event-block-functions #'tsp/hide-tweet-counts)
+
+  (sauron-start-hidden)
+  ;; Turn this off!
+  (remove-hook 'sauron-event-added-functions #'sauron-alert-el-adapter)
+  :commands (sauron-toggle-hide-show)
+  :bind ("M-o" . sauron-toggle-hide-show))
+
 
 (provide 'init-chat)
 ;;; init-chat ends here

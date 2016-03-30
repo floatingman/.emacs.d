@@ -98,6 +98,7 @@
 (use-package init-keybinding)
 (use-package init-reading)
 (use-package init-browsing)
+(use-package init-deft)
 ;;; Post initialization
 ;; start a server only in text mode
 (use-package server

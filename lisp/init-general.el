@@ -312,4 +312,6 @@
   (add-hook 'emacs-lisp-mode-hook #'idle-highlight-mode)
   (add-hook 'clojure-lisp-mode-hook #'idle-highlight-mode))
 
+
+
 (provide 'init-general)

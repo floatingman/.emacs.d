@@ -35,6 +35,9 @@
      ;; chat
      erc-hl-nicks ercn alert twittering-mode
 
+     ;; the all-seeing eye
+     sauron
+
      ;; code-helpers
      projectile smartparens smart-tab ggtags
 
