@@ -42,7 +42,7 @@
      projectile smartparens smart-tab ggtags smartscan eyebrowse
 
      ;; java
-     malabar-mode groovy-mode javap-mode emacs-eclim java-imports
+     malabar-mode groovy-mode emacs-eclim java-imports
 
      ;; python
      hy-mode virtualenvwrapper
@@ -60,7 +60,7 @@
      paredit elisp-slime-nav
 
      ;; keybinding 
-     hydra guide-key key-chord avy avy-zap smart-forward
+     guide-key avy avy-zap smart-forward
 
      ;; markup language
      markdown-mode markdown-mode+ yaml-mode zencoding-mode adoc-mode
