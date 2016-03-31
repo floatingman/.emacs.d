@@ -285,7 +285,7 @@ With prefix P, create local abbrev. Otherwise it will be global."
   (interactive)
   ;; these variables must be set before load helm-gtags
   ;; you can change to any prefix key of your choice
-  (setq helm-gtags-prefix-key "C-cg")
+  (setq helm-gtags-prefix-key "C-c g")
   (setq helm-gtags-ignore-case t
         helm-gtags-auto-update t
         helm-gtags-use-input-at-cursor t
