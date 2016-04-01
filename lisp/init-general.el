@@ -320,6 +320,7 @@
 
 (use-package eyebrowse
   :init
+  (setq eyebrowse-keymap-prefix (kbd "C-c C-b"))
   (progn
     (defun my/create-eyebrowse-setup ()
       (interactive)
@@ -332,6 +333,7 @@
           eyebrowse-new-workspace t)
     (eyebrowse-mode 1)
     (global-set-key (kbd "C-'") 'eyebrowse-next-window-config)
+    
     (add-hook 'after-init-hook #'my/create-eyebrowse-setup)))
 
 (use-package smartscan
