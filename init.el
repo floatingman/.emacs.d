@@ -99,6 +99,7 @@
 (use-package init-reading)
 (use-package init-browsing)
 (use-package init-deft)
+(use-package init-hugo)
 ;;; Post initialization
 ;; start a server only in text mode
 (use-package server
