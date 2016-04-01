@@ -8,8 +8,7 @@ I got tired of my big fat emacs config file.  I felt that my config was growing 
 2. git submodule init
 3. git submodule update
 4. cd into override/org-mode and run make
-5. cd into override/cedet and run make
-* on Windows run "emacs -Q -l cedet-build.el -f cedet-build" instead of make
+5. cd into override/cedet and run make or on Windows run "emacs -Q -l cedet-build.el -f cedet-build" instead of make
 
 ## Customizations 
 I have a symbolic linked directory, "personal", in my home directory to a dropbox folder I use for synchronizing my customizations, news feeds, passwords, etc.
