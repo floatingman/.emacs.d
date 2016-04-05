@@ -375,7 +375,7 @@ Deletes whitespace at join."
 (global-set-key (kbd "H-'") 'other-window)
 (global-set-key [C-tab] 'other-window)
 (global-set-key [C-S-tab] 'my/other-window-backwards)
-d
+
 (defun stop-using-minibuffer ()
   "kill the minibuffer"
   (when (and (>= (recursion-depth) 1) (active-minibuffer-window))
