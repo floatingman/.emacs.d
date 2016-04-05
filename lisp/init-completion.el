@@ -216,6 +216,25 @@ With prefix P, create local abbrev. Otherwise it will be global."
 
 (require 'skeleton)
 
+(define-skeleton dn-org-html-publish-header
+  "Insert a standard header for org publish"
+  "Title: "
+  "#+TITLE: " str \n
+  "#+AUTHOR: " (user-full-name) \n
+  "#+EMAIL: " user-mail-address \n
+ 
+  "#+OPTIONS: ':t *:t -:t ::t <:t H:3 \n:nil ^:t arch:headline author:t c:nil
+   #+OPTIONS: creator:comment d:(not LOGBOOK) date:t e:t email:nil f:t inline:t
+   #+OPTIONS: num:t p:nil pri:nil stat:t tags:t tasks:t tex:t timestamp:t toc:t
+   #+OPTIONS: todo:t |:t
+   #+CREATOR: Emacs 24.3.50.3 (Org mode 8.0.3)
+   #+DESCRIPTION:
+   #+EXCLUDE_TAGS: noexport
+   #+KEYWORDS:
+   #+LANGUAGE: en
+   #+SELECT_TAGS: export"
+  )
+
 (define-skeleton mlh-org-header
   "Insert a standard header for org-mode files"
   "Title: "
