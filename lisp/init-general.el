@@ -17,12 +17,7 @@
         search-ring
         regexp-search-ring))
 (setq-default save-place t)
-;; Window configuration
-;; (when window-system
-;;  (tooltip-mode -1)
-;;  (tool-bar-mode -1)
-;;  (menu-bar-mode 1)
-;;  (scroll-bar-mode -1))
+
 
 
 ;; setup path
@@ -198,11 +193,9 @@
 (when (functionp 'blink-cursor-mode)
   (blink-cursor-mode -1))
 
-(use-package mouse-copy
-  :bind
-  ("C-down-mouse-1" . mouse-drag-secondary-pasting)
-  ("C-S-down-mouse-1" . mouse-drag-secondary-moving)
-  )
+(require 'mouse-copy)
+(global-set-key [C-down-mouse-1] 'mouse-drag-secondary-pasting)
+(global-set-key [C-S-down-mouse-1] 'mouse-drag-secondary-moving)
 
 ;; no beeping no startup messages
 (setq ring-bell-function (lambda ()))
