@@ -91,3 +91,4 @@ ido.last
 /.emacs-secrets.el
 /tmp
 srecode-map.el
+/games/snake-scores

@@ -57,7 +57,7 @@
           'append)
 
 ;;4.4 Agenda Setup
-(setq org-agenda-files (quote ("~/personal/org" "~/personal/org/danielnewmandesign")))
+(setq org-agenda-files (quote ("~/personal/org" "~/personal/org/danielnewmandesign" "~/personal/org/clients")))
 
 
 ;; flyspell mode for spell checking everywhere

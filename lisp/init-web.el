@@ -11,10 +11,12 @@
 (use-package web-mode
   :mode (("\\.html\\'"       . web-mode)
          ("\\.ejs\\'"        . web-mode)
-         ("\\.html\\.erb\\'" . web-mode)
+         ("\\.html?\\'"      . web-mode)
+         ("\\.erb\\'"        . web-mode)
          ("\\.mustache\\'"   . web-mode)
          ("\\.jinja\\'"      . web-mode)
-         ("\\.php\\'"        . web-mode))
+         ("\\.php\\'"        . web-mode)
+         ("\\.js[x]?\\'"     . web-mode))
   :defer t
   :config
   (progn
