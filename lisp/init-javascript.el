@@ -17,6 +17,7 @@
     'flycheck
   (lambda ()
     (flycheck-add-mode 'javascript-eslint 'js2-mode)
+    (flycheck-add-mode 'javascript-eslint 'web-mode)
     ;; Disable jshint
     (setq-default
      flycheck-disabled-checkers
