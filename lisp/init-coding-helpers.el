@@ -76,7 +76,6 @@
 (electric-layout-mode 1)
 
 (use-package smartparens
-  :disabled t
   :defer 5
   :diminish smartparens-mode
   :bind (("M-9" . sp-backward-sexp)
@@ -87,7 +86,8 @@
 	:config
   (add-to-list 'sp-sexp-suffix '(json-mode regex ""))
   (add-to-list 'sp-sexp-suffix '(es-mode regex ""))
-
+  (add-hook 'js-mode-hook #'smartparens-mode)
+  (add-hook 'web-mode-hook #'smartparens-mode)
 
   (use-package smartparens-config)
 
@@ -142,7 +142,9 @@
                  (sp-local-pair "<" ">"))
 
   (sp-with-modes sp--lisp-modes
-                 (sp-local-pair "(" nil :bind "C-(")))
+                 (sp-local-pair "(" nil :bind "C-("))
+
+  (sp-local-pair 'web-mode "<" nil :when '(sp-web-mode-is-code-context)))
 
 
 ;; flycheck for all your fly inspection needs

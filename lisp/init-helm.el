@@ -88,6 +88,7 @@
   (add-hook 'helm-minibuffer-set-up-hook 'helm-hide-minibuffer-maybe)
 
   (setq helm-truncate-lines t
+        ;;helm-follow-mode-persistent t
         ;; may be overridden if 'ggrep' is in path (see below)
         helm-grep-default-command
         "grep -a -d skip %e -n%cH -e %p %f"

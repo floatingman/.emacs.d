@@ -24,7 +24,20 @@
     (setq web-mode-code-indent-offset 2)
     (setq web-mode-css-indent-offset 2)
     (setq web-mode-enable-current-element-highlight t)
-    (setq web-mode-enable-auto-pairing 1)))
+    (setq web-mode-enable-auto-pairing 1)
+    (defun my-web-mode-hook ()
+      (setq web-mode-enable-auto-pairing nil))
+    
+    (add-hook 'web-mode-hook  'my-web-mode-hook)
+
+    (defun sp-web-mode-is-code-context (id action context)
+      (and (eq action 'insert)
+           (not (or (get-text-property (point) 'part-side)
+                    (get-text-property (point) 'block-side)))))
+
+    
+    ))
+
 
 (use-package emmet-mode
   :defer t
