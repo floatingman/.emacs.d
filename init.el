@@ -22,11 +22,11 @@
 
 ;; Load a development version of CEDET instead of built-in one
 (setq cedetpath "override/cedet/cedet-devel-load.el")
-(when (file-exists-p (expand-file-name cedetpath user-emacs-directory))
-  (load-file (expand-file-name cedetpath user-emacs-directory))
-  ;; Use the full Java 1.5 grammar to parse Java files
-  (autoload 'wisent-java-default-setup "semantic/wisent/java"
-    "Hook run to setup Semantic in `java-mode'." nil nil))
+;; (when (file-exists-p (expand-file-name cedetpath user-emacs-directory))
+;;   (load-file (expand-file-name cedetpath user-emacs-directory))
+;;   ;; Use the full Java 1.5 grammar to parse Java files
+;;   (autoload 'wisent-java-default-setup "semantic/wisent/java"
+;;     "Hook run to setup Semantic in `java-mode'." nil nil))
 
 ;; load development version of org-mode
 (setq orgpath "override/org-mode/lisp/org.el")
