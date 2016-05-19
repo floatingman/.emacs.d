@@ -1,3 +1,16 @@
+(use-package emacs-eclim
+  :ensure t
+  :init
+  (progn
+    (global-eclim-mode)
+    (require 'eclimd)
+    (setq eclim-eclipse-dirs '("~/apps/eclipse")
+          eclim-executable "~/apps/eclipse/eclim")
+    (setq help-at-pt-display-when-idle t)
+    (setq help-at-pt-timer-delay 0.1)
+    (help-at-pt-set-timer)
+    ))
+
 ;; via http://emacs.stackexchange.com/questions/17327/how-to-have-c-offset-style-correctly-detect-a-java-constructor-and-change-indent
 (defun my/point-in-defun-declaration-p ()
   (let ((bod (save-excursion (c-beginning-of-defun)
