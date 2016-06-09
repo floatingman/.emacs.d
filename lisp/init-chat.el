@@ -42,7 +42,8 @@
 						erc-autojoin-channels-alist '(("freenode.net"
 																					 "#org-mode"
 																					 "#emacs"
-																					 "#emacs-beginners"))
+																					 "#emacs-beginners"
+                                           "#selenium"))
 						)
 
 			(defun erc-cmd-OPME ()

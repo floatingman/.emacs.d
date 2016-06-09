@@ -97,6 +97,7 @@
 ;;(when *is-linux* (use-package init-mail))
 (use-package init-keybinding)
 (use-package init-reading)
+(use-package init-flymake)
 (use-package init-browsing)
 (use-package init-deft)
 (use-package init-hugo)

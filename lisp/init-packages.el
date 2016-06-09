@@ -79,7 +79,7 @@
      idle-highlight-mode
      
      ;; javascript
-     tern json-mode js2-mode js2-refactor nodejs-repl skewer-mode
+     tern json-mode js2-mode js2-refactor nodejs-repl skewer-mode jsx-mode
      
      ;; news
      elfeed

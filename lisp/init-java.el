@@ -70,7 +70,7 @@
   (if (my/prev-line-call-with-no-args-p) '++ 0))
 
 (defconst intellij-java-style
-  '((c-basic-offset . 4)
+  '((c-basic-offset . 2)
     (c-comment-only-line-offset . (0 . 0))
     ;; the following preserves Javadoc starter lines
     (c-offsets-alist
@@ -113,9 +113,11 @@
   ;; Generic java stuff things
   (setq-local fci-rule-column 99)
   (setq-local fill-column 140)
-  ;; remove the stupid company-eclim backend
-  (when (boundp 'company-backends)
-    (delete 'company-eclim company-backends)))
+  (require 'company)
+  (require 'company-emacs-eclim)
+  (company-emacs-eclim-setup)
+  (setq company-emacs-eclim-ignore-case t)
+  )
 
 (add-hook 'java-mode-hook #'setup-java)
 
