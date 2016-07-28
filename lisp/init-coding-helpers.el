@@ -192,4 +192,6 @@
           ;; auto-save bookmarks
           bookmark-save-flag 1)))
 
+(use-package google-c-style)
+
 (provide 'init-coding-helpers)

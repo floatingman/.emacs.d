@@ -9,6 +9,8 @@
   (add-to-list 'sml/replacer-regexp-list '("^~/es/x-plugins/" ":X:"))
   (add-to-list 'sml/replacer-regexp-list '("^~/es/elasticsearch/" ":ES:") t))
 
+;set line highlight to a more subtle gray
+(set-face-background hl-line-face "gray13")
 
 (setq ns-use-srgb-colorspace t)
 
