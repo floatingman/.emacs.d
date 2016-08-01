@@ -10,6 +10,7 @@
   (add-to-list 'sml/replacer-regexp-list '("^~/es/elasticsearch/" ":ES:") t))
 
 ;set line highlight to a more subtle gray
+(global-hl-line-mode 1)
 (set-face-background hl-line-face "gray13")
 
 (setq ns-use-srgb-colorspace t)
