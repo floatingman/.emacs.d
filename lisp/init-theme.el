@@ -10,8 +10,6 @@
   (add-to-list 'sml/replacer-regexp-list '("^~/es/elasticsearch/" ":ES:") t))
 
 ;set line highlight to a more subtle gray
-(global-hl-line-mode 1)
-(set-face-background hl-line-face "gray13")
 
 (setq ns-use-srgb-colorspace t)
 
@@ -31,7 +29,11 @@
     :disabled t
     :init (load-theme 'apropospriate-dark t))
   (use-package color-theme-sanityinc-tomorrow
-    :init (load-theme 'sanityinc-tomorrow-night t))
+    :init
+    (load-theme 'sanityinc-tomorrow-night t)
+    (global-hl-line-mode 1)
+    (set-face-background hl-line-face "gray13")
+    )
   (use-package tao-theme
     :disabled t
     :init (load-theme 'tao-yin t)))
@@ -42,7 +44,6 @@
     :disabled t
     :init (load-theme 'leuven t))
   (use-package color-theme-sanityinc-tomorrow
-    :disabled t
     :init (load-theme 'sanityinc-tomorrow-day t))
   (use-package solarized-theme
     :disabled t
@@ -51,6 +52,7 @@
     :disabled t
     :init (load-theme 'material-light t))
   (use-package tao-theme
+    :disabled t
     :init (load-theme 'tao-yang t)))
 
 (if (eq my/background 'dark)
