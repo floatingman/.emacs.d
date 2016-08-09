@@ -22,6 +22,13 @@
 (require 'ox-latex)
 (require 'ox-ascii)
 
+(use-package org-bullets
+  :ensure t
+  :init
+  (progn
+    (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+    ))
+
 
 ;;18.14 Habit Tracking this needs to be around the top after loading the libraries
 ;;Enable habit tracking (and a bunch of other modules)

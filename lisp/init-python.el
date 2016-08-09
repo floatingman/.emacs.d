@@ -1,8 +1,16 @@
-(use-package python
+(use-package elpy
   :defer t
+  :ensure t
   :config
-  (define-key python-mode-map (kbd "C-c C-z") 'run-python)
-  (define-key python-mode-map (kbd "<backtab>") 'python-back-indent))
+  (elpy-enable)
+  )
+
+(use-package jedi
+  :defer t
+  :ensure t
+  :init
+  (add-hook 'python-mode-hook 'jedi:setup)
+  (add-hook 'python-mode-hook 'jedi:ac-setup))
 
 (use-package virtualenvwrapper
   :defer t

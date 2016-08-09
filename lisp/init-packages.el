@@ -45,7 +45,7 @@
      malabar-mode groovy-mode emacs-eclim java-imports
 
      ;; python
-     hy-mode virtualenvwrapper
+     hy-mode virtualenvwrapper jedi elpy
 
      ;; flycheck
      flycheck flycheck-tip flycheck-haskell flycheck-pos-tip

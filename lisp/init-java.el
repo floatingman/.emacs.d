@@ -113,10 +113,10 @@
   ;; Generic java stuff things
   (setq-local fci-rule-column 99)
   (setq-local fill-column 140)
-  (require 'company)
-  (require 'company-emacs-eclim)
-  (company-emacs-eclim-setup)
-  (setq company-emacs-eclim-ignore-case t)
+  ;(require 'company)
+  ;(require 'company-emacs-eclim)
+  ;(company-emacs-eclim-setup)
+  ;(setq company-emacs-eclim-ignore-case t)
   )
 
 (add-hook 'java-mode-hook #'setup-java)

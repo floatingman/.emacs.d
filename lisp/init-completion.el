@@ -1,4 +1,13 @@
+(use-package auto-complete
+  :ensure t
+  :init
+  (progn
+    (ac-config-default)
+    (global-auto-complete-mode t)
+    ))
+
 (use-package company
+  :disabled t
   :diminish company-mode
   :bind ("C-." . company-complete)
   :init
@@ -29,42 +38,48 @@
 
 ;; I also need some code so yasnippet and company don’t step on each other’s toes when it comes to the TAB key:
 
-(defun check-expansion ()
-  (save-excursion
-    (if (looking-at "\\_>") t
-      (backward-char 1)
-      (if (looking-at "\\.") t
-        (backward-char 1)
-        (if (looking-at "->") t nil)))))
+;; (defun check-expansion ()
+;;   (save-excursion
+;;     (if (looking-at "\\_>") t
+;;       (backward-char 1)
+;;       (if (looking-at "\\.") t
+;;         (backward-char 1)
+;;         (if (looking-at "->") t nil)))))
 
-(defun do-yas-expand ()
-  (let ((yas/fallback-behavior 'return-nil))
-    (yas/expand)))
+;; (defun do-yas-expand ()
+;;   (let ((yas/fallback-behavior 'return-nil))
+;;     (yas/expand)))
 
-(defun tab-indent-or-complete ()
-  "If in the minibuffer, complete there. If a tab needs to be
-inserted, do that, otherwise check if either a yasnippet should
-be expanded or try company completion if not."
-  (interactive)
-  (if (minibufferp)
-      (minibuffer-complete)
-    (if (or (not yas-minor-mode)
-            (null (do-yas-expand)))
-        (if (check-expansion)
-            (company-complete-common)
-          (indent-for-tab-command)))))
+;; (defun tab-indent-or-complete ()
+;;   "If in the minibuffer, complete there. If a tab needs to be
+;; inserted, do that, otherwise check if either a yasnippet should
+;; be expanded or try company completion if not."
+;;   (interactive)
+;;   (if (minibufferp)
+;;       (minibuffer-complete)
+;;     (if (or (not yas-minor-mode)
+;;             (null (do-yas-expand)))
+;;         (if (check-expansion)
+;;             (company-complete-common)
+;;           (indent-for-tab-command)))))
 
-;; ಠ_ಠ yasnippet
-(add-hook 'yas-minor-mode-hook
-          (lambda ()
-            (local-set-key [tab] 'tab-indent-or-complete)))
+;; ;; ಠ_ಠ yasnippet
+;; (add-hook 'yas-minor-mode-hook
+;;           (lambda ()
+;;             (local-set-key [tab] 'tab-indent-or-complete)))
 
+
+(use-package org-ac
+  :ensure t
+  :init (progn
+          (require 'org-ac)
+          (org-ac/config-default)))
 
 
 (use-package yasnippet
-  :disabled t
   :defer t
   :init
+  (yas-global-mode 1)
   (setq yas-snippet-dirs "~/.emacs.d/site-lisp/yasnippet-snippets")
   (add-hook 'org-mode-hook #'yas-minor-mode)
   (add-hook 'prog-mode-hook #'yas-minor-mode)
@@ -76,7 +91,6 @@ be expanded or try company completion if not."
 
 ;;use abbrev to correct misspellings
 (use-package abbrev
-  :disabled t
   :diminish abbrev-mode
   :init (add-hook 'prog-mode-hook #'abbrev-mode)
   :defer 30
