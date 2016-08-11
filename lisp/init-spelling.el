@@ -21,11 +21,13 @@
 (add-to-list 'ispell-skip-region-alist '("#\\+BEGIN_EXAMPLE" . "#\\+END_EXAMPLE"))
 
 (use-package flyspell
+  :ensure t
   :defer t
   :diminish ""
   :init (add-hook 'prog-mode-hook #'flyspell-prog-mode)
   :config
   (use-package helm-flyspell
+    :ensure t
     :init
     (define-key flyspell-mode-map (kbd "M-S") #'helm-flyspell-correct)))
 

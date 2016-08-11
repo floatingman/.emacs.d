@@ -7,6 +7,7 @@
 (add-hook 'ielm-mode-hook #'my/turn-on-paredit-and-eldoc)
 
 (use-package eldoc
+  :ensure t
   :diminish eldoc-mode
   :config
   (setq eldoc-idle-delay 0.3)
@@ -29,6 +30,7 @@
 (define-key lisp-interaction-mode-map (kbd "C-c C-z") 'ielm-other-window)
 
 (use-package elisp-slime-nav
+  :ensure t
   :diminish elisp-slime-nav-mode
   :init (add-hook 'emacs-lisp-mode-hook #'elisp-slime-nav-mode))
 

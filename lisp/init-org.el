@@ -3,7 +3,8 @@
 ;; in order to update it more easely
 ;;3.1 installing org-mode
 
-(use-package org-pomodoro )
+(use-package org-pomodoro
+  :ensure t)
 
 
 

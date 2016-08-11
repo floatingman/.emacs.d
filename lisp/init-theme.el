@@ -1,4 +1,5 @@
 (use-package smart-mode-line
+  :ensure t
   :init
   (progn
     (setq sml/theme my/background)
@@ -16,6 +17,7 @@
 (defun dakrone-dark ()
   (interactive)
   (use-package moe-theme
+    :ensure t
     :disabled t
     :commands (moe-dark moe-light)
     :init
@@ -23,35 +25,44 @@
     (setq moe-theme-highlight-buffer-id t)
     (moe-dark))
   (use-package material-theme
+    :ensure t
     :disabled t
     :init (load-theme 'material t))
   (use-package apropospriate-theme
+    :ensure t
     :disabled t
     :init (load-theme 'apropospriate-dark t))
   (use-package color-theme-sanityinc-tomorrow
+    :ensure t
     :init
     (load-theme 'sanityinc-tomorrow-night t)
     (global-hl-line-mode 1)
     (set-face-background hl-line-face "gray13")
     )
   (use-package tao-theme
+    :ensure t
     :disabled t
     :init (load-theme 'tao-yin t)))
 
 (defun dakrone-light ()
   (interactive)
   (use-package leuven-theme
+    :ensure t
     :disabled t
     :init (load-theme 'leuven t))
   (use-package color-theme-sanityinc-tomorrow
+    :ensure t
     :init (load-theme 'sanityinc-tomorrow-day t))
   (use-package solarized-theme
+    :ensure t
     :disabled t
     :init (load-theme 'solarized-light t))
   (use-package material-theme
+    :ensure t
     :disabled t
     :init (load-theme 'material-light t))
   (use-package tao-theme
+    :ensure t
     :disabled t
     :init (load-theme 'tao-yang t)))
 
@@ -88,6 +99,7 @@
 (setq-default indicate-buffer-boundaries 'right)
 
 (use-package symon
+  :ensure t
   :if window-system
   :disabled t
   :init

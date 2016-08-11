@@ -6,35 +6,37 @@
     (global-auto-complete-mode t)
     ))
 
-(use-package company
-  :disabled t
-  :diminish company-mode
-  :bind ("C-." . company-complete)
-  :init
-  (add-hook 'after-init-hook #'global-company-mode)
-  (use-package company-quickhelp
-    :init
-    (add-hook 'company-mode-hook #'company-quickhelp-mode)
-    :config
-    (setq company-quickhelp-delay 1.0))
-  :config
-  (setq company-idle-delay 0.2
-        ;; min prefix of 3 chars
-        company-minimum-prefix-length 3
-        ;; wrap completions around
-        company-selection-wrap-around t
-        ;; don't show numbers in completion
-        company-show-numbers nil
-        ;; don't downcase dabbrev suggestions
-        company-dabbrev-downcase nil
-        ;; sort completions by occurrence
-        company-transformers '(company-sort-by-occurrence))
-  (bind-keys :map company-active-map
-             ("C-n" . company-select-next)
-             ("C-p" . company-select-previous)
-             ("C-d" . company-show-doc-buffer)
-             ("C-l" . company-show-location)
-             ("<tab>" . company-complete)))
+;; (use-package company
+;;   :disabled t
+;;   :ensure t
+;;   :diminish company-mode
+;;   :bind ("C-." . company-complete)
+;;   :init
+;;   (add-hook 'after-init-hook #'global-company-mode)
+;;   (use-package company-quickhelp
+;;     :ensure t
+;;     :init
+;;     (add-hook 'company-mode-hook #'company-quickhelp-mode)
+;;     :config
+;;     (setq company-quickhelp-delay 1.0))
+;;   :config
+;;   (setq company-idle-delay 0.2
+;;         ;; min prefix of 3 chars
+;;         company-minimum-prefix-length 3
+;;         ;; wrap completions around
+;;         company-selection-wrap-around t
+;;         ;; don't show numbers in completion
+;;         company-show-numbers nil
+;;         ;; don't downcase dabbrev suggestions
+;;         company-dabbrev-downcase nil
+;;         ;; sort completions by occurrence
+;;         company-transformers '(company-sort-by-occurrence))
+;;   (bind-keys :map company-active-map
+;;              ("C-n" . company-select-next)
+;;              ("C-p" . company-select-previous)
+;;              ("C-d" . company-show-doc-buffer)
+;;              ("C-l" . company-show-location)
+;;              ("<tab>" . company-complete)))
 
 ;; I also need some code so yasnippet and company don’t step on each other’s toes when it comes to the TAB key:
 
@@ -77,17 +79,12 @@
 
 
 (use-package yasnippet
-  :defer t
+  :ensure t
   :init
   (yas-global-mode 1)
   (setq yas-snippet-dirs "~/.emacs.d/site-lisp/yasnippet-snippets")
-  (add-hook 'org-mode-hook #'yas-minor-mode)
-  (add-hook 'prog-mode-hook #'yas-minor-mode)
   :diminish yas-minor-mode
-  :commands (yas-expand yas-minor-mode)
-  :functions (yas-guess-snippet-directories yas-table-name)
-  :defines (yas-guessed-modes)
-  :mode ("/\\.emacs\\.d/snippets/" . snippet-mode))
+  )
 
 ;;use abbrev to correct misspellings
 (use-package abbrev
@@ -121,17 +118,18 @@ With prefix P, create local abbrev. Otherwise it will be global."
 (setq dabbrev-friend-buffer-function 'sanityinc/dabbrev-friend-buffer)
 
 ;; use smart tab for completion everywhere except erc, mu4e, and shell
-(use-package smart-tab
-  :defer t
-  :diminish ""
-  :init (global-smart-tab-mode 1)
-  :config
-  (progn
-    (add-to-list 'smart-tab-disabled-major-modes 'mu4e-compose-mode)
-    (add-to-list 'smart-tab-disabled-major-modes 'erc-mode)
-    (add-to-list 'smart-tab-disabled-major-modes 'shell-mode)))
+;; (use-package smart-tab
+;;   :defer t
+;;   :diminish ""
+;;   :init (global-smart-tab-mode 1)
+;;   :config
+;;   (progn
+;;     (add-to-list 'smart-tab-disabled-major-modes 'mu4e-compose-mode)
+;;     (add-to-list 'smart-tab-disabled-major-modes 'erc-mode)
+;;     (add-to-list 'smart-tab-disabled-major-modes 'shell-mode)))
 
 (use-package popwin
+  :ensure t
   :commands popwin-mode
   :init (popwin-mode 1)
   :config
@@ -325,6 +323,7 @@ With prefix P, create local abbrev. Otherwise it will be global."
         helm-gtags-pulse-at-cursor t
         helm-gtags-suggested-key-mapping t)
   (use-package helm-gtags
+    :ensure t
     :init (helm-gtags-mode t)
     :diminish "")
   ;; key bindings
@@ -347,6 +346,7 @@ With prefix P, create local abbrev. Otherwise it will be global."
   (setq ggtags-completing-read-function nil))
 
 (use-package ggtags
+  :ensure t
   :defer t
   :init
   (progn

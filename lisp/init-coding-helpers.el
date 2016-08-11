@@ -1,6 +1,7 @@
 (defun my/setup-semantic-mode ()
   (interactive)
   (use-package semantic
+    :ensure t
     :init
     (require 'semantic/ia)
     (require 'semantic/wisent)
@@ -12,6 +13,7 @@
 (global-set-key (kbd "RET") 'newline-and-indent)
 
 (use-package paredit
+  :ensure t
   :commands paredit-mode
   :diminish "()"
   :config
@@ -26,6 +28,7 @@
 
 ;;Projects
 (use-package projectile
+  :ensure t
   :diminish projectile-mode
   :config
   (progn
@@ -160,7 +163,7 @@
   (progn
     (require 'smartparens-config)
     (require 'smartparens-html)
-    (require 'smartparens-python)
+    ;;(require 'smartparens-python)
     (require 'smartparens-latex)
     (smartparens-global-mode t)
     (show-smartparens-global-mode t)
@@ -168,6 +171,7 @@
 
 ;; flycheck for all your fly inspection needs
 (use-package flycheck
+  :ensure t
   :defer 5
   :bind (("M-g M-n" . flycheck-next-error)
          ("M-g M-p" . flycheck-previous-error)
@@ -177,12 +181,13 @@
   :config
 	(progn
 		(setq-default flycheck-disabled-checkers '(emacs-lisp-checkdoc json-jsonlint json-python-json))
-    (use-package flycheck-pos-tip
-      :init (flycheck-pos-tip-mode))
-    (use-package helm-flycheck
-      :init (define-key flycheck-mode-map (kbd "C-c ! h") 'helm-flycheck))
-    (use-package flycheck-haskell
-      :init (add-hook 'flycheck-mode-hook #'flycheck-haskell-setup))))
+		(use-package flycheck-pos-tip
+		  :ensure t
+		  :init (flycheck-pos-tip-mode))
+		(use-package helm-flycheck
+		  :ensure t
+		  :init (define-key flycheck-mode-map (kbd "C-c ! h") 'helm-flycheck))
+		))
 
 (setq vc-handled-backends '(SVN Git))
 
@@ -198,19 +203,24 @@
 (add-hook 'prog-mode-hook #'my/add-watchwords)
 
 (use-package subword
+  :ensure t
   :diminish subword-mode)
 
 (use-package log4j-mode
-  :init (add-hook #'log4j-mode-hook #'my/turn-on-viewing-mode))
+  :init
+  (add-hook #'log4j-mode-hook #'my/turn-on-viewing-mode))
 
-(use-package bookmark+
-  :defer 10
-  :config
-  (progn
-    (setq bookmark-version-control t
-          ;; auto-save bookmarks
-          bookmark-save-flag 1)))
+  (use-package bookmark+
+    :ensure t
+    :defer 10
+    :config
+    (progn
+      (setq bookmark-version-control t
+            ;; auto-save bookmarks
+            bookmark-save-flag 1)))
 
-(use-package google-c-style)
+(use-package google-c-style
+  :ensure t
+  )
 
 (provide 'init-coding-helpers)

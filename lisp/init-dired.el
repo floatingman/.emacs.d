@@ -10,7 +10,8 @@
       :config
       (add-to-list 'dired-omit-extensions ".DS_Store"))
     (customize-set-variable 'diredp-hide-details-initially-flag nil)
-    (use-package dired+)
+    (use-package dired+
+      :ensure t)
     (use-package dired-aux
       :init (use-package dired-async))
     (put 'dired-find-alternate-file 'disabled nil)
@@ -60,6 +61,7 @@
 
 ;; peep-dired seems cool
 (use-package peep-dired
+  :ensure t
   :defer t ; don't acccess `dired-mode-map' until `peep-dired' is loaded
   :bind (:map dired-mode-map
               ("P" . peep-dired)))

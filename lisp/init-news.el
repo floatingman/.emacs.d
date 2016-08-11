@@ -1,4 +1,5 @@
 (use-package elfeed
+  :ensure t
 	:config
 	(progn
 		(setq-default elfeed-search-filter "@1-month-ago +unread ")

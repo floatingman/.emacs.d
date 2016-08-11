@@ -1,5 +1,5 @@
-
 (use-package engine-mode
+  :ensure t
   :config
   (progn
     (defengine mail "https://mail.google.com/mail/u/0/#search/%s" :keybinding "m")
@@ -9,6 +9,7 @@
     (engine-mode)))
 
 (use-package undo-tree
+  :ensure t
   :diminish undo-tree-mode
   :config
   (progn

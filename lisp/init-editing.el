@@ -3,7 +3,8 @@
 ;;; Commentary:
 
 ;;; Code:
-(use-package markdown-mode)
+(use-package markdown-mode
+  :ensure t)
 
 
 ;; this is for fun, a prose checker
@@ -27,11 +28,13 @@
 (add-hook 'org-mode-hook (lambda () (set-fill-column 120)))
 
 (use-package visual-fill-column
+  :ensure t
   :config
 	(progn
 		(global-visual-fill-column-mode)))
 
-(use-package fill-column-indicator)
+(use-package fill-column-indicator
+  :ensure t)
 
 ;; Whitespace mode from the awesome site http://writequit.org/org/settings.html
 (setq whitespace-line-column 140)

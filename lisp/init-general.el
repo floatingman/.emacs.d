@@ -22,6 +22,7 @@
 
 ;; setup path
 (use-package exec-path-from-shell
+  :ensure t
   :defer t
   :init
   (progn
@@ -33,6 +34,7 @@
 
 ;;Help
 (use-package guide-key
+  :ensure t
   :diminish guide-key-mode
   :config
   (progn
@@ -41,6 +43,7 @@
 
 ;; Moving between windows
 (use-package windmove
+  :ensure t
   :bind
   (("<f2> <right>" . windmove-right)
    ("<f2> <left>" . windmove-left)
@@ -50,6 +53,7 @@
 
 ;; Split windows by golden ratio
 (use-package golden-ratio
+  :ensure t
   :diminish golden-ratio-mode
   :defer t
 	:config
@@ -62,10 +66,12 @@
   (add-to-list 'golden-ratio-inhibit-functions #'my/helm-alive-p))
 
 (use-package switch-window
+  :ensure t
   :bind (("C-x o" . switch-window)))
 
 ;;Recent files found at awesome site http://writequit.org/org/settings.html
 (use-package recentf
+  :ensure t
   :defer 10
   :commands (recentf-mode
              recentf-add-file
@@ -131,6 +137,7 @@
 
 ;; find out what commands I use most frequently.
 (use-package keyfreq
+  :ensure t
   :config
   (progn
     (setq keyfreq-excluded-commands
@@ -262,6 +269,7 @@
 
 ;; use winner move to undo window configurations with C-c LEFT
 (use-package winner
+  :ensure t
   :init (winner-mode 1))
 
 ;; quit emacs superfast when the fuzz shows up
@@ -280,6 +288,7 @@
 (setq save-interprogram-paste-before-kill t)
 
 (use-package saveplace
+  :ensure t
   :defer t
   :init
   (setq-default save-place t)
@@ -287,6 +296,7 @@
 
 ;; shows the number of search hits in the modeline
 (use-package anzu
+  :ensure t
   :defer t
   :bind ("M-%" . anzu-query-replace-regexp)
   :config
@@ -300,21 +310,25 @@
 
 
 (use-package helm-flx
+  :ensure t
   :init (helm-flx-mode +1))
 
 (use-package idle-highlight-mode
+  :ensure t
   :init
   (add-hook 'java-mode-hook #'idle-highlight-mode)
   (add-hook 'emacs-lisp-mode-hook #'idle-highlight-mode)
   (add-hook 'clojure-lisp-mode-hook #'idle-highlight-mode))
 
 (use-package beacon
+  :ensure t
   :diminish beacon-mode
   :init (beacon-mode 1)
   :config
   (add-to-list 'beacon-dont-blink-major-modes 'eshell-mode))
 
 (use-package eyebrowse
+  :ensure t
   :init
   (setq eyebrowse-keymap-prefix (kbd "C-c C-b"))
   (progn
@@ -333,8 +347,9 @@
     (add-hook 'after-init-hook #'my/create-eyebrowse-setup)))
 
 (use-package smartscan
-     :init (add-hook #'prog-mode-hook #'smartscan-mode)
-     :config
-     (bind-key "M-'" #'other-window smartscan-map))
+  :ensure t
+  :init (add-hook #'prog-mode-hook #'smartscan-mode)
+  :config
+  (bind-key "M-'" #'other-window smartscan-map))
 
 (provide 'init-general)

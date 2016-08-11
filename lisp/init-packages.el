@@ -5,6 +5,12 @@
                          ("melpa-stable" . "http://stable.melpa.org/packages/")
                          ("gnu" . "http://elpa.gnu.org/packages/")))
 
+
+;; Bootstarp `use-package'
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+
 (when (boundp 'package-pinned-packages)
   (setq package-pinned-packages
         '((cider . "melpa-stable")
@@ -14,115 +20,115 @@
           (company-cider . "melpa-stable")
           (malabar-mode . "melpa-stable"))))
 
-(defvar my/install-packages
-  '(
+;; (defvar my/install-packages
+;;   '(
 
-    ;; package management
-    use-package auto-compile
-  
-     ;; themeing
-     rainbow-mode leuven-theme dakrone-theme color-identifiers-mode
-     nyan-mode color-theme-sanityinc-tomorrow apropospriate-theme
-     material-theme smart-mode-line beacon aurora-theme moe-theme
-     spaceline solarized-theme tao-theme
+;;     ;; package management
+;;     use-package auto-compile
 
-     ;; misc
-     diminish gist async sx exec-path-from-shell bbdb symon scpaste anzu bookmark+
+;;      ;; themeing
+;;      rainbow-mode leuven-theme dakrone-theme color-identifiers-mode
+;;      nyan-mode color-theme-sanityinc-tomorrow apropospriate-theme
+;;      material-theme smart-mode-line beacon aurora-theme moe-theme
+;;      spaceline solarized-theme tao-theme
 
-     ;; logs
-     log4j-mode logstash-conf
-  
-     ;; chat
-     erc-hl-nicks ercn alert twittering-mode
+;;      ;; misc
+;;      diminish gist async sx exec-path-from-shell bbdb symon scpaste anzu bookmark+
 
-     ;; the all-seeing eye
-     sauron
+;;      ;; logs
+;;      log4j-mode logstash-conf
 
-     ;; code-helpers
-     projectile smartparens smart-tab ggtags smartscan eyebrowse
+;;      ;; chat
+;;      erc-hl-nicks ercn alert twittering-mode
 
-     ;; java
-     malabar-mode groovy-mode emacs-eclim java-imports
+;;      ;; the all-seeing eye
+;;      sauron
 
-     ;; python
-     hy-mode virtualenvwrapper jedi elpy
+;;      ;; code-helpers
+;;      projectile smartparens smart-tab ggtags smartscan eyebrowse
 
-     ;; flycheck
-     flycheck flycheck-tip flycheck-haskell flycheck-pos-tip
-  
-     ;; dired
-     peep-dired dired+ popwin
+;;      ;; java
+;;      malabar-mode groovy-mode emacs-eclim java-imports
 
-     ;; utils
-     engine-mode undo-tree
+;;      ;; python
+;;      hy-mode virtualenvwrapper jedi elpy
 
-     ;; lisp
-     paredit elisp-slime-nav
+;;      ;; flycheck
+;;      flycheck flycheck-tip flycheck-haskell flycheck-pos-tip
 
-     ;; keybinding 
-     guide-key avy avy-zap smart-forward
+;;      ;; dired
+;;      peep-dired dired+ popwin
 
-     ;; markup language
-     markdown-mode markdown-mode+ yaml-mode zencoding-mode adoc-mode
+;;      ;; utils
+;;      engine-mode undo-tree
 
-     ;; editing
-     visual-fill-column fill-column-indicator
+;;      ;; lisp
+;;      paredit elisp-slime-nav
 
-     ;; autocomplete
-     fuzzy popup company yasnippet auto-complete company-quickhelp
+;;      ;; keybinding 
+;;      guide-key avy avy-zap smart-forward
 
-     ;; helm
-     helm helm-descbinds helm-swoop helm-projectile helm-ag helm-css-scss helm-gtags helm-ls-git
-     helm-flycheck helm-flyspell helm-flx
+;;      ;; markup language
+;;      markdown-mode markdown-mode+ yaml-mode zencoding-mode adoc-mode
 
-     ;; highlighting
-     idle-highlight-mode
-     
-     ;; javascript
-     tern json-mode js2-mode js2-refactor nodejs-repl skewer-mode jsx-mode
-     
-     ;; news
-     elfeed
+;;      ;; editing
+;;      visual-fill-column fill-column-indicator
 
-     ;; window mgmt
-     golden-ratio switch-window windmove
-     
-     ;;general
-     keyfreq
+;;      ;; autocomplete
+;;      fuzzy popup company yasnippet auto-complete company-quickhelp
 
-     ;; eshell
-     eshell-prompt-extras
+;;      ;; helm
+;;      helm helm-descbinds helm-swoop helm-projectile helm-ag helm-css-scss helm-gtags helm-ls-git
+;;      helm-flycheck helm-flyspell helm-flx
 
-     ;; clojure
-     clojure-mode clojure-mode-extra-font-locking cider paredit paren-face ac-cider
+;;      ;; highlighting
+;;      idle-highlight-mode
 
-     ;; git
-     magit magit-gh-pulls git-gutter+ with-editor git-timemachine git-gutter
+;;      ;; javascript
+;;      tern json-mode js2-mode js2-refactor nodejs-repl skewer-mode jsx-mode
 
-     ;; web
-     web-mode emmet-mode web-beautify scss-mode
+;;      ;; news
+;;      elfeed
 
-     ;; org
-     htmlize gnuplot-mode gnuplot org-alert org-present org-bullets deft org-pomodoro
+;;      ;; window mgmt
+;;      golden-ratio switch-window windmove
 
-     ;; eww
-     eww-lnum
-  
-     ))
+;;      ;;general
+;;      keyfreq
+
+;;      ;; eshell
+;;      eshell-prompt-extras
+
+;;      ;; clojure
+;;      clojure-mode clojure-mode-extra-font-locking cider paredit paren-face ac-cider
+
+;;      ;; git
+;;      magit magit-gh-pulls git-gutter+ with-editor git-timemachine git-gutter
+
+;;      ;; web
+;;      web-mode emmet-mode web-beautify scss-mode
+
+;;      ;; org
+;;      htmlize gnuplot-mode gnuplot org-alert org-present org-bullets deft org-pomodoro
+
+;;      ;; eww
+;;      eww-lnum
+
+;;      ))
 
 (defvar packages-refreshed? nil)
 
-(dolist (pack my/install-packages)
-  (unless (package-installed-p pack)
-    (unless packages-refreshed?
-      (package-refresh-contents)
-      (setq packages-refreshed? t))
-    (unwind-protect
-        (condition-case ex
-            (package-install pack)
-          ('error (message "Failed to install package [%s], caught exception: [%s]"
-                           pack ex)))
-      (message "Installed %s" pack))))
+;; (dolist (pack my/install-packages)
+;;   (unless (package-installed-p pack)
+;;     (unless packages-refreshed?
+;;       (package-refresh-contents)
+;;       (setq packages-refreshed? t))
+;;     (unwind-protect
+;;         (condition-case ex
+;;             (package-install pack)
+;;           ('error (message "Failed to install package [%s], caught exception: [%s]"
+;;                            pack ex)))
+;;       (message "Installed %s" pack))))
 
 ;; Load use-package, used for loading packages everywhere else
 (require 'use-package)

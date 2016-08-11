@@ -1,4 +1,5 @@
 (use-package eww
+  :ensure t
   :defer t
   :config
   (use-package s
@@ -12,6 +13,7 @@
   (setq browse-url-generic-program (executable-find "firefox"))
 
   (use-package eww-lnum
+    :ensure t
     :config
     (bind-key "f" #'eww-lnum-follow eww-mode-map)
     (bind-key "F" #'eww-lnum-universal eww-mode-map)))

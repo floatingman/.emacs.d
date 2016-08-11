@@ -1,4 +1,5 @@
 (use-package view
+  :ensure t
   :defer t
   :bind
   (("C-M-n" . View-scroll-half-page-forward)
@@ -25,6 +26,7 @@
     (define-key view-mode-map (kbd "l") 'forward-char)))
 
 (use-package doc-view
+  :ensure t
   :config
   (define-key doc-view-mode-map (kbd "j")
     #'doc-view-next-line-or-next-page)

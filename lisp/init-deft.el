@@ -1,4 +1,5 @@
 (use-package deft
+  :ensure t
   :bind ("C-x t" . deft)
   :config
   (setq deft-extension "org"

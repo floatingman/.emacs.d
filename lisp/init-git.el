@@ -1,4 +1,5 @@
 (use-package magit
+  :ensure t
   :bind (("M-g M-g" . magit-status)
          ("C-x g" . magit-status))
   :init (add-hook 'magit-mode-hook 'hl-line-mode)
@@ -29,9 +30,11 @@
   (bind-key "M-3" #'my/create-or-switch-to-eshell-3 magit-mode-map)
   (bind-key "M-4" #'my/create-or-switch-to-eshell-4 magit-mode-map))
 
-(use-package magit-gh-pulls)
+(use-package magit-gh-pulls
+  :ensure t)
 
 (use-package git-gutter
+  :ensure t
   :defer t
   :bind (("C-x =" . git-gutter:popup-hunk)
          ("C-c P" . git-gutter:previous-hunk)
@@ -45,6 +48,7 @@
   (add-hook 'org-mode-hook 'git-gutter-mode))
 
 (use-package git-gutter+
+  :ensure t
   :defer t
   :disabled t
   :bind (("C-x n" . git-gutter+-next-hunk)

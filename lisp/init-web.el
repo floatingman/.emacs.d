@@ -9,8 +9,8 @@
 
 
 (use-package web-mode
-  :mode (("\\.html\\'"       . web-mode)
-         ("\\.ejs\\'"        . web-mode)
+  :ensure t
+  :mode (("\\.ejs\\'"        . web-mode)
          ("\\.html?\\'"      . web-mode)
          ("\\.erb\\'"        . web-mode)
          ("\\.mustache\\'"   . web-mode)
@@ -20,6 +20,10 @@
   :defer t
   :config
   (progn
+    (setq web-mode-content-types-alist
+	  '(("json" . "/some/path/.*\\.api\\'")
+	    ("xml"  . "/other/path/.*\\.api\\'")
+	    ("jsx"  . "/some/react/path/.*\\.js[x]?\\'")))
     (setq web-mode-markup-indent-offset 2)
     (setq web-mode-code-indent-offset 2)
     (setq web-mode-css-indent-offset 2)
@@ -40,6 +44,7 @@
 
 
 (use-package emmet-mode
+  :ensure t
   :defer t
   :config
   (add-hook 'css-mode-hook  'emmet-mode)
@@ -47,9 +52,11 @@
   )
 
 (use-package web-beautify
+  :ensure t
   :defer t)
 
 (use-package scss-mode
+  :ensure t
   :defer t
   :mode (("\\.scss\\'" . scss-mode))
   :config

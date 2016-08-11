@@ -1,8 +1,12 @@
 (use-package js2-mode
+  :ensure t
+  :ensure ac-js2
   :defer t
   :mode (("\\.js\\'" . js2-mode))
-	:config
-	(progn
+  :config
+  (progn
+    (add-hook 'js-mode-hook 'js2-minor-mode)
+    (add-hook 'js2-mode-hook 'ac-js2-mode)
     (add-to-list 'interpreter-mode-alist '("node" . js2-mode))
     (setq-default
      js-indent-level 2
@@ -11,7 +15,7 @@
      js2-mode-show-parse-errors nil
      js2-mode-show-strict-warnings)
     )
-	)
+  )
 
 (eval-after-load
     'flycheck
@@ -25,14 +29,16 @@
              '(javascript-jshint)))))
 
 (use-package js2-refactor
+  :ensure t
   :defer t
   :config
-	(progn
+  (progn
     (add-hook 'js2-mode-hook (lambda () (js2-refactor-mode t)))
     (js2r-add-keybindings-with-prefix "C-c C-m"))
 	)
 
 (use-package tern
+  :ensure t
   :defer t
   :config
 	(progn
@@ -45,11 +51,13 @@
   (interactive)
   (delete-process "Tern"))
 
-(use-package nodejs-repl 
+(use-package nodejs-repl
+  :ensure t
   :defer t
 	)
 
 (use-package skewer-mode
+  :ensure t
   :defer t
 	:config
 	(progn
@@ -74,7 +82,8 @@
 (add-hook 'js-mode-hook
 					(lambda () (flycheck-mode t)))
 
-(use-package json-mode 
+(use-package json-mode
+  :ensure t
   :defer t)                             
 
 (provide 'init-javascript)

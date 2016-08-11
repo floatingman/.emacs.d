@@ -65,8 +65,10 @@
   (load custom-file))
 
 (use-package auto-compile
+  :ensure t
   :config (auto-compile-on-load-mode))
 (setq load-prefer-newer t)
+
 
 
 ;; load custom config

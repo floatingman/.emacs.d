@@ -1,4 +1,5 @@
-(use-package flymake)
+(use-package flymake
+  :ensure t)
 
 ;;Java flymake support using the eclipse compiler
 (defun flymake-java-ecj-init ()

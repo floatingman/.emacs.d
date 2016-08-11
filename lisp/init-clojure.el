@@ -6,6 +6,7 @@
   (global-set-key (kbd "C-c t") 'clojure-jump-between-tests-and-code))
 
 (use-package clojure-mode
+  :ensure t
   :init
   (add-hook #'clojure-mode-hook #'my/clojure-things-hook))
 
@@ -20,6 +21,7 @@
   (eldoc-mode 1))
 
 (use-package cider
+  :ensure t
   :defer 30
   :init
   (add-hook #'cider-mode-hook #'my/setup-cider)
@@ -27,6 +29,7 @@
   (add-hook #'cider-mode-hook #'my/clojure-things-hook)
   (add-hook #'cider-repl-mode-hook #'my/clojure-things-hook)
   (use-package ac-cider
+    :ensure t
     :init
     (add-hook #'cider-mode-hook #'ac-flyspell-workaround)
     (add-hook #'cider-mode-hook #'ac-cider-setup)

@@ -13,6 +13,7 @@
   (add-hook 'python-mode-hook 'jedi:ac-setup))
 
 (use-package virtualenvwrapper
+  :ensure t
   :defer t
   :init
   (progn

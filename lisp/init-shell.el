@@ -52,8 +52,10 @@ comint-replace-by-expanded-history-before-point."
   (hl-line-mode -1)
   (define-key eshell-mode-map (kbd "M-l")
     'helm-eshell-history))
-
+(use-package eshell-prompt-extras
+  :ensure t)
 (use-package eshell
+  :ensure t
   :config
   (progn
     (defalias 'emacs 'find-file)

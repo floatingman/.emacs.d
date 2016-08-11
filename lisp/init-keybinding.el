@@ -37,15 +37,19 @@ Repeated invocations toggle between the two most recently open buffers."
 
 
 ;; quickly jump to different points in current view
-(use-package avy)
+(use-package avy
+  :ensure t
+  )
   ;; I use the jj key-chord for this; see the definitions for key-chord
 (use-package avy-zap
+  :ensure t
   :bind
   (("M-z" . avy-zap-up-to-char-dwim)
    ("M-Z" . avy-zap-to-char-dwim)))
 
 ;; use smart-forward
 (use-package smart-forward
+  :ensure t
   :bind (( "M-<up>" . smart-up)
 				 ("M-<down>" . smart-down)
 				 ("M-<left>" . smart-backward)

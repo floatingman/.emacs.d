@@ -1,9 +1,29 @@
 (use-package helm-descbinds
+  :ensure t
   :bind ("C-h b" . helm-descbinds)
   :init (fset 'describe-bindings 'helm-descbinds)
   :config (require 'helm-config))
 
+(use-package helm-ag
+  :ensure t)
+
+(use-package helm-flx
+  :ensure t)
+
+(use-package helm-flycheck
+  :ensure t)
+
+(use-package helm-flyspell
+  :ensure t)
+
+(use-package helm-gtags
+  :ensure t)
+
+(use-package helm-css-scss
+  :ensure t)
+
 (use-package helm-swoop
+  :ensure t
   :bind
   (("M-i" . helm-swoop)
    ("M-I" . helm-swoop-back-to-last-)
@@ -270,8 +290,7 @@
   (global-set-key (kbd "C-c M-h") 'helm-clj-http))
 
 (use-package helm-c-yasnippet
-  :ensure nil
-  :disabled t
+  :ensure t
   :bind
   (("M-=" . helm-yas-complete)))
 

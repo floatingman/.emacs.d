@@ -6,15 +6,16 @@
 
 
 	;; following Sacha Chua and http://writequit.org/org/settings.html#sec-1-13
-	(use-package erc
+  (use-package erc
+    :ensure t
     :config
-		(progn
-			(setq erc-fill-column 78
-						erc-server-coding-system '(utf-8 . utf-8)
-						erc-hide-list '("JOIN" "PART" "QUIT" "NICK")
-						erc-track-exclude-types (append '("324" "329" "332" "333"
-																							"353" "477" "MODE")
-																						erc-hide-list)
+    (progn
+      (setq erc-fill-column 78
+	    erc-server-coding-system '(utf-8 . utf-8)
+	    erc-hide-list '("JOIN" "PART" "QUIT" "NICK")
+	    erc-track-exclude-types (append '("324" "329" "332" "333"
+					      "353" "477" "MODE")
+					    erc-hide-list)
 						erc-nick '("floatingman" "floatingman_" "floatingman__")
 						erc-flood-protect nil
 						erc-keywords '("floatingman" "floatingman_" "floatingman__" "daniel"
@@ -96,17 +97,18 @@
 	(asf-erc-bouncer-connect erc-gitter "irc.gitter.im" 6667 "floatingman" nil gitter-password)
 	
 	(use-package ercn
-    :config
-		(progn
-			(setq ercn-notify-rules
-						'((current-nick . all)
-							(keyword . all)
-							(pal . ("#84115"))
-							(query-buffer . all)))
-			(defun do-notify (nickname message)
-				(alert message :title (concat (buffer-name) ": " nickname)))
-			(add-hook 'ercn-notify-hook #'do-notify)))
-
+	  :ensure t
+	  :config
+	  (progn
+	    (setq ercn-notify-rules
+		  '((current-nick . all)
+		    (keyword . all)
+		    (pal . ("#84115"))
+		    (query-buffer . all)))
+	    (defun do-notify (nickname message)
+	      (alert message :title (concat (buffer-name) ": " nickname)))
+	    (add-hook 'ercn-notify-hook #'do-notify)))
+	
 	;; connect irc
 	(call-interactively 'erc-bitlbee)
 	(sit-for 1)
@@ -115,6 +117,7 @@
 	)
 
 (use-package sauron
+  :ensure t
   :init
   (setq sauron-max-line-length 120
         sauron-watch-patterns '("floatingman" "zygocat")
