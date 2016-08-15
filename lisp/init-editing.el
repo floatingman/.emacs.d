@@ -6,6 +6,14 @@
 (use-package markdown-mode
   :ensure t)
 
+(use-package edit-server
+  :ensure t
+  :init (edit-server-start)
+  )
+
+
+(use-package iedit
+  :ensure t)
 
 ;; this is for fun, a prose checker
 ;; you need to install proselint with pip

@@ -206,18 +206,15 @@
   :ensure t
   :diminish subword-mode)
 
-(use-package log4j-mode
-  :init
-  (add-hook #'log4j-mode-hook #'my/turn-on-viewing-mode))
 
-  (use-package bookmark+
-    :ensure t
-    :defer 10
-    :config
-    (progn
-      (setq bookmark-version-control t
-            ;; auto-save bookmarks
-            bookmark-save-flag 1)))
+(use-package bookmark+
+  :ensure t
+  :defer 10
+  :config
+  (progn
+    (setq bookmark-version-control t
+          ;; auto-save bookmarks
+          bookmark-save-flag 1)))
 
 (use-package google-c-style
   :ensure t
