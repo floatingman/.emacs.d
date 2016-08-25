@@ -80,9 +80,10 @@
 
 (use-package yasnippet
   :ensure t
-  :init
+  :init 
+  (setq yas-snippet-dirs  '("~/.emacs.d/site-lisp/yasnippet-snippets"
+                            "~/.emacs.d/snippets"))
   (yas-global-mode 1)
-  (setq yas-snippet-dirs "~/.emacs.d/site-lisp/yasnippet-snippets")
   :diminish yas-minor-mode
   )
 
