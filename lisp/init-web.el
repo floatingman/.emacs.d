@@ -62,4 +62,13 @@
   :config
   (progn (setq scss-sass-command (expand-file-name "~/.rvm/gems/ruby-2.2.1/bin/sass"))))
 
+(use-package lorem-ipsum
+  :ensure t
+  :init
+  (global-set-key (kbd "C-c C-l s") 'lorem-ipsum-insert-sentences)
+  (global-set-key (kbd "C-c C-l p") 'lorem-ipsum-insert-paragraphs)
+  (global-set-key (kbd "C-c C-l l") 'lorem-ipsum-insert-list)
+  )
+
+
 (provide 'init-web)
