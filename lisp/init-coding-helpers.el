@@ -220,4 +220,8 @@
   :ensure t
   )
 
+(use-package yaml-mode
+  :ensure t
+  )
+
 (provide 'init-coding-helpers)
