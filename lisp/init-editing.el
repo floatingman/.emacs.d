@@ -3,6 +3,8 @@
 ;;; Commentary:
 
 ;;; Code:
+(delete-selection-mode)
+
 (use-package markdown-mode
   :ensure t)
 

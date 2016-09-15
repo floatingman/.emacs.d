@@ -61,5 +61,7 @@ Repeated invocations toggle between the two most recently open buffers."
 ;; copy whole buffer into clipboard
 (global-set-key (kbd "C-c w") 'my/copy-buffer)
 
+;; C-z is undo!
+(global-set-key (kbd "C-z") #'undo)
 
 (provide 'init-keybinding)

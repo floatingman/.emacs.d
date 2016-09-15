@@ -104,6 +104,8 @@
 (use-package init-browsing)
 (use-package init-deft)
 (use-package init-hugo)
+(use-package init-r)
+
 ;;; Post initialization
 ;; start a server only in text mode
 (use-package server

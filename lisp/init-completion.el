@@ -1,81 +1,42 @@
-(use-package auto-complete
-  :ensure t
-  :init
-  (progn
-    (ac-config-default)
-    (global-auto-complete-mode t)
-    ))
-
-;; (use-package company
-;;   :disabled t
+;; (use-package auto-complete
 ;;   :ensure t
-;;   :diminish company-mode
-;;   :bind ("C-." . company-complete)
 ;;   :init
-;;   (add-hook 'after-init-hook #'global-company-mode)
-;;   (use-package company-quickhelp
-;;     :ensure t
-;;     :init
-;;     (add-hook 'company-mode-hook #'company-quickhelp-mode)
-;;     :config
-;;     (setq company-quickhelp-delay 1.0))
-;;   :config
-;;   (setq company-idle-delay 0.2
-;;         ;; min prefix of 3 chars
-;;         company-minimum-prefix-length 3
-;;         ;; wrap completions around
-;;         company-selection-wrap-around t
-;;         ;; don't show numbers in completion
-;;         company-show-numbers nil
-;;         ;; don't downcase dabbrev suggestions
-;;         company-dabbrev-downcase nil
-;;         ;; sort completions by occurrence
-;;         company-transformers '(company-sort-by-occurrence))
-;;   (bind-keys :map company-active-map
-;;              ("C-n" . company-select-next)
-;;              ("C-p" . company-select-previous)
-;;              ("C-d" . company-show-doc-buffer)
-;;              ("C-l" . company-show-location)
-;;              ("<tab>" . company-complete)))
+;;   (progn
+;;     (ac-config-default)
+;;     (global-auto-complete-mode t)
+;;     ))
 
-;; I also need some code so yasnippet and company don’t step on each other’s toes when it comes to the TAB key:
-
-;; (defun check-expansion ()
-;;   (save-excursion
-;;     (if (looking-at "\\_>") t
-;;       (backward-char 1)
-;;       (if (looking-at "\\.") t
-;;         (backward-char 1)
-;;         (if (looking-at "->") t nil)))))
-
-;; (defun do-yas-expand ()
-;;   (let ((yas/fallback-behavior 'return-nil))
-;;     (yas/expand)))
-
-;; (defun tab-indent-or-complete ()
-;;   "If in the minibuffer, complete there. If a tab needs to be
-;; inserted, do that, otherwise check if either a yasnippet should
-;; be expanded or try company completion if not."
-;;   (interactive)
-;;   (if (minibufferp)
-;;       (minibuffer-complete)
-;;     (if (or (not yas-minor-mode)
-;;             (null (do-yas-expand)))
-;;         (if (check-expansion)
-;;             (company-complete-common)
-;;           (indent-for-tab-command)))))
-
-;; ;; ಠ_ಠ yasnippet
-;; (add-hook 'yas-minor-mode-hook
-;;           (lambda ()
-;;             (local-set-key [tab] 'tab-indent-or-complete)))
-
-
-(use-package org-ac
+(use-package company
   :ensure t
-  :init (progn
-          (require 'org-ac)
-          (org-ac/config-default)))
+  :diminish company-mode
+  :bind ("C-." . company-complete)
+  :init
+  (add-hook 'after-init-hook #'global-company-mode)
+  (use-package company-quickhelp
+    :ensure t
+    :init
+    (add-hook 'company-mode-hook #'company-quickhelp-mode)
+    :config
+    (setq company-quickhelp-delay 1.0))
+  :config
+  (setq company-idle-delay 0.2
+        ;; min prefix of 3 chars
+        company-minimum-prefix-length 3
+        ;; wrap completions around
+        company-selection-wrap-around t
+        ;; don't show numbers in completion
+        company-show-numbers nil
+        ;; don't downcase dabbrev suggestions
+        company-dabbrev-downcase nil
+        ;; sort completions by occurrence
+        company-transformers '(company-sort-by-occurrence))
+  (bind-keys :map company-active-map
+             ("C-n" . company-select-next)
+             ("C-p" . company-select-previous)
+             ("C-d" . company-show-doc-buffer)
+             ("C-l" . company-show-location)
+             ("<tab>" . company-complete)))
+
 
 
 (use-package yasnippet
@@ -86,6 +47,89 @@
   (yas-global-mode 1)
   :diminish yas-minor-mode
   )
+
+
+;; I also need some code so yasnippet and company don’t step on each other’s toes when it comes to the TAB key:
+;; taken from http://emacs.stackexchange.com/questions/7908/how-to-make-yasnippet-and-company-work-nicer
+(defun check-expansion ()
+  (save-excursion
+    (if (looking-at "\\_>") t
+      (backward-char 1)
+      (if (looking-at "\\.") t
+        (backward-char 1)
+        (if (looking-at "->") t nil)))))
+
+(defun do-yas-expand ()
+  (let ((yas/fallback-behavior 'return-nil))
+    (yas/expand)))
+
+(defun tab-indent-or-complete ()
+  (interactive)
+  (cond
+   ((minibufferp)
+    (minibuffer-complete))
+   (t
+    (indent-for-tab-command)
+    (if (or (not yas/minor-mode)
+            (null (do-yas-expand)))
+        (if (check-expansion)
+            (progn
+              (company-manual-begin)
+              (if (null company-candidates)
+                  (progn
+                    (company-abort)
+                    (indent-for-tab-command)))))))))
+
+(defun tab-complete-or-next-field ()
+  (interactive)
+  (if (or (not yas/minor-mode)
+          (null (do-yas-expand)))
+      (if company-candidates
+          (company-complete-selection)
+        (if (check-expansion)
+            (progn
+              (company-manual-begin)
+              (if (null company-candidates)
+                  (progn
+                    (company-abort)
+                    (yas-next-field))))
+          (yas-next-field)))))
+
+(defun expand-snippet-or-complete-selection ()
+  (interactive)
+  (if (or (not yas/minor-mode)
+          (null (do-yas-expand))
+          (company-abort))
+      (company-complete-selection)))
+
+(defun abort-company-or-yas ()
+  (interactive)
+  (if (null company-candidates)
+      (yas-abort-snippet)
+    (company-abort)))
+
+(global-set-key [tab] 'tab-indent-or-complete)
+(global-set-key (kbd "TAB") 'tab-indent-or-complete)
+(global-set-key [(control return)] 'company-complete-common)
+
+(define-key company-active-map [tab] 'expand-snippet-or-complete-selection)
+(define-key company-active-map (kbd "TAB") 'expand-snippet-or-complete-selection)
+
+(define-key yas-minor-mode-map [tab] nil)
+(define-key yas-minor-mode-map (kbd "TAB") nil)
+
+(define-key yas-keymap [tab] 'tab-complete-or-next-field)
+(define-key yas-keymap (kbd "TAB") 'tab-complete-or-next-field)
+(define-key yas-keymap [(control tab)] 'yas-next-field)
+(define-key yas-keymap (kbd "C-g") 'abort-company-or-yas)
+
+;; (use-package org-ac
+;;   :ensure t
+;;   :init (progn
+;;           (require 'org-ac)
+;;           (org-ac/config-default)))
+
+
 
 ;;use abbrev to correct misspellings
 (use-package abbrev
