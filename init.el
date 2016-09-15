@@ -72,7 +72,8 @@
 
 
 ;; load custom config
-
+(use-package better-defaults
+  :ensure t)
 (use-package init-general)
 (use-package init-org)
 (use-package init-mswindows)

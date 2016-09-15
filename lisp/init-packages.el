@@ -2,23 +2,17 @@
 
 (package-initialize)
 (setq package-archives '(("melpa" . "http://melpa.org/packages/")
-                         ("melpa-stable" . "http://stable.melpa.org/packages/")
                          ("gnu" . "http://elpa.gnu.org/packages/")))
 
 
-;; Bootstarp `use-package'
+;; Bootstrap `use-package'
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
 
 (when (boundp 'package-pinned-packages)
   (setq package-pinned-packages
-        '((cider . "melpa-stable")
-          (ac-cider . "melpa-stable")
-          (clojure-mode . "melpa-stable")
-          (clojure-mode-extra-font-locking . "melpa-stable")
-          (company-cider . "melpa-stable")
-          (malabar-mode . "melpa-stable"))))
+        '()))
 
 ;; (defvar my/install-packages
 ;;   '(

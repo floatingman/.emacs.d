@@ -95,3 +95,4 @@ srecode-map.el
 /session.*
 
 .python-environments
+/.places
