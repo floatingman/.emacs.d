@@ -383,4 +383,11 @@ Deletes whitespace at join."
 
 (add-hook 'mouse-leave-buffer-hook 'stop-using-minibuffer)
 
+;; comments                                                                     
+(defun toggle-comment-on-line ()                                                
+  "comment or uncomment current line"                                           
+  (interactive)                                                                 
+  (comment-or-uncomment-region (line-beginning-position) (line-end-position)))
+;; (global-set-key (kbd "C-;") 'toggle-comment-on-line)          
+
 (provide 'init-functions)
