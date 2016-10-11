@@ -10,7 +10,11 @@
   :ensure t
   :init
   (add-hook 'python-mode-hook 'jedi:setup)
-  (add-hook 'python-mode-hook 'jedi:ac-setup))
+  (setq jedi:complete-on-dot t)
+  )
+
+(use-package company-jedi
+  :ensure t)
 
 (use-package virtualenvwrapper
   :ensure t
@@ -21,5 +25,8 @@
     (venv-initialize-eshell)
     (setq venv-location (or (getenv "WORKON_HOME")
                             "~/.venvs"))))
+
+(setq python-shell-interpreter "ipython"
+      python-shell-interpreter-args "--simple-prompt -i")
 
 (provide 'init-python)

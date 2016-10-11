@@ -51,6 +51,7 @@
   (add-hook #'cider-mode-hook #'my/clojure-things-hook)
   (add-hook #'cider-repl-mode-hook #'my/clojure-things-hook)
   (use-package ac-cider
+    :disabled t
     :ensure t
     :init
     (add-hook #'cider-mode-hook #'ac-flyspell-workaround)
