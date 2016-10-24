@@ -11,12 +11,12 @@
     :config
     (progn
       (setq erc-fill-column 78
-	    erc-server-coding-system '(utf-8 . utf-8)
-	    erc-hide-list '("JOIN" "PART" "QUIT" "NICK")
-	    erc-track-exclude-types (append '("324" "329" "332" "333"
-					      "353" "477" "MODE")
-					    erc-hide-list)
-						erc-nick '("floatingman" "floatingman_" "floatingman__")
+            erc-server-coding-system '(utf-8 . utf-8)
+            erc-hide-list '("JOIN" "PART" "QUIT" "NICK")
+            erc-track-exclude-types (append '("324" "329" "332" "333"
+                                              "353" "477" "MODE")
+                                            erc-hide-list)
+						erc-nick '("floatingman" "floatingman_1" "floatingman_2")
 						erc-flood-protect nil
 						erc-keywords '("floatingman" "floatingman_" "floatingman__" "daniel"
                            "daniel newman")
@@ -91,37 +91,43 @@
 		)
 
 
+  (asf-erc-bouncer-connect erc-znc "thenewmans.no-ip.org" 3344 "dnewman" t znc-password)
 	;; (de-erc-connect erc-freenode "irc.freenode.net" 6667 "floatingman")
-	(de-erc-connect erc-bitlbee "thenewmans.no-ip.org" 6667 "floatingman")
-	(asf-erc-bouncer-connect erc-freenode "irc.freenode.net" 6667 "floatingman" t freenode-password)
-	(asf-erc-bouncer-connect erc-gitter "irc.gitter.im" 6667 "floatingman" nil gitter-password)
+	;; (de-erc-connect erc-bitlbee "thenewmans.no-ip.org" 6667 "floatingman")
+	;; (asf-erc-bouncer-connect erc-freenode "irc.freenode.net" 6667 "floatingman" t freenode-password)
+	;; (asf-erc-bouncer-connect erc-gitter "irc.gitter.im" 6667 "floatingman" nil gitter-password)
 	
 	(use-package ercn
 	  :ensure t
-	  :config
+    :disabled t
+    :config
 	  (progn
 	    (setq ercn-notify-rules
-		  '((current-nick . all)
-		    (keyword . all)
-		    (pal . ("#84115"))
-		    (query-buffer . all)))
+            '((current-nick . all)
+              (keyword . all)
+              (pal . ("#84115"))
+              (query-buffer . all)))
 	    (defun do-notify (nickname message)
 	      (alert message :title (concat (buffer-name) ": " nickname)))
 	    (add-hook 'ercn-notify-hook #'do-notify)))
 	
 	;; connect irc
-	(call-interactively 'erc-bitlbee)
-	(sit-for 1)
-	(call-interactively 'erc-freenode)
-	(sit-for 1)
-	)
+	;; (call-interactively 'erc-bitlbee)
+	;; (sit-for 1)
+	;; (call-interactively 'erc-freenode)
+	;; (sit-for 1)
+  (use-package znc
+    :ensure t)
+  (znc-all)
+  )
 
 (use-package sauron
   :ensure t
   :init
+  ;; (setq sauron-modules '(sauron-org sauron-notifications))
   (setq sauron-max-line-length 120
-        sauron-watch-patterns '("floatingman" "zygocat")
-        sauron-watch-nicks '("floatingman" "zygocat")
+        sauron-watch-patterns '("floatingman" "zygocat" "dnewman" "floatingman_1")
+        sauron-watch-nicks '("floatingman" "zygocat" "dnewman" "floatingman_1")
         sauron-frame-geometry "120x48+0+0")
   ;; filter out IRC spam
   (defun tsp/hide-irc-user-spam (origin priority msg &optional properties)
