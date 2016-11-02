@@ -19,7 +19,7 @@
 						erc-nick '("floatingman" "floatingman_1" "floatingman_2")
 						erc-flood-protect nil
 						erc-keywords '("floatingman" "floatingman_" "floatingman__" "daniel"
-                           "daniel newman")
+                           "daniel newman" "dnewman" "dwnewman78")
 						erc-ignore-list '()
             erc-track-exclude-types '("JOIN" "NICK" "PART" "QUIT" "MODE"
                                       "324" "329" "332" "333" "353" "477")
@@ -40,85 +40,115 @@
                            (erc-propertize (concat "ERC>") 'read-only t
                                            'rear-nonsticky t
                                            'front-nonsticky t)))
-						erc-autojoin-channels-alist '(("freenode.net"
-																					 "#org-mode"
-																					 "#emacs"
-																					 "#emacs-beginners"
-                                           "#selenium"))
-						)
+            erc-join-buffer 'bury
+            
+            )
+      )
+    )
 
-			(defun erc-cmd-OPME ()
-				"Request chanserv to op me."
-				(erc-message "PRIVMSG"
-										 (format "chanserv op %s %s"
-														 (erc-default-target)
-														 (erc-current-nick)) nil))
-			
-			(defun erc-cmd-DEOPME ()
-				"Deop myself from current channel."
-				(erc-cmd-DEOP (format "%s" (erc-current-nick))))
+  (define-key erc-mode-map (kbd "C-c C-q")
+    (lambda (nick)
+      (interactive (list (completing-read "Nick: " channel-members)))
+      (erc-cmd-QUERY nick)))
+  
+  ;; (defadvice erc-display-prompt (after conversation-erc-display-prompt activate)
+  ;;   "Insert last recipient after prompt."
+  ;;   (let ((previous 
+  ;;          (save-excursion 
+  ;;            ((insert )f (and (search-backward-regexp (concat "^[^<]*<" erc-nick ">") nil t)
+  ;;                             ((setq )earch-forward-regexp (concat "^[^<]*<" erc-nick ">" 
+  ;;                                                                  " *\\([^:]*: ?\\)") nil t))
+  ;;             (match-string 1)))))
+  ;;     ;; when we got something, and it was in the last 3 mins, put it in
+  ;;     (when (and 
+  ;;            previous 
+  ;;            (> 180 (time-to-seconds 
+  ;;                    (time-since (get-text-property 0 'timestamp previous)))))
+  ;;       (set-text-properties 0 (length previous) nil previous)
+  ;;       (insert previous))))
 
-			(defmacro de-erc-connect (command server port nick)
-				"Create interactive command `command', for connecting to an IRC server. The
+  (defun erc-cmd-OPME ()
+    "Request chanserv to op me."
+    (erc-message "PRIVMSG"
+                 (format "chanserv op %s %s"
+                         (erc-default-target)
+                         (erc-current-nick)) nil))
+  
+  (defun erc-cmd-DEOPME ()
+    "Deop myself from current channel."
+    (erc-cmd-DEOP (format "%s" (erc-current-nick))))
+
+  (defmacro de-erc-connect (command server port nick)
+    "Create interactive command `command', for connecting to an IRC server. The
       command uses interactive mode if passed an argument."
-				(fset command
-							`(lambda (arg)
-								 (interactive "p")
-								 (if (not (= 1 arg))
-										 (call-interactively 'erc)
-									 (erc :server ,server :port ,port :nick ,nick)))))
+    (fset command
+          `(lambda (arg)
+             (interactive "p")
+             (if (not (= 1 arg))
+                 (call-interactively 'erc)
+               (erc :server ,server :port ,port :nick ,nick)))))
 
-			(defmacro asf-erc-bouncer-connect (command server port nick ssl pass)
-				"Create interactive command `command', for connecting to an IRC server. The
+  (defmacro asf-erc-bouncer-connect (command server port nick ssl pass)
+    "Create interactive command `command', for connecting to an IRC server. The
    command uses interactive mode if passed an argument."
-				(fset command
-							`(lambda (arg)
-								 (interactive "p")
-								 (if (not (= 1 arg))
-										 (call-interactively 'erc)
-									 (let ((erc-connect-function ',(if ssl
-																										 'erc-open-ssl-stream
-																									 'open-network-stream)))
-										 (erc :server ,server :port ,port :nick ,nick :password ,pass))))))
-			
-			(defun bitlbee-identify () 
-				"If we're on the bitlbee server, send the identify command to the #bitlbee channel."
-				(when (and (= 6667 erc-session-port)
-									 (string= "&bitlbee" (buffer-name)))
-					(erc-send-command (format "PRIVMSG &bitlbee :identify %s" bitlbee-password))))
-			(add-hook 'erc-join-hook 'bitlbee-identify)
-			)
-		)
+    (fset command
+          `(lambda (arg)
+             (interactive "p")
+             (if (not (= 1 arg))
+                 (call-interactively 'erc)
+               (let ((erc-connect-function ',(if ssl
+                                                 'erc-open-ssl-stream
+                                               'open-network-stream)))
+                 (erc :server ,server :port ,port :nick ,nick :password ,pass))))))
+  
+  (defun bitlbee-identify () 
+    "If we're on the bitlbee server, send the identify command to the #bitlbee channel."
+    (when (and (= 3344 erc-session-port)
+               (string= "&bitlbee" (buffer-name)))
+      (erc-send-command (format "PRIVMSG &bitlbee :identify %s" bitlbee-password))))
+  (add-hook 'erc-join-hook 'bitlbee-identify) 
 
-
-  (asf-erc-bouncer-connect erc-znc "thenewmans.no-ip.org" 3344 "dnewman" t znc-password)
-	;; (de-erc-connect erc-freenode "irc.freenode.net" 6667 "floatingman")
-	;; (de-erc-connect erc-bitlbee "thenewmans.no-ip.org" 6667 "floatingman")
-	;; (asf-erc-bouncer-connect erc-freenode "irc.freenode.net" 6667 "floatingman" t freenode-password)
-	;; (asf-erc-bouncer-connect erc-gitter "irc.gitter.im" 6667 "floatingman" nil gitter-password)
-	
-	(use-package ercn
-	  :ensure t
-    :disabled t
-    :config
-	  (progn
-	    (setq ercn-notify-rules
-            '((current-nick . all)
-              (keyword . all)
-              (pal . ("#84115"))
-              (query-buffer . all)))
-	    (defun do-notify (nickname message)
-	      (alert message :title (concat (buffer-name) ": " nickname)))
-	    (add-hook 'ercn-notify-hook #'do-notify)))
-	
-	;; connect irc
-	;; (call-interactively 'erc-bitlbee)
-	;; (sit-for 1)
-	;; (call-interactively 'erc-freenode)
-	;; (sit-for 1)
-  (use-package znc
-    :ensure t)
+  ;; connect to znc
   (znc-all)
+
+
+  ;; (asf-erc-bouncer-connect erc-znc "thenewmans.no-ip.org" 3344 "dnewman" t znc-password)
+  ;; (de-erc-connect erc-freenode "irc.freenode.net" 6667 "floatingman")
+  ;; (de-erc-connect erc-bitlbee "thenewmans.no-ip.org" 6667 "floatingman")
+  ;; (asf-erc-bouncer-connect erc-freenode "irc.freenode.net" 6667 "floatingman" t freenode-password)
+  ;; (asf-erc-bouncer-connect erc-gitter "irc.gitter.im" 6667 "floatingman" nil gitter-password)
+
+
+
+  ;; connect irc
+  ;; (call-interactively 'erc-bitlbee)
+  ;; (sit-for 1)
+  ;; (call-interactively 'erc-freenode)
+  ;; (sit-for 1)
+  
+  )
+
+(use-package znc
+  :ensure t
+  :defer t
+  )
+
+(use-package ercn
+  :ensure t
+  :defer t
+  :config
+  (progn
+    (setq ercn-notify-rules
+          '((current-nick . all)
+            (keyword . all)
+            (pal . ("#84115"))
+            (query-buffer . all)))
+    (defun do-notify (nickname message)
+      (alert message :title (concat (buffer-name) ": " nickname)))
+    (add-hook 'ercn-notify-hook #'do-notify)))
+
+(use-package erc-terminal-notifier
+  :ensure t
   )
 
 (use-package sauron
