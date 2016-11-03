@@ -67,6 +67,28 @@
   ;;       (set-text-properties 0 (length previous) nil previous)
   ;;       (insert previous))))
 
+  (defvar notify-command (executable-find "terminal-notifier") "The path to terminal-notifier")
+
+  (defun notify (title message)
+    "Shows a message through the Notification center system using
+`notify-command` as the program."
+    (flet ((encfn (s) (encode-coding-string s (keyboard-coding-system))))
+      (let* ((process (start-process "notify" nil
+                                     notify-command
+                                     "-title" (encfn title)
+                                     "-message" (encfn message))))))
+    t)
+
+  (defun my-erc-hook (match-type nick message)
+    "Show a growl notification, when user's nick was mentioned. If the buffer is currently not visible, makes it sticky."
+    (unless (posix-string-match "^\\** *Users on #" message)
+      (notify
+       (concat "ERC: name mentioned on: " (buffer-name (current-buffer)))
+       message)))
+  
+  (when (bound-and-true-p notify-command)
+    (add-hook 'erc'text-matched-hook 'my-erc-hook))
+  
   (defun erc-cmd-OPME ()
     "Request chanserv to op me."
     (erc-message "PRIVMSG"
@@ -154,7 +176,7 @@
 (use-package sauron
   :ensure t
   :init
-  ;; (setq sauron-modules '(sauron-org sauron-notifications))
+  (setq sauron-modules '(sauron-org sauron-notifications sauron-elfeed sauron-erc))
   (setq sauron-max-line-length 120
         sauron-watch-patterns '("floatingman" "zygocat" "dnewman" "floatingman_1")
         sauron-watch-nicks '("floatingman" "zygocat" "dnewman" "floatingman_1")
@@ -166,6 +188,10 @@
     (or (string-match "^[0-9]+ new tweets" msg)))
   (add-hook 'sauron-event-block-functions #'tsp/hide-irc-user-spam)
   (add-hook 'sauron-event-block-functions #'tsp/hide-tweet-counts)
+  (add-hook 'sauron-event-block-functions
+            (lambda (origin prio msg &optional props)
+              (or
+               (string-match "#twitter_floatingman" msg))))
 
   (sauron-start-hidden)
   ;; Turn this off!
