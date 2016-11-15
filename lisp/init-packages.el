@@ -129,4 +129,20 @@
 ;; Set to t to debug package loading or nil to disable
 (setq use-package-verbose nil)
 
+;; Misc packages to try out and find a place for later.
+(use-package docker
+  :ensure t)
+
+(use-package nginx-mode
+  :ensure t)
+
+(use-package command-log-mode
+  :ensure t)
+(use-package csharp-mode
+  :ensure t)
+(use-package prodigy
+  :ensure t)
+
+
+
 (provide 'init-packages)
