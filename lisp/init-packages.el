@@ -142,7 +142,18 @@
   :ensure t)
 (use-package prodigy
   :ensure t)
+(use-package restclient
+  :ensure t)
 
+(use-package super-save
+  :defer t
+  :config
+  (progn
+    (dolist (f '(select-window
+                 select-window-by-number
+                 ace-select-window))
+      (add-to-list 'super-save-triggers (symbol-name f)))
+    (super-save-initialize)))
 
 
 (provide 'init-packages)
