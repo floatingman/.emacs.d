@@ -1476,7 +1476,7 @@ so change the default 'F' binding in the agenda to allow both"
               (search category-up))))
 
 ;; Start the weekly agenda on Monday
-(setq org-agenda-start-on-weekday 1)
+(setq org-agenda-start-on-weekday 0)
 
 ;; Enable display of the time grid so we can see the marker for the current time
 (setq org-agenda-time-grid (quote((daily today remove-match)
