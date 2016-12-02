@@ -25,6 +25,7 @@
           ;; Auto refresh dired
           global-auto-revert-non-file-buffers t
           wdired-allow-to-change-permissions t)
+    (when *is-a-mac* (setq trash-directory "~/.Trash"))          
     (define-key dired-mode-map (kbd "RET") 'dired-find-alternate-file)
     (define-key dired-mode-map (kbd "C-M-u") 'dired-up-directory)
     (define-key dired-mode-map (kbd "M-o") #'my/dired-open)
