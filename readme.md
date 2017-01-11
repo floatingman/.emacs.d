@@ -15,5 +15,9 @@ I got tired of my big fat emacs config file.  I felt that my config was growing 
 Initially or when deleting the elpa directory, I have to start and stop emacs a few times to make sure everything gets installed.  I also have to delete the org mode folder in the elpa directory, which gets installed because of another dependency I believe. 
 Honestly, I don't use this much on Windows anymore **so your mileage may vary**.
 
+### Some tools to install on a Mac
+1. GPGTools - https://gpgtools.org/
+2. MacTex - https://tug.org/mactex/
+
 ## Customizations 
 I have a symbolic linked directory, "personal", in my home directory to a dropbox folder I use for synchronizing my customizations, news feeds, passwords, etc.
