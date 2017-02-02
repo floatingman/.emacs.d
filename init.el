@@ -106,6 +106,7 @@
 (use-package init-deft)
 (use-package init-hugo)
 (use-package init-r)
+(use-package init-groovy)
 (use-package init-lisp)
 (use-package init-ivy)
 ;;; Post initialization

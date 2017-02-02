@@ -1,3 +1,5 @@
+(use-package jdee-mode)
+
 ;; via http://emacs.stackexchange.com/questions/17327/how-to-have-c-offset-style-correctly-detect-a-java-constructor-and-change-indent
 (defun my/point-in-defun-declaration-p ()
   (let ((bod (save-excursion (c-beginning-of-defun)
