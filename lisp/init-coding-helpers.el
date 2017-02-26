@@ -158,15 +158,27 @@
 
 ;;   (sp-local-pair 'web-mode "<" nil :when '(sp-web-mode-is-code-context)))
 (use-package smartparens
+  :defer 5
+  :diminish smartparens-mode
   :ensure smartparens
+  :bind (("M-9" . sp-backward-sexp)
+         ("M-0" . sp-forward-sexp))
+  :init
+  (show-smartparens-global-mode t)
+  (add-hook 'prog-mode-hook #'turn-on-smartparens-mode)
   :config
   (progn
     (require 'smartparens-config)
     (require 'smartparens-html)
-    ;;(require 'smartparens-python)
+    (require 'smartparens-python)
     (require 'smartparens-latex)
-    (smartparens-global-mode t)
-    (show-smartparens-global-mode t)
+
+    ;; Remove the M-<backspace> binding that smartparens adds
+    (let ((disabled '("M-<backspace>")))
+      (setq sp-smartparens-bindings
+            (cl-remove-if (lambda (key-command)
+                            (member (car key-command) disabled))
+                          sp-smartparens-bindings)))
 
     (define-key sp-keymap (kbd "C-(") 'sp-forward-barf-sexp)
     (define-key sp-keymap (kbd "C-)") 'sp-forward-slurp-sexp)
@@ -203,7 +215,19 @@
     (define-key sp-keymap (kbd "H-s n") 'sp-add-to-next-sexp)
     (define-key sp-keymap (kbd "H-s j") 'sp-join-sexp)
     (define-key sp-keymap (kbd "H-s s") 'sp-split-sexp)
-    ))
+
+    (sp-local-pair 'minibuffer-inactive-mode "'" nil :actions nil)
+    ;; Remove '' pairing in elisp because quoting is used a ton
+    (sp-local-pair 'emacs-lisp-mode "'" nil :actions nil)
+
+    (sp-with-modes '(html-mode sgml-mode)
+      (sp-local-pair "<" ">"))
+
+    (sp-with-modes sp--lisp-modes
+      (sp-local-pair "(" nil :bind "C-("))
+
+    (sp-local-pair 'web-mode "<" nil :when '(sp-web-mode-is-code-context)))
+  )
 
 ;; flycheck for all your fly inspection needs
 (use-package flycheck

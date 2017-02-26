@@ -8,6 +8,9 @@
 (use-package markdown-mode
   :ensure t)
 
+(use-package haml-mode
+  :ensure t)
+
 (use-package edit-server
   :ensure t
   :init (edit-server-start)
