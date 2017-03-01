@@ -220,13 +220,11 @@
     ;; Remove '' pairing in elisp because quoting is used a ton
     (sp-local-pair 'emacs-lisp-mode "'" nil :actions nil)
 
-    (sp-with-modes '(html-mode sgml-mode)
-      (sp-local-pair "<" ">"))
+    (sp-pair "%" "%" :wrap "C-%")
+    (sp-pair "<" ">" :wrap "C->") 
 
     (sp-with-modes sp--lisp-modes
-      (sp-local-pair "(" nil :bind "C-("))
-
-    (sp-local-pair 'web-mode "<" nil :when '(sp-web-mode-is-code-context)))
+      (sp-local-pair "(" nil :bind "C-(")))
   )
 
 ;; flycheck for all your fly inspection needs

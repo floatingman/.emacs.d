@@ -1,13 +1,3 @@
-(defun my/web-mode-hook ()
-  (setq web-mode-enable-auto-pairing 1))
-
-(defun my/sp-web-mode-is-code-context (id action context)
-  (when (and (eq action 'insert)
-             (not (or (get-text-property (point) 'part-side)
-                      (get-text-property (point) 'block-side))))
-    t))
-
-
 (use-package web-mode
   :ensure t
   :mode (("\\.ejs\\'"        . web-mode)
@@ -21,9 +11,9 @@
   :config
   (progn
     (setq web-mode-content-types-alist
-	  '(("json" . "/some/path/.*\\.api\\'")
-	    ("xml"  . "/other/path/.*\\.api\\'")
-	    ("jsx"  . "/some/react/path/.*\\.js[x]?\\'")))
+          '(("json" . "/some/path/.*\\.api\\'")
+            ("xml"  . "/other/path/.*\\.api\\'")
+            ("jsx"  . "/some/react/path/.*\\.js[x]?\\'")))
     (setq web-mode-markup-indent-offset 2)
     (setq web-mode-code-indent-offset 2)
     (setq web-mode-css-indent-offset 2)
@@ -37,11 +27,8 @@
     (defun sp-web-mode-is-code-context (id action context)
       (and (eq action 'insert)
            (not (or (get-text-property (point) 'part-side)
-                    (get-text-property (point) 'block-side)))))
-
-    
-    ))
-
+                    (get-text-property (point) 'block-side))))))
+  )
 
 (use-package emmet-mode
   :ensure t
@@ -69,6 +56,5 @@
   (global-set-key (kbd "C-c C-l p") 'lorem-ipsum-insert-paragraphs)
   (global-set-key (kbd "C-c C-l l") 'lorem-ipsum-insert-list)
   )
-
 
 (provide 'init-web)

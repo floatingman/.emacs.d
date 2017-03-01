@@ -109,6 +109,7 @@
 (use-package init-groovy)
 (use-package init-lisp)
 (use-package init-ivy)
+(use-package init-ruby)
 ;;; Post initialization
 ;; start a server only in text mode
 (use-package server
