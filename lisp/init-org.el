@@ -20,7 +20,7 @@
 (require 'org-crypt)
 (require 'org-protocol)
 ;;(require 'smex)
-(require 'org-mime)
+;;(require 'org-mime)
 ;; Explicitly load required exporters
 (require 'ox-html)
 (require 'ox-latex)

@@ -36,11 +36,15 @@
   :config
   (add-hook 'css-mode-hook  'emmet-mode)
   (add-hook 'web-mode-hook 'emmet-mode)
+  (add-hook 'sgml-mode-hook 'emmet-mode)
+  (add-hook 'emmet-mode-hook (lambda () (setq emmet-indentation 2)))
   )
 
 (use-package web-beautify
   :ensure t
-  :defer t)
+  :defer t
+  :config
+  (setq web-beautify-args '("--indent-size" "2" "-f" "-")))
 
 (use-package scss-mode
   :ensure t
