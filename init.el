@@ -19,7 +19,7 @@
 (defconst *is-windows* (eq system-type 'windows-nt))
 (defconst *is-linux* (eq system-type 'gnu/linux))
 (defconst *is-gui* (not (eq window-system nil)))
-
+(defvar running-alternate-emacs nil)
 ;; Load a development version of CEDET instead of built-in one
 (setq cedetpath "override/cedet/cedet-devel-load.el")
 ;; (when (file-exists-p (expand-file-name cedetpath user-emacs-directory))
@@ -80,6 +80,7 @@
 (use-package init-mswindows)
 (use-package init-theme)
 (use-package init-dired)
+(use-package init-display)
 (use-package init-completion)
 (use-package init-coding-helpers)
 (use-package init-functions)

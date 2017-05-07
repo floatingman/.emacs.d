@@ -73,4 +73,28 @@ couldn't figure things out (ex: syntax errors)."
 
 (define-key lisp-mode-shared-map (kbd "RET") 'reindent-then-newline-and-indent)
 
+(defun do-eval-buffer ()
+  (interactive)
+  (call-interactively 'eval-buffer)
+  (message "Buffer has been evaluated"))
+
+(defun do-eval-region ()
+  (interactive)
+  (call-interactively 'eval-region)
+  (message "Region has been evaluated"))
+
+(bind-keys :prefix-map my-lisp-devel-map
+           :prefix "C-c e"
+           ("E" . elint-current-buffer)
+           ("b" . do-eval-buffer)
+           ("c" . cancel-debug-on-entry)
+           ("d" . debug-on-entry)
+           ("e" . toggle-debug-on-error)
+           ("f" . emacs-lisp-byte-compile-and-load)
+           ("j" . emacs-lisp-mode)
+           ("l" . find-library)
+           ("r" . do-eval-region)
+           ("s" . scratch)
+           ("z" . byte-recompile-directory))
+
 (provide 'init-elisp)
