@@ -85,5 +85,12 @@
 (use-package json-mode
   :ensure t
   :defer t)                             
+(use-package jade-mode
+  :ensure t
+  :defer t)
+
+(use-package sws-mode
+  :ensure t
+  :defer t)
 
 (provide 'init-javascript)
