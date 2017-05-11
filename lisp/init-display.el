@@ -34,19 +34,19 @@
     (if running-alternate-emacs
         "-*-Myriad Pro-normal-normal-normal-*-20-*-*-*-p-0-iso10646-1"
       ;; "-*-Source Code Pro-normal-normal-normal-*-20-*-*-*-m-0-iso10646-1"
-      "-*-Hack-normal-normal-normal-*-18-*-*-*-m-0-iso10646-1"
+      "-*-Hack-normal-normal-normal-*-14-*-*-*-m-0-iso10646-1"
       ))
    ((eq display-name 'macbook-pro)
     (if running-alternate-emacs
         "-*-Myriad Pro-normal-normal-normal-*-20-*-*-*-p-0-iso10646-1"
       ;; "-*-Source Code Pro-normal-normal-normal-*-20-*-*-*-m-0-iso10646-1"
-      "-*-Hack-normal-normal-normal-*-16-*-*-*-m-0-iso10646-1"
+      "-*-Hack-normal-normal-normal-*-14-*-*-*-m-0-iso10646-1"
       ))
    ((eq display-name 'macbook-pro-vga)
     (if running-alternate-emacs
         "-*-Myriad Pro-normal-normal-normal-*-20-*-*-*-p-0-iso10646-1"
       ;; "-*-Source Code Pro-normal-normal-normal-*-20-*-*-*-m-0-iso10646-1"
-      "-*-Hack-normal-normal-normal-*-16-*-*-*-m-0-iso10646-1"
+      "-*-Hack-normal-normal-normal-*-14-*-*-*-m-0-iso10646-1"
       ))
    ((string= (system-name) "ubuntu")
     ;; "-*-Source Code Pro-normal-normal-normal-*-20-*-*-*-m-0-iso10646-1"
