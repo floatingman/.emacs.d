@@ -82,8 +82,8 @@ request/
 saved-places
 rake.cache
 .emacs-custom.el
-projectile.cache 
-ido.last 
+projectile.cache
+ido.last
 
 /helm-history
 /.elfeed
@@ -98,3 +98,4 @@ srecode-map.el
 /.places
 SessionDesktop.el
 network-security.data
+/override/
