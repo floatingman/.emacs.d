@@ -1,4 +1,5 @@
 (use-package elfeed
+  :disabled
   :ensure t
 	:config
 	(progn
