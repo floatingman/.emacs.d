@@ -5,10 +5,8 @@ I got tired of my big fat emacs config file.  I felt that my config was growing 
 
 ## Installing
 1. git clone repository
-2. git submodule init
-3. git submodule update
 4. Install texinfo and texi2html with package manager.
-4. cd into override/org-mode and run make
+4. cd into override/org-mode and run make uncompiled
 5. cd into override/cedet and run make or on Windows run "emacs -Q -l cedet-build.el -f cedet-build" instead of make
 
 ## Caveats
