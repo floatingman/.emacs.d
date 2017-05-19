@@ -6,6 +6,7 @@ I got tired of my big fat emacs config file.  I felt that my config was growing 
 ## Installing
 1. git clone repository
 4. Install texinfo and texi2html with package manager.
+3. Make a tmp directory in the .emacs.d directory
 4. cd into override/org-mode and run make uncompiled
 5. cd into override/cedet and run make or on Windows run "emacs -Q -l cedet-build.el -f cedet-build" instead of make
 
