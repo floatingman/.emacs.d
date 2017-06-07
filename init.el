@@ -20,20 +20,7 @@
 (defconst *is-linux* (eq system-type 'gnu/linux))
 (defconst *is-gui* (not (eq window-system nil)))
 (defvar running-alternate-emacs nil)
-;; Load a development version of CEDET instead of built-in one
-;; (setq cedetpath "override/cedet/cedet-devel-load.el")
-;; (when (file-exists-p (expand-file-name cedetpath user-emacs-directory))
-;;   (load-file (expand-file-name cedetpath user-emacs-directory))
-;;   ;; Use the full Java 1.5 grammar to parse Java files
-;;   (autoload 'wisent-java-default-setup "semantic/wisent/java"
-;;     "Hook run to setup Semantic in `java-mode'." nil nil))
-
-;; load development version of org-mode
-(setq orgpath "override/org-mode/lisp/org.el")
-(when (file-exists-p (expand-file-name orgpath user-emacs-directory))
-  (add-to-list 'load-path "~/.emacs.d/override/org-mode/lisp")
-  (add-to-list 'load-path "~/.emacs.d/override/org-mode/contrib/lisp")
-  (require 'org))
+(defvar running-development-emacs nil)
 
 ;;(defvar my/background 'light)
 (defvar my/background 'dark)
@@ -75,8 +62,24 @@
 (use-package better-defaults
   :ensure t)
 (use-package init-general)
-(when (file-exists-p "~/personal/org/todo.org")
-  (use-package init-org))
+(use-package init-org
+  :load-path ("override/org-mode/contrib/lisp"
+              "override/org-mode/lisp")
+  :commands my-org-startup
+  :bind (("M-C" . jump-to-org-agenda)
+         ("M-m" . org-smart-capture)
+         ("M-M" . org-inline-note)
+         ("C-c a" . org agenda)
+         ("C-c S" . org-store-link)
+         ("C-c l" . org-insert-link)
+         ("C-. n" . org-velocity-read))
+  :defer 30
+  :config
+  (when (and nil
+             (not running-alternate-emacs)
+             (not running-development-emacs))
+    (run-with-idle-timer 300 t 'jump-to-org-agenda)
+    (my-org-startup)))
 (use-package init-mswindows)
 (use-package init-theme)
 (use-package init-dired)

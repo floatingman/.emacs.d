@@ -1,30 +1,86 @@
-;;;;; ;;;;; ;;;;; ORG ;;;;; ;;;;; ;;;;;
-;; reorganized org mode section to fit with http://doc.norang.ca/org-mode.html
-;; in order to update it more easely
-;;3.1 installing org-mode
+;;;_, Org-mode
 
-(use-package org-pomodoro
-  :ensure t
-  :commands (org-pomodoro)
-  :config
-  (setq alert-user-configuration (quote ((((:category . "org-pomodoro")) libnotify nil)))))
-
-
-
-;;4.2 Org-Mode Setup
-(add-to-list 'auto-mode-alist '("\\.\\(org\\|org_archive\\|txt\\)$" . org-mode))
 (require 'cl)
+(require 'use-package)
 
-(require 'org-checklist)
-(require 'org-id)
+(load "org-settings")
+
+(require 'org)
+(require 'org-agenda)
+(require 'org-smart-capture)
 (require 'org-crypt)
-(require 'org-protocol)
-;;(require 'smex)
-;;(require 'org-mime)
-;; Explicitly load required exporters
-(require 'ox-html)
-(require 'ox-latex)
-(require 'ox-ascii)
+(require 'org-bbdb)
+(require 'org-devonthink)
+(require 'ob-python)
+(require 'ob-ruby)
+(require 'ob-emacs-lisp)
+(require 'ob-haskell)
+(require 'ob-sh)
+(require 'ob-md)
+
+(defconst my-org-soft-red    "#fcebeb")
+(defconst my-org-soft-orange "#fcf5eb")
+(defconst my-org-soft-yellow "#fcfceb")
+(defconst my-org-soft-green  "#e9f9e8")
+(defconst my-org-soft-blue   "#e8eff9")
+(defconst my-org-soft-purple "#f3e8f9")
+
+(declare-function cfw:open-calendar-buffer "calfw")
+(declare-function cfw:refresh-calendar-buffer "calfw")
+(declare-function cfw:org-create-source "calfw-org")
+(declare-function cfw:cal-create-source "calfw-cal")
+
+(defun org-fit-agenda-window ()
+  "Fit the window to the buffer size."
+  (and (memq org-agenda-window-setup '(reorganize-frame))
+       (fboundp 'fit-window-to-buffer)
+       (fit-window-to-buffer)))
+
+(defun my-org-startup ()
+  (org-agenda-list)
+  (org-fit-agenda-window)
+  (org-agenda-to-appt))
+
+(defun my-calendar ()
+  (interactive)
+  (let ((buf (get-buffer "*cfw-calendar*")))
+    (if buf
+        (pop-to-buffer buf nil)
+      (cfw:open-calendar-buffer
+       :contents-sourcres
+       (list (cfw:org-create-source "Dark Blue")
+             (cfw:cal-create-source "Dark Orange"))
+       :view 'two-weeks))))
+
+(use-package org-autolist
+  :load-path "site-lisp/org-autolist"
+  :commands org-autolist-mode)
+
+(use-package calfw
+  :load-path "site-lisp/emacs-calfw"
+  :bind ("C-c A" . my-calendar)
+  :init
+  (progn
+    (use-package calfw-cal)
+    (use-package calfw-org)
+
+    (bind-key "M-n" 'cfw:navi-next-month-command cfw:calendar-mode-map)
+    (bind-key "M-p" 'cfw:navi-previous-month-command cfw: calendar-mode-map))
+
+  :config
+  (progn
+    ;; Unicode characters
+    (setq cfw:fchar-junction ?╋
+          cfw:fchar-vertical-line ?┃
+          cfw:fchar-horizontal-line ?━
+          cfw:fchar-left-junction ?┣
+          cfw:fchar-right-junction ?┫
+          cfw:fchar-top-junction ?┯
+          cfw:fchar-top-left-corner ?┏
+          cfw:fchar-top-right-corner ?┓)
+
+    (bind-key "j" 'cfw:navi-goto-date-command cfw:calendar-mode-map)
+    (bind-key "g" 'cfw:refresh-calendar-buffer cfw:calendar-mode-map)))
 
 (use-package org-bullets
   :ensure t
