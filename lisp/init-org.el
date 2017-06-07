@@ -889,3 +889,10 @@ Summary: %s" product component version priority severity heading) ?\n ?\n)
   ;; (shell-command "git remote rm ext/orgaggregate")
   :disabled t
   :load-path "site-lisp/orgaggregate")
+
+(use-package outorg
+  :load-path "site-lisp/outorg"
+  :bind ("C-c '" . outorg-edit-as-org)
+  :config
+  (require 'outshine))
+
