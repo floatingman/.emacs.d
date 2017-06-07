@@ -896,3 +896,11 @@ Summary: %s" product component version priority severity heading) ?\n ?\n)
   :config
   (require 'outshine))
 
+(use-package outshine
+  :load-path ("site-lisp/outshine"
+              "site-lisp/navi")
+  :commands outshine-hook-function
+  ;; :init
+  ;; (add-hook 'outline-minor-mode-hook 'outshine-hook-function)
+  :config
+  (use-package navi-mode))
