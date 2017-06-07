@@ -904,3 +904,13 @@ Summary: %s" product component version priority severity heading) ?\n ?\n)
   ;; (add-hook 'outline-minor-mode-hook 'outshine-hook-function)
   :config
   (use-package navi-mode))
+
+(use-package poporg
+  :load-path "site-lisp/poporg"
+  :bind ("C-c e o" . poporg-dwim))
+
+(use-package org-wiki
+  :load-path "site-lisp/org-wiki"
+  :defer 5)
+
+(provide 'init-org)
