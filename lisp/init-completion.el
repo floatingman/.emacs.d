@@ -8,7 +8,7 @@
 
 (use-package company
   :ensure t
-  :diminish company-mode
+  :diminish "CM"
   :bind ("C-." . company-complete)
   :init
   (add-hook 'after-init-hook #'global-company-mode)

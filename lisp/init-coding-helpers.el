@@ -29,7 +29,7 @@
 ;;Projects
 (use-package projectile
   :ensure t
-  :diminish projectile-mode
+  :diminish "pm"
   :config
   (progn
     (setq projectile-keymap-prefix (kbd "C-c p"))
@@ -284,6 +284,7 @@
 
 (use-package editorconfig
   :ensure t
+  :diminish "ec"
   :init
   (add-hook 'prog-mode-hook (editorconfig-mode 1))
   (add-hook 'text-mode-hook (editorconfig-mode 1))

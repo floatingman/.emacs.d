@@ -8,6 +8,7 @@
 
 (use-package ivy-bibtex
   :ensure t
+  :disabled
   :config
   (setq bibtex-completion-bibliography my/bib-file-location)
   (bind-key* "C-c C-r" #'ivy-bibtex)

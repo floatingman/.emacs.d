@@ -1,19 +1,16 @@
 (use-package js2-mode
   :ensure t
-  :ensure ac-js2
-  :defer t
   :mode (("\\.js\\'" . js2-mode))
   :config
   (progn
     (add-hook 'js-mode-hook 'js2-minor-mode)
+    (add-hook 'js2-mode-hook #'js2-imenu-extras-mode)
     (add-hook 'js2-mode-hook 'ac-js2-mode)
+    (add-hook 'js2-mode-hook (lambda () (add-hook 'xref-backend-functions #'xref-js2-xref-backend nil t)))
     (add-to-list 'interpreter-mode-alist '("node" . js2-mode))
     (setq-default
      js-indent-level 2
-     js2-basic-offset 2
-     ;; Supress js2 mode errors
-     js2-mode-show-parse-errors nil
-     js2-mode-show-strict-warnings)
+     js2-basic-offset 2)
     )
   )
 
@@ -30,16 +27,22 @@
 
 (use-package js2-refactor
   :ensure t
-  :defer t
   :config
   (progn
     (add-hook 'js2-mode-hook (lambda () (js2-refactor-mode t)))
-    (js2r-add-keybindings-with-prefix "C-c C-m"))
+    (js2r-add-keybindings-with-prefix "C-c C-r")
+    (define-key js2-mode-map (kbd "C-k") #'js2r-kill))
 	)
+(use-package xref-js2
+  :ensure t
+  :config
+  (progn
+    (define-key js-mode-map (kbd "M-.") nil)
+    )
+  )
 
 (use-package tern
   :ensure t
-  :defer t
   :config
 	(progn
 		(add-hook 'js2-mode-hook (lambda () (tern-mode t)))))
@@ -56,27 +59,11 @@
   :defer t
 	)
 
-(use-package skewer-mode
+(use-package indium
   :ensure t
-  :defer t
-	:config
-	(progn
-		(require 'skewer-repl)
-		(add-hook 'js2-mode-hook 'skewer-mode)
-		(add-hook 'css-mode-hook 'skewer-css-mode)
-		(add-hook 'html-mode-hook 'skewer-html-mode)))
-
-(defun skewer-start ()
-  (interactive)
-  (let ((httpd-port 8023))
-    (httpd-start)
-    (message "Ready to skewer the browser. Now jack in with the bookmarklet.")))
-
-(defun skewer-demo ()
-  (interactive)
-  (let ((httpd-port 8024))
-    (run-skewer)
-    (skewer-repl)))
+  :config
+  (progn
+    (add-hook 'js-mode-hook #'indium-interaction-mode)))
 
 ;; enable flycheck for javascript
 (add-hook 'js-mode-hook

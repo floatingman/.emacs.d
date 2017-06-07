@@ -111,6 +111,7 @@
 (use-package init-lisp)
 (use-package init-ivy)
 (use-package init-ruby)
+(use-package init-diminish)
 ;;; Post initialization
 ;; start a server only in text mode
 (use-package server

@@ -6,7 +6,7 @@
          ("\\.mustache\\'"   . web-mode)
          ("\\.jinja\\'"      . web-mode)
          ("\\.php\\'"        . web-mode)
-         ("\\.js[x]?\\'"     . web-mode))
+         ("\\.jsx\\'"        . web-mode))
   :defer t
   :config
   (progn
