@@ -10,13 +10,12 @@
 (require 'org-smart-capture)
 (require 'org-crypt)
 (require 'org-bbdb)
-(require 'org-devonthink)
 (require 'ob-python)
 (require 'ob-ruby)
 (require 'ob-emacs-lisp)
 (require 'ob-haskell)
 (require 'ob-sh)
-(require 'ob-md)
+(require 'ox-md)
 
 (defconst my-org-soft-red    "#fcebeb")
 (defconst my-org-soft-orange "#fcf5eb")
@@ -47,7 +46,7 @@
     (if buf
         (pop-to-buffer buf nil)
       (cfw:open-calendar-buffer
-       :contents-sourcres
+       :contents-sources
        (list (cfw:org-create-source "Dark Blue")
              (cfw:cal-create-source "Dark Orange"))
        :view 'two-weeks))))
@@ -220,7 +219,7 @@ To use this function, add it to `org-agenda-finalize-hook':
        (gnus-string-remove-all-properties (substring message-id 2)))
     (org-mac-message-open message-id)))
 
-(add-to-list 'org-link-protocols (list "message" 'org-my-message-open nil))
+;;(add-to-list 'org-link-protocols (list "message" 'org-my-message-open nil))
 
 (defun save-org-mode-files ()
   (dolist (buf (buffer-list))
@@ -914,3 +913,10 @@ Summary: %s" product component version priority severity heading) ?\n ?\n)
   :defer 5)
 
 (provide 'init-org)
+
+;; Local Variables:
+;; mode: emacs-lisp
+;; outline-regexp: "^;;;_\\([,. ]+\\)"
+;; End:
+
+;;; init-org.el ends here

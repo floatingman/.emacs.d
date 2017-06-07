@@ -69,7 +69,7 @@
   :bind (("M-C" . jump-to-org-agenda)
          ("M-m" . org-smart-capture)
          ("M-M" . org-inline-note)
-         ("C-c a" . org agenda)
+         ("C-c a" . org-agenda)
          ("C-c S" . org-store-link)
          ("C-c l" . org-insert-link)
          ("C-. n" . org-velocity-read))
