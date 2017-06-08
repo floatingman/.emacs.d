@@ -64,7 +64,7 @@
     (use-package calfw-org)
 
     (bind-key "M-n" 'cfw:navi-next-month-command cfw:calendar-mode-map)
-    (bind-key "M-p" 'cfw:navi-previous-month-command cfw: calendar-mode-map))
+    (bind-key "M-p" 'cfw:navi-previous-month-command cfw:calendar-mode-map))
 
   :config
   (progn
@@ -116,12 +116,15 @@
   "Add overlays found in OVERLAY properties to agenda items.
 Note that habitual items are excluded, as they already
 extensively use text properties to draw the habits graph.
+
 For example, for work tasks I like to use a subtle, yellow
 background color; for tasks involving other people, green; and
 for tasks concerning only myself, blue.  This way I know at a
 glance how different responsibilities are divided for any given
 day.
+
 To achieve this, I have the following in my todo file:
+
   * Work
     :PROPERTIES:
     :CATEGORY: Work
@@ -140,11 +143,15 @@ To achieve this, I have the following in my todo file:
     :OVERLAY:  (face (:background \"#e8eff9\"))
     :END:
   ** TODO Task
+
 The colors (which only work well for white backgrounds) are:
+
   Yellow: #fdfdeb
   Green:  #e8f9e8
   Blue:   #e8eff9
+
 To use this function, add it to `org-agenda-finalize-hook':
+
   (add-hook 'org-finalize-agenda-hook 'org-agenda-add-overlays)"
   (let ((inhibit-read-only t) l c
         (buffer-invisibility-spec '(org-link)))
@@ -176,7 +183,7 @@ To use this function, add it to `org-agenda-finalize-hook':
 
 (add-hook 'org-finalize-agenda-hook 'org-agenda-add-overlays)
 
-(autoload 'gnus-goto-artical "dot-gnus")
+(autoload 'gnus-goto-article "dot-gnus")
 (autoload 'gnus-string-remove-all-properties "gnus-util")
 
 (defun gnus-summary-mark-read-and-unread-as-read (&optional new-mark)
