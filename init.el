@@ -12,6 +12,47 @@
 
 (setq message-log-max 16384)
 
+(eval-and-compile
+  (defconst emacs-environment (getenv "NIX_MYENV_NAME"))
+
+  (mapc #'(lambda (path)
+            (add-to-list 'load-path
+                         (expand-file-name path user-emacs-directory)))
+        '("site-lisp" "override" "lisp" "lisp/use-package" ""))
+
+  (defun nix-read-environment (name)
+    (let ((script
+           (nth 0 (split-string
+                   (shell-command-to-string (concat "which load-env-" name))
+                   "\n"))))
+      (if (string= script "")
+          (error "Could not find environment %s" name)
+        (with-temp-buffer
+          (insert-file-contents-literally script)
+          (when (re-search-forward "^source \\(.+\\)$" nil t)
+            (let ((script2 (match-string 1)))
+              (with-temp-buffer
+                (insert-file-contents-literally script2)
+                (when (re-search-forward "^ nativeBuildInputs=\"\\(.+?\\)\""
+                                         nil t)
+                  (let ((inputs (split-string (match-string 1))))
+                    inputs)))))))))
+  
+  (when (executable-find "nix-env")
+    (mapc #'(lambda (path)
+              (let ((share (expand-file-name "share/emacs/site-lisp" path)))
+                (if (file-directory-p share))))
+          (nix-read-environment emacs-environment)))
+  
+  (eval-after-load 'advice
+    `(setq ad-redefinition-action 'accept))
+
+  (require 'cl)
+
+  (defvar use-package-verbose t)
+  ;; (defvar use-package-expand-minimally t)
+  (require 'use-package))
+
 ;;Setup some variables for use in other config files
 
 (defconst *spell-check-support-enabled* t) ;; Enable with t if you prefer
@@ -32,21 +73,12 @@
 ;; This sets up the load path so that we can override it
 (package-initialize nil)
 
-
-;; setup load path
-(eval-and-compile
-  (mapc #'(lambda (path)
-            (add-to-list 'load-path
-                         (expand-file-name path user-emacs-directory)))
-        '("site-lisp" "override" "lisp" ))
-
-  (eval-after-load 'advice
-    `(setq ad-redefinition-action 'accept)))
-
+(require 'bind-key)
+(require 'diminish nil t)
 
 
 ;; package archives
-(require 'init-packages)
+;; (require 'init-packages)
 (setq custom-file "~/personal/.emacs-custom.el")
 (when (file-exists-p custom-file)
   (load custom-file))
