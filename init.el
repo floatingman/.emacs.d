@@ -1,10 +1,6 @@
 ;;; This file bootstraps the configuration, which is divided into
 ;;; a number of other files.
 
-;; turn on emacs debugging when starting, turn it off later
-(setq debug-on-error t)
-(setq debug-on-quit t)
-
 (defconst emacs-start-time (current-time))
 
 (unless noninteractive
@@ -18,7 +14,7 @@
   (mapc #'(lambda (path)
             (add-to-list 'load-path
                          (expand-file-name path user-emacs-directory)))
-        '("site-lisp" "override" "lisp" "lisp/use-package" ""))
+        '("site-lisp" "override" "lisp" "lisp/use-package"))
 
   (defun nix-read-environment (name)
     (let ((script
@@ -33,7 +29,7 @@
             (let ((script2 (match-string 1)))
               (with-temp-buffer
                 (insert-file-contents-literally script2)
-                (when (re-search-forward "^ nativeBuildInputs=\"\\(.+?\\)\""
+                (when (re-search-forward "^ outbuildings=\"\\(.+?\\)\""
                                          nil t)
                   (let ((inputs (split-string (match-string 1))))
                     inputs)))))))))
@@ -76,23 +72,20 @@
 (require 'bind-key)
 (require 'diminish nil t)
 
-
 ;; package archives
 ;; (require 'init-packages)
 (setq custom-file "~/personal/.emacs-custom.el")
 (when (file-exists-p custom-file)
   (load custom-file))
 
-(use-package auto-compile
-  :ensure t
-  :config (auto-compile-on-load-mode))
-(setq load-prefer-newer t)
-
-
+;; (use-package auto-compile
+;;   :ensure t
+;;   :config (auto-compile-on-load-mode))
+;; (setq load-prefer-newer t)
 
 ;; load custom config
-(use-package better-defaults
-  :ensure t)
+;;(use-package better-defaults
+;;:ensure t)
 (use-package init-general)
 (use-package init-org
   :load-path ("override/org-mode/contrib/lisp"
