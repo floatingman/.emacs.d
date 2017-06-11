@@ -104,7 +104,7 @@
 (use-package epc            :defer t :load-path "lib/emacs-epc")
 (use-package epl            :defer t :load-path "lib/epl")
 (use-package f              :defer t :load-path "lib/f-el")
-;;(use-package fame           :defer t :load-path "lib/fame")
+(use-package fame           :defer t :load-path "lib/fame")
 ;;(use-package fuzzy          :defer t :load-path "lib/fuzzy-el")
 ;;(use-package gh             :defer t :load-path "lib/gh-el")
 ;;(use-package ht             :defer t :load-path "lib/ht-el")
