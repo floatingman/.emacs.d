@@ -78,6 +78,55 @@
 (when (file-exists-p custom-file)
   (load custom-file))
 
+;;; Enable disabled commands
+
+(put 'downcase-region             'disabled nil)   ; Let downcasing work
+(put 'erase-buffer                'disabled nil)
+(put 'eval-expression             'disabled nil)   ; Let ESC-ESC work
+(put 'narrow-to-page              'disabled nil)   ; Let narrowing work
+(put 'narrow-to-region            'disabled nil)   ; Let narrowing work
+(put 'set-goal-column             'disabled nil)
+(put 'upcase-region               'disabled nil)   ; Let upcasing work
+(put 'company-coq-fold            'disabled nil)
+(put 'TeX-narrow-to-group         'disabled nil)
+(put 'LaTeX-narrow-to-environment 'disabled nil)
+
+;;; Configure libraries
+
+(eval-and-compile
+  (add-to-list 'load-path (expand-file-name "lib" user-emacs-directory)))
+
+(use-package anaphora       :defer t :load-path "lib/anaphora")
+(use-package button-lock    :defer t :load-path "lib/button-lock")
+(use-package ctable         :defer t :load-path "lib/emacs-ctable")
+(use-package dash           :defer t :load-path "lib/dash-el")
+(use-package deferred       :defer t :load-path "lib/emacs-deferred")
+(use-package epc            :defer t :load-path "lib/emacs-epc")
+(use-package epl            :defer t :load-path "lib/epl")
+(use-package f              :defer t :load-path "lib/f-el")
+(use-package fame           :defer t :load-path "lib/fame")
+(use-package fuzzy          :defer t :load-path "lib/fuzzy-el")
+(use-package gh             :defer t :load-path "lib/gh-el")
+(use-package ht             :defer t :load-path "lib/ht-el")
+(use-package let-alist      :defer t :load-path "lib/let-alist")
+(use-package logito         :defer t :load-path "lib/logito")
+(use-package makey          :defer t :load-path "lib/makey")
+(use-package marshal        :defer t :load-path "lib/marshal-el")
+(use-package pcache         :defer t :load-path "lib/pcache")
+(use-package pkg-info       :defer t :load-path "lib/pkg-info")
+(use-package popup          :defer t :load-path "lib/popup-el")
+(use-package popwin         :defer t :load-path "lib/popwin-el")
+(use-package pos-tip        :defer t :load-path "lib/pos-tip")
+(use-package request        :defer t :load-path "lib/emacs-request")
+(use-package s              :defer t :load-path "lib/s-el")
+(use-package tablist        :defer t :load-path "lib/tablist")
+(use-package uuidgen        :defer t :load-path "lib/uuidgen-el")
+(use-package web            :defer t :load-path "lib/emacs-web")
+(use-package websocket      :defer t :load-path "lib/emacs-websocket")
+(use-package web-server     :defer t :load-path "lib/emacs-web-server")
+(use-package working        :defer t :load-path "lib/working")
+(use-package xml-rpc        :defer t :load-path "lib/xml-rpc")
+
 ;; (use-package auto-compile
 ;;   :ensure t
 ;;   :config (auto-compile-on-load-mode))
@@ -156,9 +205,6 @@
 
 (add-hook 'after-init-hook #'global-flycheck-mode)
 
-;; turn off debugging after emacs starts
-(setq debug-on-error nil)
-(setq debug-on-quit nil)
 
 (when window-system
   (let ((elapsed (float-time (time-subtract (current-time)
@@ -174,4 +220,3 @@
             t))
 
 ;;; init.el ends here
-
