@@ -72,11 +72,18 @@
 (require 'bind-key)
 (require 'diminish nil t)
 
+(defsubst hook-into-modes (func &rest modes)
+  (dolist (mode-hook modes) (add-hook mode-hook func)))
+
 ;; package archives
 ;; (require 'init-packages)
 (setq custom-file "~/personal/.emacs-custom.el")
 (when (file-exists-p custom-file)
   (load custom-file))
+
+(autoload 'org-cycle "org" nil t)
+(autoload 'hippie-expand "hippie-exp" nil t)
+(autoload 'indent-according-to-mode "indent" nil t)
 
 ;;; Enable disabled commands
 
