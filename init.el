@@ -166,6 +166,7 @@
 (use-package init-javascript)
 (use-package init-web)
 (use-package init-elisp)
+(use-package init-cc)
 (use-package init-clojure)
 (use-package init-shell)
 (use-package init-java)
