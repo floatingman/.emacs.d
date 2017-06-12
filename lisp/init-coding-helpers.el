@@ -1,44 +1,56 @@
-(defun my/setup-semantic-mode ()
-  (interactive)
-  (use-package semantic
-    :ensure t
-    :init
-    (require 'semantic/ia)
-    (require 'semantic/wisent)
-    (semantic-mode t)))
-
-(add-hook 'c-mode-hook #'my/setup-semantic-mode)
-(add-hook 'java-mode-hook #'my/setup-semantic-mode)
-
-(global-set-key (kbd "RET") 'newline-and-indent)
-
 (use-package paredit
-  :ensure t
   :commands paredit-mode
-  :diminish "()"
+  :diminish paredit-mode
   :config
-  (bind-key "M-)" #'paredit-forward-slurp-sexp paredit-mode-map)
-  (bind-key "C-(" #'paredit-forward-barf-sexp paredit-mode-map)
-  (bind-key "C-)" #'paredit-forward-slurp-sexp paredit-mode-map)
-  (bind-key ")" #'paredit-close-parenthesis paredit-mode-map)
-  (bind-key "M-\"" #'my/other-window-backwards paredit-mode-map))
+  (use-package paredit-ext)
 
-(define-key emacs-lisp-mode-map (kbd "C-c .") 'find-function-at-point)
-(bind-key "C-c f" 'find-function)
+  (bind-key "C-M-l" #'paredit-recentre-on-sexp paredit-mode-map)
+
+  (bind-key ")" #'paredit-close-round-and-newline paredit-mode-map)
+  (bind-key "M-)" #'paredit-close-round paredit-mode-map)
+
+  (bind-key "M-k" #'paredit-raise-sexp paredit-mode-map)
+  (bind-key "M-I" #'paredit-splice-sexp paredit-mode-map)
+
+  (unbind-key "M-r" paredit-mode-map)
+  (unbind-key "M-s" paredit-mode-map)
+
+  (bind-key "C-. D" #'paredit-forward-down paredit-mode-map)
+  (bind-key "C-. B" #'paredit-splice-sexp-killing-backward paredit-mode-map)
+  (bind-key "C-. C" #'paredit-convolute-sexp paredit-mode-map)
+  (bind-key "C-. F" #'paredit-splice-sexp-killing-forward paredit-mode-map)
+  (bind-key "C-. a" #'paredit-add-to-next-list paredit-mode-map)
+  (bind-key "C-. A" #'paredit-add-to-previous-list paredit-mode-map)
+  (bind-key "C-. j" #'paredit-join-with-next-list paredit-mode-map)
+  (bind-key "C-. J" #'paredit-join-with-previous-list paredit-mode-map))
+
+(or (use-package mic-paren
+      :defer 5
+      :config
+      (paren-activate))
+    (use-package paren
+      :defer 5
+      :config
+      (show-paren-mode 1)))
 
 ;;Projects
 (use-package projectile
-  :ensure t
-  :diminish "pm"
+  :load-path "site-lisp/projectile"
+  :diminish projectile-mode
+  :defer 5
+  :bind-keymap ("C-c p" . projectile-command-map)
   :config
-  (progn
-    (setq projectile-keymap-prefix (kbd "C-c p"))
-    (setq projectile-completion-system 'default)
-    (setq projectile-enable-caching t)
-    (setq projectile-indexing-method 'alien)
-    (add-to-list 'projectile-globally-ignored-files "node-modules"))
-  :config
-  (projectile-global-mode))
+  (use-package helm-projectile
+    :config
+    (setq projectile-completion-system 'helm)
+    (helm-projectile-on))
+  (projectile-global-mode)
+  (bind-key "s s"
+            #'(lambda ()
+                (interactive)
+                (helm-do-grep-1 (list (projectile-projet-root)) t))
+            'projectile-command-map))
+
 
 (defun my/recursive-find-file (file &optional directory)
   "Find the first FILE in DIRECTORY or its parents."

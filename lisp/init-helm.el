@@ -74,9 +74,4 @@
 (use-package helm-css-scss
   :ensure t)
 
-(use-package helm-c-yasnippet
-  :ensure t
-  :bind
-  (("M-=" . helm-yas-complete)))
-
 (provide 'init-helm)
