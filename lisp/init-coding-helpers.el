@@ -48,7 +48,7 @@
   (bind-key "s s"
             #'(lambda ()
                 (interactive)
-                (helm-do-grep-1 (list (projectile-projet-root)) t))
+                (helm-do-grep-1 (list (projectile-project-root)) t))
             'projectile-command-map))
 
 

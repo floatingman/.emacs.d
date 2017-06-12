@@ -146,7 +146,8 @@
          ("C-c a" . org-agenda)
          ("C-c S" . org-store-link)
          ("C-c l" . org-insert-link)
-         ("C-. n" . org-velocity-read))
+         ("C-. n" . org-velocity-read)
+         )
   :defer 30
   :config
   (when (and nil
