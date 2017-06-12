@@ -85,6 +85,22 @@
 (autoload 'hippie-expand "hippie-exp" nil t)
 (autoload 'indent-according-to-mode "indent" nil t)
 
+(defvar ctl-period-map)
+(define-prefix-command 'ctl-period-map)
+(bind-key "C-." #'ctl-period-map)
+
+(bind-key* "<C-return>" #'other-window)
+
+(defun collapse-or-expand ()
+  (interactive)
+  (if (> (length (window-list))
+          1)
+      (delete-other-windows)
+    (bury-buffer)))
+
+(bind-key "C-z" #'delete-other-windows)
+
+
 ;;; Enable disabled commands
 
 (put 'downcase-region             'disabled nil)   ; Let downcasing work

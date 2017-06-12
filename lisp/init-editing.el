@@ -23,7 +23,7 @@
 ;; this is for fun, a prose checker
 ;; you need to install proselint with pip
 ;; pip install proselint
-(flycheck-define-checker proselint
+n(flycheck-define-checker proselint
   "A linter for prose."
   :command ("proselint" source-inplace)
   :error-patterns
@@ -97,6 +97,21 @@
   (eval-after-load "tex"
     '(add-to-list 'TeX-command-list '("xelatexmk" "latexmk -synctex=1 -shell-escape -xelatex %s" TeX-run-TeX nil t :help "Process file with xelatexmk")))
   (add-hook 'TeX-mode-hook '(lambda () (setq TeX-command-default "latexmk"))))
+
+(use-package selected
+  :load-path "site-lisp/selected"
+  :defer 5
+  :diminish selected-minor-mode
+  :config
+  (selected-global-mode 1)
+
+  (bind-key "[" #'align-regexp selected-keymap)
+  (bind-key "f" #'fill-region selected-keymap)
+  (bind-key "U" #'unfill-region selected-keymap)
+  (bind-key "d" #'downcase-region selected-keymap)
+  (bind-key "r" #'reverse-region selected-keymap)
+  (bind-key "s" #'sort-lines selected-keymap)
+  (bind-key "u" #'upcase-region selected-keymap))
 
 (provide 'init-editing)
 ;;; init-editing.el ends here
