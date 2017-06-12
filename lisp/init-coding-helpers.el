@@ -245,7 +245,28 @@
 
 (add-hook 'auto-revert-tail-mode-hook 'etc-log-tail-handler)
 
+(bind-key "C-. m" #'kmacro-keymap)
+
 (bind-key "C-. C-i" #'indent-rigidly)
+
+(defvar insert-and-counting--index 1)
+(defvar insert-and-counting--expr nil)
+
+(defun insert-and-counting (&optional index expr)
+  (interactive
+   (if (or current-prefix-arg
+           (not insert-and-counting--expr))
+       (list (setq insert-and-counting--index
+                   (prefix-numeric-value current-prefix-arg))
+             (setq insert-and-counting--expr
+                   (eval-expr-read-lisp-object-minibuffer "Pattern: ")))
+     (list (setq insert-and-counting--index
+                 (1+ insert-and-counting--index))
+           insert-and-counting--expr)))
+  (let ((n insert-and-counting--index))
+    (eval expr)))
+
+(bind-key "C-. C-y" #'insert-and-counting)
 
 (use-package align
   :bind (("M-["   . align-code)

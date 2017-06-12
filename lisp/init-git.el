@@ -1,40 +1,86 @@
 (use-package magit
-  :ensure t
-  :bind (("M-g M-g" . magit-status)
-         ("C-x g" . magit-status))
-  :init (add-hook 'magit-mode-hook 'hl-line-mode)
+  :load-path ("site-lisp/magit/lisp"
+              "site-lisp/with-editor")
+  :bind (("C-x g" . magit-status)
+         ("C-x G" . magit-status-with-prefix))
+  :preface
+  (defun magit-monitor (&optional no-display)
+    "Start git-monitor in the current directory."
+    (interactive)
+    (when (string-match "\\*magit: \\(.+\\)" (buffer-name))
+      (let ((name (format "*git-monitor: %s*"
+                          (match-string 1 (buffer-name)))))
+
+        (or (get-buffer name)
+            (let ((buf (get-buffer-create name)))
+              (ignore-errors
+                (start-process "*git-monitor*" buf "git-monitor"
+                               "-d" (expand-file-name default-directory)))
+              buf)))))
+
+  (defun magit-status-with-prefix ()
+    (interactive)
+    (let ((current-prefix-arg '(4)))
+      (call-interactively 'magit-status)))
+
+  (defun lusty-magit-status (dir &optional switch-function)
+    (interactive (list (if current-prefix-arg
+                           (lusty-read-directory)
+                         (or (magit-get-top-dir)
+                             (lusty-read-directory)))))
+    (magit-status-internal dir switch-function))
+
+  (defun eshell/git (&rest args)
+    (cond
+     ((or (null args)
+          (and (string= (car args) "status") (null (cdr args))))
+      (magit-status-internal default-directory))
+     ((and (string= (car args) "log") (null (cdr args)))
+      (magit-log "HEAD"))
+     (t (throw 'eshell-replace-command
+               (eshell-parse-command
+                "*git"
+                (eshell-stringify-list (eshell-flatten-list args)))))))
+    
+  :init
+  (add-hook 'magit-mode-hook 'hl-line-mode)
+
+  (use-package with-editor
+    ;; Magit makes use of this mode
+    :demand t
+    :commands (with-editor-async-shell-command
+               with-editor-shell-command)
+    :load-path "site-lisp/with-editor")
+
+  (use-package git-commit)
+  
   :config
   (setenv "GIT_PAGER" "")
-  (if (file-exists-p  "/usr/local/bin/emacsclient")
-      (setq magit-emacsclient-executable "/usr/local/bin/emacsclient")
-    (setq magit-emacsclient-executable (executable-find "emacsclient")))
-  (defun my/magit-browse ()
-    "Browse to the project's github URL, if available"
-    (interactive)
-    (let ((url (with-temp-buffer
-                 (unless (zerop (call-process-shell-command
-                                 "git remote -v" nil t))
-                   (error "Failed: 'git remote -v'"))
-                 (goto-char (point-min))
-                 (when (re-search-forward
-                        "github\\.com[:/]\\(.+?\\)\\.git" nil t)
-                   (format "https://github.com/%s" (match-string 1))))))
-      (unless url
-        (error "Can't find repository URL"))
-      (browse-url url)))
 
-  (define-key magit-mode-map (kbd "C-c C-b") #'my/magit-browse)
-  ;; Magit has its own binding, so re-bind them
-  (bind-key "M-1" #'my/create-or-switch-to-eshell-1 magit-mode-map)
-  (bind-key "M-2" #'my/create-or-switch-to-eshell-2 magit-mode-map)
-  (bind-key "M-3" #'my/create-or-switch-to-eshell-3 magit-mode-map)
-  (bind-key "M-4" #'my/create-or-switch-to-eshell-4 magit-mode-map))
+  (unbind-key "M-h" magit-mode-map)
+  (unbind-key "M-s" magit-mode-map)
+  (unbind-key "M-m" magit-mode-map)
+  (unbind-key "M-w" magit-mode-map)
+  (unbind-key "<C-return>" magit-file-section-map)
 
-(use-package magit-gh-pulls
-  :ensure t)
+  (diminish 'magit-wip-after-save-local-mode)
+  (diminish 'magit-wip-after-apply-mode)
+  (diminish 'magit-wip-before-change-mode)
+
+  (bind-key "U" #'magit-unstage-all magit-mode-map)
+
+  (add-hook 'magit-log-edit-mode-hook
+            #'(lambda ()
+                (set-fill-column 72)
+                (flyspell-mode 1)))
+
+  (add-hook 'magit-status-mode-hook #'(lambda () (magit-monitor t)))
+
+  (remove-hook 'server-switch-hook 'magit-commit-diff))
 
 (use-package git-gutter
   :ensure t
+  :disabled t
   :defer t
   :bind (("C-x =" . git-gutter:popup-hunk)
          ("C-c P" . git-gutter:previous-hunk)
