@@ -1,41 +1,14 @@
-;; (use-package auto-complete
-;;   :ensure t
-;;   :init
-;;   (progn
-;;     (ac-config-default)
-;;     (global-auto-complete-mode t)
-;;     ))
-
 (use-package company
-  :ensure t
-  :diminish "CM"
-  :bind ("C-." . company-complete)
-  :init
-  (add-hook 'after-init-hook #'global-company-mode)
-  (use-package company-quickhelp
-    :ensure t
-    :init
-    (add-hook 'company-mode-hook #'company-quickhelp-mode)
-    :config
-    (setq company-quickhelp-delay 1.0))
+  :load-path "site-lisp/company-mode"
+  :diminish company-mode
+  :commands company-mode
   :config
-  (setq company-idle-delay 0.2
-        ;; min prefix of 3 chars
-        company-minimum-prefix-length 3
-        ;; wrap completions around
-        company-selection-wrap-around t
-        ;; don't show numbers in completion
-        company-show-numbers nil
-        ;; don't downcase dabbrev suggestions
-        company-dabbrev-downcase nil
-        ;; sort completions by occurrence
-        company-transformers '(company-sort-by-occurrence))
-  (bind-keys :map company-active-map
-             ("C-n" . company-select-next)
-             ("C-p" . company-select-previous)
-             ("C-d" . company-show-doc-buffer)
-             ("C-l" . company-show-location)
-             ("<tab>" . company-complete)))
+  ;; From https://github.com/company-mode/company-mode/issues/87
+  ;; See also https://github.com/company-mode/company-mode/issues/123
+  (defadvice company-pseudo-tooltip-unless-just-one-frontend
+      (around only-show-tooltip-when-invoked activate)
+    (when (company-explicit-action-p)
+      ad-do-it)))
 
 (require 'skeleton)
 
@@ -121,51 +94,5 @@
   > "} catch (Exception e) {" \n
   > "throw e;" \n
   > "}" \n)
-
-;;ggtags
-(defun my/setup-helm-gtags ()
-  (interactive)
-  ;; these variables must be set before load helm-gtags
-  ;; you can change to any prefix key of your choice
-  (setq helm-gtags-prefix-key "C-c g")
-  (setq helm-gtags-ignore-case t
-        helm-gtags-auto-update t
-        helm-gtags-use-input-at-cursor t
-        helm-gtags-pulse-at-cursor t
-        helm-gtags-suggested-key-mapping t)
-  (use-package helm-gtags
-    :ensure t
-    :init (helm-gtags-mode t)
-    :diminish "")
-  ;; key bindings
-  (define-key helm-gtags-mode-map (kbd "M-s") 'helm-gtags-select)
-  (define-key helm-gtags-mode-map (kbd "M-.") 'helm-gtags-dwim)
-  (define-key helm-gtags-mode-map (kbd "M-,") 'helm-gtags-pop-stack)
-  (define-key helm-gtags-mode-map (kbd "C-c <") 'helm-gtags-previous-history)
-  (define-key helm-gtags-mode-map (kbd "C-c >") 'helm-gtags-next-history))
-
-(defun my/setup-ggtags ()
-  (interactive)
-  (ggtags-mode 1)
-  ;; turn on eldoc with ggtags
-  (setq-local eldoc-documentation-function #'ggtags-eldoc-function)
-  ;; add ggtags to the hippie completion
-  (setq-local hippie-expand-try-functions-list
-              (cons 'ggtags-try-complete-tag
-                    hippie-expand-try-functions-list))
-  ;; use helm for completion
-  (setq ggtags-completing-read-function nil))
-
-(use-package ggtags
-  :ensure t
-  :defer t
-  :init
-  (progn
-    (add-hook 'c-mode-common-hook
-              (lambda ()
-                (when (derived-mode-p 'c-mode 'c++-mode 'java-mode 'asm-mode)
-                  (my/setup-semantic-mode)
-                  (my/setup-helm-gtags))))))
-
 
 (provide 'init-completion)
