@@ -23,7 +23,7 @@
 ;; this is for fun, a prose checker
 ;; you need to install proselint with pip
 ;; pip install proselint
-n(flycheck-define-checker proselint
+(flycheck-define-checker proselint
   "A linter for prose."
   :command ("proselint" source-inplace)
   :error-patterns

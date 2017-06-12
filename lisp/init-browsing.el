@@ -18,6 +18,4 @@
     (bind-key "f" #'eww-lnum-follow eww-mode-map)
     (bind-key "F" #'eww-lnum-universal eww-mode-map)))
 
-(global-set-key (kbd "C-x m") 'browse-url-at-point)
-
 (provide 'init-browsing)
