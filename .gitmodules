@@ -1,3 +1,6 @@
 [submodule "lisp/use-package"]
 	path = lisp/use-package
 	url = git://github.com/jwiegley/use-package.git
+[submodule "snippets"]
+	path = snippets
+	url = git@github.com:floatingman/yasnippet-snippets.git
