@@ -23,11 +23,11 @@
   :ensure t)
 
 (use-package helm-swoop
-  :ensure t
+  :load-path "site-lisp/helm-swoop"
   :bind
-  (("M-i" . helm-swoop)
+  (("M-s o" . helm-swoop)
    ("M-I" . helm-swoop-back-to-last-)
-   ("C-c M-i" . helm-multi-swoop))
+   ("M-s /" . helm-multi-swoop))
   :config
   ;; When doing isearch, hand the word over to helm-swoop
   (define-key isearch-mode-map (kbd "M-i") 'helm-swoop-from-isearch)
