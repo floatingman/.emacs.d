@@ -1,100 +1,143 @@
-(defun my/turn-on-paredit-and-eldoc ()
-  (interactive)
-  (paredit-mode 1)
-  (eldoc-mode 1))
+(use-package lisp-mode
+  :defer t
+  :preface
+  (defface esk-paren-face
+    '((((class color) (background dark))
+       (:foreground "grey50"))
+      (((class color) (background light))
+       (:foreground "grey55")))
+    "Face used to dim parentheses."
+    :group 'starter-kit-faces)
 
-(add-hook 'emacs-lisp-mode-hook #'my/turn-on-paredit-and-eldoc)
-(add-hook 'ielm-mode-hook #'my/turn-on-paredit-and-eldoc)
+  (defvar slime-mode nil)
+  (defvar lisp-mode-initialized nil)
 
-(use-package eldoc
-  :ensure t
-  :diminish eldoc-mode
-  :config
-  (setq eldoc-idle-delay 0.3)
-  (set-face-attribute 'eldoc-highlight-function-argument nil
-                      :underline t :foreground "green"
-                      :weight 'bold))
+  (defun my-lisp-mode-hook ()
+    (unless lisp-mode-initialized
+      (setq lisp-mode-initialized t)
 
-;;Change the faces for elisp regex grouping:
-(set-face-foreground 'font-lock-regexp-grouping-backslash "#ff1493")
-(set-face-foreground 'font-lock-regexp-grouping-construct "#ff8c00")
+      (use-package redshank
+        :diminish redshank-mode)
 
-(defun ielm-other-window ()
-  "Run ielm on other window"
-  (interactive)
-  (switch-to-buffer-other-window
-   (get-buffer-create "*ielm*"))
-  (call-interactively 'ielm))
+      (use-package elisp-slime-nav
+        :load-path "site-lisp/elisp-slime-nav"
+        :diminish elisp-slime-nav-mode)
 
-(define-key emacs-lisp-mode-map (kbd "C-c C-z") 'ielm-other-window)
-(define-key lisp-interaction-mode-map (kbd "C-c C-z") 'ielm-other-window)
+      (use-package edebug)
 
-(use-package elisp-slime-nav
-  :ensure t
-  :diminish elisp-slime-nav-mode
-  :init (add-hook 'emacs-lisp-mode-hook #'elisp-slime-nav-mode))
+      (use-package eldoc
+        :diminish eldoc-mode
+        :commands eldoc-mode
+        :config
+        (use-package eldoc-extension
+          :disabled t
+          :defer t
+          :init
+          (add-hook 'emacs-lisp-mode-hook
+                    #'(lambda () (require 'eldoc-extension)) t))
+        (eldoc-add-command 'paredit-backward-delete
+                           'paredit-close-round))
 
-(defun my/sort-sexps-in-region (beg end)
-  "Can be handy for sorting out duplicates.
-Sorts the sexps from BEG to END. Leaves the point at where it
-couldn't figure things out (ex: syntax errors)."
-  (interactive "r")
-  (let ((input (buffer-substring beg end))
-        list last-point form result)
-    (save-restriction
-      (save-excursion
-        (narrow-to-region beg end)
-        (goto-char (point-min))
-        (setq last-point (point-min))
-        (setq form t)
-        (while (and form (not (eobp)))
-          (setq form (ignore-errors (read (current-buffer))))
-          (when form
-            (add-to-list
-             'list
-             (cons
-              (prin1-to-string form)
-              (buffer-substring last-point (point))))
-            (setq last-point (point))))
-        (setq list (sort list (lambda (a b) (string< (car a) (car b)))))
-        (delete-region (point-min) (point))
-        (insert (mapconcat 'cdr list "\n"))))))
+      (use-package cldoc
+        :commands (cldoc-mode turn-on-cldoc-mode)
+        :diminish cldoc-mode)
 
-(bind-key "M-:" 'pp-eval-expression)
+      (use-package ert
+        :bind ("C-c e t" . ert-run-tests-interactively))
 
-(defun sanityinc/eval-last-sexp-or-region (prefix)
-  "Eval region from BEG to END if active, otherwise the last sexp."
-  (interactive "P")
-  (if (and (mark) (use-region-p))
-      (eval-region (min (point) (mark)) (max (point) (mark)))
-    (pp-eval-last-sexp prefix)))
+      (use-package elint
+        :commands 'elint-initialize
+        :preface
+        (defun elint-current-buffer ()
+          (interactive)
+          (elint-initialize)
+          (elint-current-buffer))
 
-(bind-key "C-x C-e" 'sanityinc/eval-last-sexp-or-region emacs-lisp-mode-map)
+        :config
+        (add-to-list 'elint-standard-variables 'current-prefix-arg)
+        (add-to-list 'elint-standard-variables 'command-line-args-left)
+        (add-to-list 'elint-standard-variables 'buffer-file-coding-system)
+        (add-to-list 'elint-standard-variables 'emacs-major-version)
+        (add-to-list 'elint-standard-variables 'window-system))
 
-(define-key lisp-mode-shared-map (kbd "RET") 'reindent-then-newline-and-indent)
+      (use-package highlight-cl
+        :init
+        (mapc (function
+               (lambda (mode-hook)
+                 (add-hook mode-hook
+                           'highlight-cl-add-font-lock-keywords)))
+              lisp-mode-hooks))
 
-(defun do-eval-buffer ()
-  (interactive)
-  (call-interactively 'eval-buffer)
-  (message "Buffer has been evaluated"))
+      (defun my-elisp-indent-or-complete (&optional arg)
+        (interactive "p")
+        (call-interactively 'lisp-indent-line)
+        (unless (or (looking-back "^\\s-*")
+                    (bolp)
+                    (not (looking-back "[-A-Za-z0-9_*+/=<>!?]+")))
+          (call-interactively 'lisp-complete-symbol)))
 
-(defun do-eval-region ()
-  (interactive)
-  (call-interactively 'eval-region)
-  (message "Region has been evaluated"))
+      (defun my-lisp-indent-or-complete (&optional arg)
+        (interactive "p")
+        (if (or (looking-back "^\\s-*") (bolp))
+            (call-interactively 'lisp-indent-line)
+          (call-interactively 'slime-indent-and-complete-symbol)))
 
-(bind-keys :prefix-map my-lisp-devel-map
-           :prefix "C-c e"
-           ("E" . elint-current-buffer)
-           ("b" . do-eval-buffer)
-           ("c" . cancel-debug-on-entry)
-           ("d" . debug-on-entry)
-           ("e" . toggle-debug-on-error)
-           ("f" . emacs-lisp-byte-compile-and-load)
-           ("j" . emacs-lisp-mode)
-           ("l" . find-library)
-           ("r" . do-eval-region)
-           ("s" . scratch)
-           ("z" . byte-recompile-directory))
+      (defun my-byte-recompile-file ()
+        (save-excursion
+          (byte-recompile-file buffer-file-name)))
 
+      (use-package info-lookmore
+        :load-path "site-lisp/info-lookmore"
+        :config
+        (info-lookmore-elisp-cl)
+        (info-lookmore-elisp-userlast)
+        (info-lookmore-elisp-gnus)
+        (info-lookmore-apropos-elisp))
+
+      (use-package testcover
+        :commands testcover-this-defun)
+
+      (mapc (lambda (mode)
+              (info-lookup-add-help
+               :mode mode
+               :regexp "[^][()'\" \t\n]+"
+               :ignore-case t
+               :doc-spec '(("(ansicl)Symbol Index" nil nil nil))))
+            lisp-modes))
+
+    (auto-fill-mode 1)
+    (paredit-mode 1)
+    (redshank-mode 1)
+    (elisp-slime-nav-mode 1)
+
+    (local-set-key (kbd "<return>") 'paredit-newline)
+    (bind-key "<tab>" #'my-elisp-indent-or-complete emacs-lisp-mode-map)
+
+    (add-hook 'after-save-hook 'check-parens nil t)
+
+    (unless (memq major-mode
+                  '(emacs-lisp-mode inferior-emacs-lisp-mode ielm-mode))
+      (turn-on-cldoc-mode)
+      (bind-key "M-q" #'slime-reindent-defun lisp-mode-map)
+      (bind-key "M-l" #'slime-selector lisp-mode-map)))
+
+  ;; Change lambda to an actual lambda symbol
+  :init
+  (mapc
+   (lambda (major-mode)
+     (font-lock-add-keywords
+      major-mode
+      '(("(\\(lambda\\)\\>"
+         (0 (ignore
+             (compose-region (match-beginning 1)
+                             (match-end 1) ?λ))))
+        ("(\\|)" . 'esk-paren-face)
+        ("(\\(ert-deftest\\)\\>[         '(]*\\(setf[    ]+\\sw+\\|\\sw+\\)?"
+         (1 font-lock-keyword-face)
+         (2 font-lock-function-name-face
+            nil t)))))
+   lisp-modes)
+
+  (apply #'hook-into-modes 'my-lisp-mode-hook lisp-mode-hooks))
+       
 (provide 'init-elisp)

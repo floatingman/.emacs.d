@@ -8,7 +8,8 @@
          ("C-x f" . helm-multi-files)
          ("M-s b" . helm-occur)
          ("M-s n" . my-helm-find)
-         )
+         ("M-H" . helm-resume))
+  
   :preface
   (defun my-helm-find ()
     (interactive)
