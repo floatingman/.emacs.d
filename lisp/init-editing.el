@@ -6,7 +6,17 @@
 (delete-selection-mode)
 
 (use-package markdown-mode
-  :ensure t)
+  :load-path "site-lisp/markdown-mode"
+  :mode (("\\`README\\.md\\'" . gfm-mode)
+         ("\\.md\\'" . markdown-mode)
+         ("\\.markdown\\'" . markdown-mode))
+  :config
+  (use-package markdown-preview-mode
+    :load-path "site-lisp/markdown-preview-mode"
+    :config
+    (setq markdown-preview-stylesheets
+          (list "http://ftp.newartisans.com/pub/github.css"))))
+
 
 (use-package haml-mode
   :ensure t)
