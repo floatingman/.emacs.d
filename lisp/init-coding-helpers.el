@@ -194,4 +194,26 @@
         (indent-region beg end-mark nil)
         (align beg end-mark)))))
 
+(use-package compile
+  :bind (("C-c c" . compile)
+         ("M-O" . show-compilation))
+  :preface
+  (defun show-compilation ()
+    (interactive)
+    (let ((compile-buf
+           (catch 'found
+             (dolist (buf (buffer-list))
+               (if (string-match "\\*compilation\\*" (buffer-name buf))
+                   (throw 'found buf))))))
+      (if compile-buf
+          (switch-to-buffer-other-window compile-buf)
+        (call-interactively 'compile))))
+  (defun compilation-ansi-color-process-output ()
+    (ansi-color-process-output nil)
+    (set (make-local-variable 'comint-last-output-start)
+         (point-marker)))
+  :config
+  (add-hook 'compilation-filter-hook #'compilation-ansi-color-process-output))
+
+
 (provide 'init-coding-helpers)

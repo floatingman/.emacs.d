@@ -175,11 +175,8 @@
                           ".gz"
                           "~$" "/tmp/" "/ssh:" "/sudo:" "/scp:")
         recentf-auto-cleanup 600)
-  (when (not noninteractive) (recentf-mode 1))
-  
+  (when (not noninteractive) (recentf-mode 1)))
 
-
-  )
 
 ;; reload buffers when file changes on disk
 (global-auto-revert-mode t)
@@ -379,13 +376,6 @@
 ;; save whatever is in the clipboard before replacing it with the emacs text
 (setq save-interprogram-paste-before-kill t)
 
-(use-package saveplace
-  :ensure t
-  :defer t
-  :init
-  (setq-default save-place t)
-  (setq save-place-file (expand-file-name ".places" user-emacs-directory)))
-
 ;; shows the number of search hits in the modeline
 (use-package anzu
   :ensure t
@@ -400,43 +390,102 @@
 (add-hook 'prog-mode-hook #'anzu-mode)
 (add-hook 'org-mode-hook #'anzu-mode)
 
-(use-package idle-highlight-mode
-  :ensure t
-  :init
-  (add-hook 'java-mode-hook #'idle-highlight-mode)
-  (add-hook 'emacs-lisp-mode-hook #'idle-highlight-mode)
-  (add-hook 'clojure-lisp-mode-hook #'idle-highlight-mode))
-
-(use-package beacon
-  :ensure t
-  :diminish beacon-mode
-  :init (beacon-mode 1)
+(use-package crosshairs
+  :bind ("M-o c" . crosshairs-mode)
   :config
-  (add-to-list 'beacon-dont-blink-major-modes 'eshell-mode))
+  (use-package col-highlight
+    :config
+    (use-package vline)))
 
-(use-package eyebrowse
-  :ensure t
-  :init
-  (setq eyebrowse-keymap-prefix (kbd "C-c C-b"))
-  (progn
-    (defun my/create-eyebrowse-setup ()
-      (interactive)
-      "Create a default window config, if none is present"
-      (when (not (eyebrowse--window-config-present-p 2))
-        ;; there's probably a better way to do this, creating two workspaces
-        (eyebrowse-switch-to-window-config-2)
-        (eyebrowse-switch-to-window-config-1)))
-    (setq eyebrowse-wrap-around t
-          eyebrowse-new-workspace t)
-    (eyebrowse-mode 1)
-    (global-set-key (kbd "C-'") 'eyebrowse-next-window-config)
-    
-    (add-hook 'after-init-hook #'my/create-eyebrowse-setup)))
+(use-package hi-lock
+  :bind (("M-o l" . highlight-lines-matching-regexp)
+         ("M-o r" . highlight-regexp)
+         ("M-o w" . highlight-phrase)))
 
-(use-package smartscan
-  :ensure t
-  :init (add-hook #'prog-mode-hook #'smartscan-mode)
+(use-package hilit-chg
+  :bind ("M-o C" . highlight-changes-mode))
+
+(use-package hl-line
+  :commands hl-line-mode
+  :bind (("M-o h" . hl-line-mode))
   :config
-  (bind-key "M-'" #'other-window smartscan-map))
+  (use-package hl-line+))
+
+(use-package ido
+  :demand t
+  :defines (ido-cur-item
+            ido-require-match
+            ido-selected
+            ido-final-text
+            ido-show-confirm-message)
+  :bind (("C-x b" . ido-switch-buffer)
+         ("C-x B" . ido-switch-buffer-other-window))
+  :preface
+  (eval-when-compile
+    (defvar ido-require-match)
+    (defvar ido-cur-item)
+    (defvar ido-show-confirm-message)
+    (defvar ido-selected)
+    (defvar ido-final-text))
+
+  (defun ido-smart-select-text ()
+    "Select the current completed item.  Do NOT descend into directories."
+    (interactive)
+    (when (and (or (not ido-require-match)
+                   (if (memq ido-require-match
+                             '(confirm confirm-after-completion))
+                       (if (or (eq ido-cur-item 'dir)
+                               (eq last-command this-command))
+                           t
+                         (setq ido-show-confirm-message t)
+                         nil))
+                   (ido-existing-item-p))
+               (not ido-incomplete-regexp))
+      (when ido-current-directory
+        (setq ido-exit 'takeprompt)
+        (unless (and ido-text (= 0 (length ido-text)))
+          (let ((match (ido-name (car ido-matches))))
+            (throw 'ido
+                   (setq ido-selected
+                         (if match
+                             (replace-regexp-in-string "/\\'" "" match)
+                           ido-text)
+                         ido-text ido-selected
+                         ido-final-text ido-text)))))
+      (exit-minibuffer)))
+
+  :config
+  (ido-mode 'buffer)
+
+  (use-package ido-hacks
+    :demand t
+    :load-path "site-lisp/ido-hacks"
+    :bind ("M-x" . my-ido-hacks-execute-extended-command)
+    :config
+    (ido-hacks-mode 1)
+
+    (defvar ido-hacks-completing-read (symbol-function 'completing-read))
+    (fset 'completing-read ido-hacks-orgin-completing-read-function)
+    (defun my-ido-hacks-execute-extended-command (&optional arg)
+      (interactive "P")
+      (flet ((completing-read
+              (prompt collection &optional predicate require-match
+                      initial-input hist def inherit-input-method)
+              (funcall ido-hacks-completing-read
+                       prompt collection predicate require-match
+                       initial-input hist def inherit-input-method)))
+        (ido-hacks-execute-extended-command arg))))
+(use-package flx-ido
+    :disabled t
+    :load-path "site-lisp/flx"
+    :config
+    (flx-ido-mode 1))
+
+  (add-hook 'ido-minibuffer-setup-hook
+            #'(lambda ()
+                (bind-key "<return>" #'ido-smart-select-text
+                          ido-file-completion-map))))
+
+
 
 (provide 'init-general)
