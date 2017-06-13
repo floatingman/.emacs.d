@@ -1,48 +1,3 @@
-(setenv "PAGER" "cat")
-
-(custom-set-variables
- '(comint-scroll-to-bottom-on-input t)  ; always insert at the bottom
- '(comint-scroll-to-bottom-on-output nil) ; always add output at the bottom
- '(comint-scroll-show-maximum-output t) ; scroll to show max possible output
- ;; '(comint-completion-autolist t)     ; show completion list when ambiguous
- '(comint-input-ignoredups t)           ; no duplicates in command history
- '(comint-completion-addsuffix t)       ; insert space/slash after file completion
- '(comint-prompt-read-only nil)         ; if this is t, it breaks shell-command
- '(comint-get-old-input (lambda () "")) ; what to run when i press enter on a
-                                        ; line above the current prompt
- )
-
-(defun my/shell-kill-buffer-sentinel (process event)
-  (when (memq (process-status process) '(exit signal))
-    (kill-buffer)))
-
-(defun my/kill-process-buffer-on-exit ()
-  (set-process-sentinel (get-buffer-process (current-buffer))
-                        #'my/shell-kill-buffer-sentinel))
-
-(dolist (hook '(ielm-mode-hook term-exec-hook comint-exec-hook))
-  (add-hook hook 'my/kill-process-buffer-on-exit))
-
-(defun set-scroll-conservatively ()
-  "Add to shell-mode-hook to prevent jump-scrolling on newlines in shell buffers."
-  (set (make-local-variable 'scroll-conservatively) 10))
-
-(defadvice comint-previous-matching-input
-    (around suppress-history-item-messages activate)
-  "Suppress the annoying 'History item : NNN' messages from shell history isearch.
-If this isn't enough, try the same thing with
-comint-replace-by-expanded-history-before-point."
-  (let ((old-message (symbol-function 'message)))
-    (unwind-protect
-        (progn (fset 'message 'ignore) ad-do-it)
-      (fset 'message old-message))))
-
-(add-hook 'shell-mode-hook 'set-scroll-conservatively)
-;; truncate buffers continuously
-(add-hook 'comint-output-filter-functions 'comint-truncate-buffer)
-;; interpret and use ansi color codes in shell output windows
-(add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
-
 (use-package eshell
   :commands (eshell eshell-command)
   :preface
@@ -86,28 +41,33 @@ comint-replace-by-expanded-history-before-point."
   (use-package esh-toggle
     :bind ("C-x C-z" . eshell-toggle)))
 
-(use-package tramp
+(use-package tramp-sh
+  :load-path "override/tramp"
   :defer t
   :config
   (progn
-    (with-eval-after-load 'tramp-cache
-      (setq tramp-persistency-file-name "~/.emacs.d/etc/tramp"))
-    (setq tramp-default-user-alist '(("\\`su\\(do\\)?\\'" nil "root"))
-          ;;tramp-adb-program "/Users/hinmanm/android-sdk-macosx/platform-tools/adb"
-          ;; use the settings in ~/.ssh/config instead of Tramp's
-          tramp-use-ssh-controlmaster-options nil
-          backup-enable-predicate
-          (lambda (name)
-            (and (normal-backup-enable-predicate name)
-                 (not (let ((method (file-remote-p name 'method)))
-                        (when (stringp method)
-                          (member method '("su" "sudo"))))))))
-
-    (use-package tramp-sh
-      :config
-      (progn
-        (add-to-list 'tramp-remote-path "/usr/local/sbin")
-        (add-to-list 'tramp-remote-path "/opt/java/current/bin")
-        (add-to-list 'tramp-remote-path "~/bin")))))
+    (add-to-list 'tramp-remote-path "/usr/local/sbin")
+    (add-to-list 'tramp-remote-path "/opt/java/current/bin")
+    (add-to-list 'tramp-remote-path "~/bin"))
+  ;; Open files in Docker containers like so: /docker:drunk_bardeen:/etc/passwd
+  (push
+   (cons
+    "docker"
+    '((tramp-login-program "docker")
+      (tramp-login-args (("exec" "-it") ("%h") ("/bin/bash")))
+      (tramp-remote-shell "/bin/sh")
+      (tramp-remote-shell-args ("-i") ("-c"))))
+   tramp-methods)
+  (defadvice tramp-completion-handle-file-name-all-completions
+      (around dotemacs-completion-docker activate)
+    "(tramp-completion-handle-file-name-all-completions \"\" \"/docker:\" returns
+    a list of active Docker container names, followed by colons."
+    (if (equal (ad-get-arg 1) "/docker:")
+        (let* ((dockernames-raw (shell-command-to-string "docker ps | perl -we 'use strict; $_ = <>; m/^(.*)NAMES/ or die; my $offset = length($1); while(<>) {substr($_, 0, $offset, q()); chomp; for(split m/\\W+/) {print qq($_:\n)} }'"))
+               (dockernames (cl-remove-if-not
+                             #'(lambda (dockerline) (string-match ":$" dockerline))
+                             (split-string dockernames-raw "\n"))))
+          (setq ad-return-value dockernames))
+      ad-do-it)))
 
 (provide 'init-shell)

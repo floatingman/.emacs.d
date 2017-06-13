@@ -108,8 +108,6 @@
    nil '(("\\<\\(FIXME\\|TODO\\|NOCOMMIT\\)\\>"
           1 '((:foreground "#d7a3ad") (:weight bold)) t))))
 
-(add-hook 'prog-mode-hook #'hl-line-mode)
-
 (add-hook 'prog-mode-hook #'my/add-watchwords)
 
 (use-package subword
