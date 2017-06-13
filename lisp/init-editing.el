@@ -23,16 +23,16 @@
 ;; this is for fun, a prose checker
 ;; you need to install proselint with pip
 ;; pip install proselint
-(flycheck-define-checker proselint
-  "A linter for prose."
-  :command ("proselint" source-inplace)
-  :error-patterns
-  ((warning line-start (file-name) ":" line ":" column ": "
-						(id (one-or-more (not (any " "))))
-						(message) line-end))
-  :modes (text-mode markdown-mode gfm-mode))
+;; (flycheck-define-checker proselint
+;;   "A linter for prose."
+;;   :command ("proselint" source-inplace)
+;;   :error-patterns
+;;   ((warning line-start (file-name) ":" line ":" column ": "
+;; 						(id (one-or-more (not (any " "))))
+;; 						(message) line-end))
+;;   :modes (text-mode markdown-mode gfm-mode))
 
-(add-to-list 'flycheck-checkers 'proselint)
+;; (add-to-list 'flycheck-checkers 'proselint)
 
 ;;make writing posts in org-mode look more better
 (remove-hook 'text-mode-hook #'turn-on-auto-fill)

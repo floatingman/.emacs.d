@@ -48,6 +48,9 @@
   (defvar use-package-verbose t)
   ;; (defvar use-package-expand-minimally t)
   (require 'use-package))
+(setq package-archives '(("melpa" . "http://melpa.org/packages/")
+                         ("gnu" . "http://elpa.gnu.org/packages/")))
+
 
 ;;Setup some variables for use in other config files
 
@@ -226,9 +229,6 @@
 
 (when (window-system)
   (setenv "EMACS_GUI" "t"))
-
-
-(add-hook 'after-init-hook #'global-flycheck-mode)
 
 
 (when window-system
