@@ -191,7 +191,7 @@
 (use-package init-utils)
 (use-package init-javascript)
 (use-package init-web)
-(use-package init-elisp)
+(use-package init-lisp)
 (use-package init-cc)
 (use-package init-clojure)
 (use-package init-shell)
@@ -213,7 +213,6 @@
 (use-package init-hugo)
 (use-package init-r)
 (use-package init-groovy)
-(use-package init-lisp)
 (use-package init-ruby)
 ;;; Post initialization
 ;; start a server only in text mode

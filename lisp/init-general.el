@@ -400,11 +400,6 @@
 (add-hook 'prog-mode-hook #'anzu-mode)
 (add-hook 'org-mode-hook #'anzu-mode)
 
-
-(use-package helm-flx
-  :ensure t
-  :init (helm-flx-mode +1))
-
 (use-package idle-highlight-mode
   :ensure t
   :init
