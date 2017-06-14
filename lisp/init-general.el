@@ -18,6 +18,12 @@
         regexp-search-ring))
 (setq-default save-place t)
 
+(use-package inventory
+  :commands inventory)
+
+(use-package async
+  :load-path "elpa/packages/async")
+
 ;;; help-map
 (defvar lisp-find-map)
 (define-prefix-command 'lisp-find-map)
