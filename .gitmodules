@@ -4,3 +4,6 @@
 [submodule "snippets"]
 	path = snippets
 	url = git@github.com:floatingman/yasnippet-snippets.git
+[submodule "lisp/emacs-async"]
+	path = lisp/emacs-async
+	url = git@github.com:jwiegley/emacs-async.git
