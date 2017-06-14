@@ -153,14 +153,6 @@
 (use-package working        :defer t :load-path "lib/working")
 (use-package xml-rpc        :defer t :load-path "lib/xml-rpc")
 
-;; (use-package auto-compile
-;;   :ensure t
-;;   :config (auto-compile-on-load-mode))
-;; (setq load-prefer-newer t)
-
-;; load custom config
-;;(use-package better-defaults
-;;:ensure t)
 (use-package init-general)
 (use-package init-org
   :load-path ("override/org-mode/contrib/lisp"

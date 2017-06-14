@@ -36,7 +36,6 @@
     :ensure t
     :init
     (load-theme 'sanityinc-tomorrow-night t)
-    (set-face-background hl-line-face "gray13")
     )
   (use-package tao-theme
     :ensure t

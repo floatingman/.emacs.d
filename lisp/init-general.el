@@ -411,6 +411,13 @@
   :config
   (use-package hl-line+))
 
+(use-package ibuffer
+  :bind ("C-x C-b" . ibuffer)
+  :init
+  (add-hook 'ibuffer-mode-hook
+            #'(lambda ()
+                (ibuffer-switch-to-saved-filter-groups "default"))))
+
 (use-package ido
   :demand t
   :defines (ido-cur-item
