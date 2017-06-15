@@ -16,7 +16,7 @@
     (helm-find nil))
   
   :config
-  (use-package helm-commnads)
+  (use-package helm-commands)
   (use-package helm-files)
   (use-package helm-buffers)
   (use-package helm-multi-match)
