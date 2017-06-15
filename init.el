@@ -174,7 +174,7 @@
     (run-with-idle-timer 300 t 'jump-to-org-agenda)
     (my-org-startup)))
 (use-package init-mswindows)
-(use-package init-theme)
+;;(use-package init-theme)
 (use-package init-dired)
 (use-package init-display)
 (use-package init-completion)
