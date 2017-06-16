@@ -33,13 +33,13 @@
                                          nil t)
                   (let ((inputs (split-string (match-string 1))))
                     inputs)))))))))
-  
+
   (when (executable-find "nix-env")
     (mapc #'(lambda (path)
               (let ((share (expand-file-name "share/emacs/site-lisp" path)))
                 (if (file-directory-p share))))
           (nix-read-environment emacs-environment)))
-  
+
   (eval-after-load 'advice
     `(setq ad-redefinition-action 'accept))
 
@@ -86,7 +86,6 @@
   (load custom-file))
 
 (autoload 'org-cycle "org" nil t)
-(autoload 'hippie-expand "hippie-exp" nil t)
 (autoload 'indent-according-to-mode "indent" nil t)
 
 (defvar ctl-period-map)

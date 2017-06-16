@@ -10,6 +10,22 @@
     (when (company-explicit-action-p)
       ad-do-it)))
 
+(autoload 'hippie-expand "hippie-exp" nil t)
+
+(defun smart-tab (&optional arg)
+  (interactive "P")
+  (cond
+   ((looking-back "^[-+* \t]*" nil)
+    (if (eq major-mode 'org-mode)
+        (org-cycle arg)
+      (indent-according-to-mode)))
+   (t
+    ;; Hippie also expands yasnippets, due to `yas-hippie-try-expand' in
+    ;; `hippie-expand-try-functions-list'.
+    (hippie-expand arg))))
+
+(define-key key-translation-map (kbd "A-TAB") (kbd "C-TAB"))
+
 (use-package hippie-exp
   :bind (("M-/" . dabbrev-expand)
          ("M-?" . hippie-expand))
@@ -341,19 +357,7 @@ completion using the specified hippie-expand function."
   > "throw e;" \n
   > "}" \n)
 
-(defun smart-tab (&optional arg)
-  (interactive "P")
-  (cond
-   ((looking-back "^[-+* \t]*" nil)
-    (if (eq major-mode 'org-mode)
-        (org-cycle arg)
-      (indent-according-to-mode)))
-   (t
-    ;; Hippie also expands yasnippets, due to `yas-hippie-try-expand' in
-    ;; `hippie-expand-try-functions-list'.
-    (hippie-expand arg))))
 
-(define-key key-translation-map (kbd "A-TAB") (kbd "C-TAB"))
 
 (use-package yasnippet
   :load-path "site-lisp/yasnippet"
