@@ -58,6 +58,8 @@
   (require 'helm-config))
 
 (use-package helm-ag
-  :load-path "site-lisp/helm-ag")
+  :load-path "site-lisp/helm-ag"
+  :bind ("M-s a" . helm-ag)
+  )
 
 (provide 'init-helm)

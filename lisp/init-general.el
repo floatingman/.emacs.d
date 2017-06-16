@@ -5,7 +5,6 @@
 (setq version-control t)
 (setq vc-make-backup-files t)
 (setq auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t)))
-(setq temporary-file-directory "~/.emacs.d/tmp/")
 ;;History
 (setq savehist-file "~/.emacs.d/savehist")
 (savehist-mode 1)
@@ -23,6 +22,18 @@
 
 (use-package async
   :load-path "elpa/packages/async")
+
+(use-package grep
+  :bind (("M-s d" . find-grep-dired)
+         ("M-s f" . find-grep)
+         ("M-s G" . grep))
+  :config
+  (add-hook 'grep-mode-hook #'(lambda ()
+                                (use-package grep-ed)))
+  (grep-apply-setting 'grep-command "egrep -nH -e ")
+  (grep-apply-setting
+   'grep-find-command
+   '("find . -name '*.v' -type f -print0 | xargs -P4 -0 egrep -nh " . 61)))
 
 ;;; help-map
 (defvar lisp-find-map)

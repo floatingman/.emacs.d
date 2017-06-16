@@ -48,6 +48,7 @@
   (defvar use-package-verbose t)
   ;; (defvar use-package-expand-minimally t)
   (require 'use-package))
+
 (setq package-archives '(("melpa" . "http://melpa.org/packages/")
                          ("gnu" . "http://elpa.gnu.org/packages/")))
 
@@ -174,6 +175,7 @@
     (run-with-idle-timer 300 t 'jump-to-org-agenda)
     (my-org-startup)))
 (use-package init-mswindows)
+(use-package light-faces)
 ;;(use-package init-theme)
 (use-package init-dired)
 (use-package init-display)

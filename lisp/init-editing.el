@@ -26,9 +26,53 @@
   :init (edit-server-start)
   )
 
+(use-package ielm
+  :bind ("C-c :" . ielm)
+  :config
+  (defun my-ielm-return ()
+    (interactive)
+    (let ((end-of-sexp (save-excursion
+                         (goto-char (point-max))
+                         (skip-chars-backward " \t\n\r")
+                         (point))))
+      (if (>= (point) end-of-sexp)
+          (progn
+            (goto-char (point-max))
+            (skip-chars-backward " \t\n\r")
+            (delete-region (point) (point-max))
+            (call-interactively #'ielm-return))
+        (call-interactively #'paredit-newline))))
+
+  (add-hook 'ielm-mode-hook
+            (function
+             (lambda ()
+               (bind-key "<return>" #'my-ielm-return ielm-map)))
+            t))
 
 (use-package iedit
-  :ensure t)
+  :ensure t
+  :bind (("C-;" . iedit-mode)))
+
+(use-package isearch
+  :no-require t
+  :bind (("C-M-r" . isearch-backward-other-window)
+         ("C-M-s" . isearch-forward-other-window))
+  :preface
+  (defun isearch-backward-other-window ()
+    (interactive)
+    (split-window-vertically)
+    (call-interactively 'isearch-backward))
+
+  (defun isearch-forward-other-window ()
+    (interactive)
+    (split-window-vertically)
+    (call-interactively 'isearch-forward))
+
+  :config
+  (bind-key "C-c" #'isearch-toggle-case-fold isearch-mode-map)
+  (bind-key "C-t" #'isearch-toggle-regexp isearch-mode-map)
+  (bind-key "C-^" #'isearch-edit-string isearch-mode-map)
+  (bind-key "C-i" #'isearch-complete isearch-mode-map))
 
 ;; this is for fun, a prose checker
 ;; you need to install proselint with pip
