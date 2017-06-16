@@ -29,6 +29,14 @@
   (when (executable-find "curl")
     (setq helm-google-suggest-use-curl-p t)))
 
+(use-package swiper-helm
+  :load-path ("site-lisp/swiper"
+              "site-lisp/swiper-helm")
+  :bind ("C-. C-s" . swiper-helm)
+  :config
+  (use-package swiper
+    :load-path "site-lisp/swiper"))
+
 (use-package helm-swoop
   :load-path "site-lisp/helm-swoop"
   :bind

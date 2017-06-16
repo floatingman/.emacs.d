@@ -21,11 +21,6 @@
 (use-package haml-mode
   :ensure t)
 
-(use-package edit-server
-  :ensure t
-  :init (edit-server-start)
-  )
-
 (use-package ielm
   :bind ("C-c :" . ielm)
   :config
@@ -103,38 +98,72 @@
 (use-package fill-column-indicator
   :ensure t)
 
-;; Whitespace mode from the awesome site http://writequit.org/org/settings.html
-(setq whitespace-line-column 140)
+(use-package whitespace
+  :diminish (global-whitespace-mode
+             whitespace-mode
+             whitespace-newline-mode)
+  :commands (whitespace-buffer
+             whitespace-cleanup
+             whitespace-mode)
+  :defines (whitespace-auto-cleanup
+            whitespace-rescan-timer-time
+            whitespace-silent)
+  :preface
+  (defun normalize-file ()
+    (interactive)
+    (save-excursion
+      (goto-char (point-min))
+      (whitespace-cleanup)
+      (delete-trailing-whitespace)
+      (goto-char (point-max))
+      (delete-blank-lines)
+      (set-buffer-file-coding-system 'unix)
+      (goto-char (point-min))
+      (while (re-search-forward "\r$" nil t)
+        (replace-match ""))
+      (set-buffer-file-coding-system 'utf-8)
+      (let ((require-final-newline t))
+        (save-buffer))))
 
-(setq whitespace-style '(tabs newline space-mark
-                              tab-mark newline-mark
-                              face lines-tail))
-(setq whitespace-display-mappings
-      ;; all numbers are Unicode codepoint in decimal. e.g. (insert-char 182 1)
-      ;; 32 SPACE, 183 MIDDLE DOT
-      '((space-mark nil)
-        ;; 10 LINE FEED
-        ;; (newline-mark 10 [172 10])
-        (newline-mark nil)
-        ;; 9 TAB, MIDDLE DOT
-        (tab-mark 9 [183 9] [92 9])))
+  (defun maybe-turn-on-whitespace ()
+    "Depending on the file, maybe clean up whitespace."
+    (let ((file (expand-file-name ".clean"))
+          parent-dir)
+      (while (and (not (file-exists-p file))
+                  (progn
+                    (setq parent-dir
+                          (file-name-directory
+                           (directory-file-name
+                            (file-name-directory file))))
+                    ;; Give up if we are already at the root dir.
+                    (not (string= (file-name-directory file)
+                                  parent-dir))))
+        ;; Move up to the parent dir and try again.
+        (setq file (expand-file-name ".clean" parent-dir)))
+      ;; If we found a change log in a parent, use that.
+      (when (and (file-exists-p file)
+                 (not (file-exists-p ".noclean"))
+                 (not (and buffer-file-name
+                           (string-match "\\(\\.texi\\|COMMIT_EDITMSG\\)\\'"
+                                         buffer-file-name))))
+        (add-hook 'write-contents-hooks
+                  #'(lambda () (ignore (whitespace-cleanup))) nil t)
+        (whitespace-cleanup))))
 
-(setq whitespace-global-modes '(not org-mode
-                                    eshell-mode
-                                    shell-mode
-                                    web-mode
-                                    log4j-mode
-                                    "Web"
-                                    dired-mode
-                                    emacs-lisp-mode
-                                    clojure-mode
-                                    lisp-mode))
+  :init
+  (add-hook 'find-file-hooks 'maybe-turn-on-whitespace t)
 
-;; turn on whitespace mode globally
-(global-whitespace-mode 1)
-(diminish 'global-whitespace-mode "")
-(set-default 'indicate-empty-lines t)
-(setq show-trailing-whitespace t)
+  :config
+  (remove-hook 'find-file-hooks 'whitespace-buffer)
+  (remove-hook 'kill-buffer-hook 'whitespace-buffer)
+
+  ;; For some reason, having these in settings.el gets ignored if whitespace
+  ;; loads lazily.
+  (setq whitespace-auto-cleanup t
+        whitespace-line-column 110
+        whitespace-rescan-timer-time nil
+        whitespace-silent t
+        whitespace-style '(face trailing lines space-before-tab empty)))
 
 ;; Latex support
 (use-package tex-site
@@ -166,6 +195,10 @@
   (bind-key "r" #'reverse-region selected-keymap)
   (bind-key "s" #'sort-lines selected-keymap)
   (bind-key "u" #'upcase-region selected-keymap))
+
+(use-package tiny
+  :load-path "site-lisp/tiny"
+  :bind ("C-. N" . tiny-expand))
 
 (provide 'init-editing)
 ;;; init-editing.el ends here
