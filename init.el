@@ -11,3 +11,4 @@
 (require 'init-navigation)
 (require 'init-snippets)
 (require 'init-misc)
+(require 'init-lisp)
