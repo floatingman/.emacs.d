@@ -80,7 +80,7 @@ projectile-bookmarks.eld
 sachaorgmode.org
 *.txt
 eshell
-recentf
+.recentf
 request/
 saved-places
 rake.cache
