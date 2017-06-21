@@ -9,4 +9,5 @@
 (require 'init-editing)
 (require 'init-macos)
 (require 'init-navigation)
+(require 'init-snippets)
 (require 'init-misc)
