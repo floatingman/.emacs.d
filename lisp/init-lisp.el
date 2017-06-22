@@ -20,7 +20,12 @@
 ;; C-c C-v c : Switch prefix bunch of symbols.
 ;;             ex: '(hoge-var hoge-func) -> '(foo-var foo-func)
 ;; C-c C-v ? : Display flymake elint warnings/errors
-    
+
+(when (>= emacs-major-version 25)
+  (eval-after-load 'bytecomp
+    '(add-to-list 'byte-compile-not-obsolete-funcs
+                  'preceding-sexp)))
+
 (use-package erefactor
     :config
     (define-key emacs-lisp-mode-map "\C-c\C-v" erefactor-map))
