@@ -1,6 +1,6 @@
 (use-package golden-ratio
   :ensure t
-  :diminish golden-ratio
+  :diminish golden-ratio-mode
   :init
   (golden-ratio-mode 1))
 

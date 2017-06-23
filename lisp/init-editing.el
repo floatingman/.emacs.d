@@ -45,5 +45,10 @@
 (add-hook 'after-init-hook #'global-flycheck-mode)
 (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
 
+(use-package indent-guide
+  :ensure t
+  :diminish indent-guide-mode
+  :init
+  (add-hook 'prog-mode-hook 'indent-guide-mode))
 
 (provide 'init-editing)

@@ -2,8 +2,10 @@
   (if (ad-get-arg 0)
       ad-do-it
     nil))
-(use-package color-theme)
-(use-package color-theme-solarized)
+(use-package color-theme
+  :ensure t)
+(use-package color-theme-solarized
+  :ensure t)
 (defun my/setup-color-theme ()
   (interactive)
   (color-theme-solarized-dark)

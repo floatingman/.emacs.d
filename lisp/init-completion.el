@@ -23,8 +23,12 @@
     :config
     (company-quickhelp-mode 1)))
 
+(defun sanityinc/local-push-company-backend (backend)
+  "Add BACKEND to a buffer-local version of `company-backends'."
+  (set (make-local-variable 'company-backends)
+       (append (list backend)
+	        company-backends)))
 
-(bind-key "M-/" 'hippie-expand)
 (defun sanityinc/dabbrev-friend-buffer (other-buffer)
   (< (buffer-size other-buffer) (* 1 1024 1024)))
 (setq dabbrev-friend-buffer-function 'sanityinc/dabbrev-friend-buffer)
