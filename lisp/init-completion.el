@@ -1,8 +1,28 @@
+(setq tab-always-indent 'complete)
+(add-to-list 'completion-styles 'initals t)
+(setq completion-cycle-threshold 5)
+
 (use-package company
+  :ensure t
+  :diminish "CMP"
+  :bind (("M-C-/" . company-complete)
+	 :map company-mode-map
+	 ("M-/" . company-complete)
+	 :map company-active-map
+	 ("M-/" . company-select-next)
+	 ("C-n" . company-select-next)
+	 ("C-p" . company-select-previous))
   :init
-  (setq company-tooltip-align-annotations t)
-  (add-hook 'prog-mode-hook 'company-mode)
-  )
+  (global-company-mode 1)
+  (setq-default company-backends '((company-capf company-dabbrev-code) company-dabbrev)
+		company-dabbrev-other-buffers 'all)
+  :config
+  (use-package company-quickhelp
+    :ensure t
+    :defer 10
+    :config
+    (company-quickhelp-mode 1)))
+
 
 (bind-key "M-/" 'hippie-expand)
 (defun sanityinc/dabbrev-friend-buffer (other-buffer)

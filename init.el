@@ -21,7 +21,7 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (yasnippet use-package smex redshank rainbow-delimiters projectile paredit ido-ubiquitous golden-ratio flycheck exec-path-from-shell erefactor company color-theme-solarized auto-compile))))
+    (guide-key company-quickhelp notmuch yasnippet use-package smex redshank rainbow-delimiters projectile paredit ido-ubiquitous golden-ratio flycheck exec-path-from-shell erefactor company color-theme-solarized auto-compile))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

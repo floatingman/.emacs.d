@@ -1,7 +1,9 @@
 (require 'saveplace)
 
-(use-package rainbow-delimiters)
-(use-package flycheck)
+(use-package rainbow-delimiters
+  :ensure t)
+(use-package flycheck
+  :ensure t)
 
 ;; Highlights matching parenthesis
 (show-paren-mode 1)

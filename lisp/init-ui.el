@@ -1,4 +1,8 @@
-(use-package golden-ratio)
+(use-package golden-ratio
+  :ensure t
+  :diminish golden-ratio
+  :init
+  (golden-ratio-mode 1))
 
 ;;Stop the startup message
 (setq inhibit-startup-message t)
@@ -20,8 +24,6 @@
 (setq-default cursor-type 'bar)
 (set-cursor-color "#cccccc")
 (setq ring-bell-function 'ignore)
-
-(golden-ratio-mode 1)
 
 
 (provide 'init-ui)
