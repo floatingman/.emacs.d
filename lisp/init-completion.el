@@ -33,6 +33,8 @@
   (< (buffer-size other-buffer) (* 1 1024 1024)))
 (setq dabbrev-friend-buffer-function 'sanityinc/dabbrev-friend-buffer)
 
+(global-set-key (kbd "M-/") 'hippie-expand)
+
 (setq hippie-expand-try-functions-list
       '(yas-hippie-try-expand
         try-expand-all-abbrevs

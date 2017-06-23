@@ -1,34 +1,34 @@
-(defadvice color-theme-alist (around daniel activate)
-  (if (ad-get-arg 0)
-      ad-do-it
-    nil))
-(use-package color-theme
+(use-package color-theme-sanityinc-solarized
   :ensure t)
-(use-package color-theme-solarized
+
+(use-package color-theme-sanityinc-tomorrow
   :ensure t)
-(defun my/setup-color-theme ()
+
+;; Ensure that themes will be applied even if they have not been customized
+(defun reapply-themes ()
+  "Forcibly load the themes listed in `custom-enabled-themes'."
+  (dolist (theme custom-enabled-themes)
+    (unless (custom-theme-p theme)
+      (load-theme theme)))
+  (custom-set-variables `(custom-enabled-themes (quote ,custom-enabled-themes))))
+
+(add-hook 'after-init-hook 'reapply-themes)
+
+;;-------------------------------------------------------------------------------
+;; Toggle between light and dark
+;;-------------------------------------------------------------------------------
+(defun light ()
+  "Activate a light color theme."
   (interactive)
-  (color-theme-solarized-dark)
-  (set-face-foreground 'secondary-selection "darkblue")
-  (set-face-background 'secondary-selection "lightblue")
-  (set-face-background 'font-lock-doc-face "black")
-  (set-face-foreground 'font-lock-doc-face "wheat")
-  (set-face-background 'font-lock-string-face "black")
-  (set-face-foreground 'org-todo "green")
-  (set-face-background 'org-todo "black"))
+  (setq custom-enabled-themes '(sanityinc-tomorrow-day))
+  (reapply-themes))
 
-(eval-after-load 'color-theme (my/setup-color-theme))
+(defun dark ()
+  "Activate a dark color theme."
+  (interactive)
+  (setq custom-enabled-themes '(sanityinc-tomorrow-bright))
+  (reapply-themes))
 
-(when window-system
-  (custom-set-faces
-   '(erc-input-face ((t (:foreground "antique white"))))
-   '(helm-selection ((t (:background "ForestGreen" :foreground "black"))))
-   '(org-agenda-clocking ((t (:inherit secondary-selection :foreground "black"))) t)
-   '(org-agenda-done ((t (:foreground "dim gray" :strike-through nil))))
-   '(org-done ((t (:foreground "PaleGreen" :weight normal :strike-through t))))
-   '(org-clock-overlay ((t (:background "SkyBlue4" :foreground "black"))))
-   '(org-headline-done ((((class color) (min-colors 16) (background dark)) (:foreground "LightSalmon" :strike-through t))))
-   '(outline-1 ((t (:inherit font-lock-function-name-face :foreground "cornflower blue"))))))
 
 
 (provide 'init-theme)
