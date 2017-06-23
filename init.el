@@ -1,3 +1,9 @@
+(defconst emacs-start-time (current-time))
+
+(unless noninteractive
+  (message "Loading %s..." load-file-name))
+
+(setq message-log-max 16384)
 
 
 (package-initialize)
@@ -14,6 +20,21 @@
 (require 'init-snippets)
 (require 'init-misc)
 (require 'init-lisp)
+
+(when window-system
+  (let ((elapsed (float-time (time-subtract (current-time)
+                                            emacs-start-time))))
+    (message "Loading %s...done (%.3fs)" load-file-name elapsed))
+
+  (add-hook 'after-init-hook
+            `(lambda ()
+               (let ((elapsed (float-time (time-subtract (current-time)
+                                                         emacs-start-time))))
+                 (message "Loading %s...done (%.3fs) [after-init]"
+                          ,load-file-name elapsed)))
+            t))
+
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -21,7 +42,7 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (indent-guide guide-key company-quickhelp notmuch yasnippet use-package smex redshank rainbow-delimiters projectile paredit ido-ubiquitous golden-ratio flycheck exec-path-from-shell erefactor company color-theme-solarized auto-compile))))
+    (nlinum indent-guide guide-key company-quickhelp notmuch yasnippet use-package smex redshank rainbow-delimiters projectile paredit ido-ubiquitous golden-ratio flycheck exec-path-from-shell erefactor company color-theme-solarized auto-compile))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

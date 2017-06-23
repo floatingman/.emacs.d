@@ -1,7 +1,10 @@
 (require 'saveplace)
 
 (use-package rainbow-delimiters
-  :ensure t)
+  :ensure t
+  :init
+  (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
+
 (use-package flycheck
   :ensure t)
 
@@ -19,6 +22,12 @@
 (global-set-key (kbd "C-M-r") 'isearch-backward)
 
 (define-key global-map (kbd "RET") 'newline-and-indent)
+(defun sanityinc/newline-at-end-of-test ()
+  "Move to end of line, enter a newline, and reindent."
+  (interactive)
+  (move-end-of-line 1)
+  (newline-and-indent))
+(global-set-key (kbd "S-<return>") 'sanityinc/newline-at-end-of-test)
 
 (setq-default save-place t)
 ;; keep track of saved places in ~/.emacs.d/places

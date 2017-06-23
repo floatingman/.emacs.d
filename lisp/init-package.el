@@ -12,6 +12,9 @@
 (use-package auto-compile
   :ensure t
   :config (auto-compile-on-load-mode))
+
+(defvar use-package-verbose t)
+
 (setq load-prefer-newer t)
 
 (provide 'init-package)

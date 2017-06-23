@@ -4,6 +4,23 @@
   :init
   (golden-ratio-mode 1))
 
+(use-package nlinum
+  :ensure t
+  :preface
+  (defun goto-line-with-feedback ()
+    "Show line numbers temporarily, while prompting for the line number input"
+    (interactive)
+    (unwind-protect
+	(progn
+	  (nlinum-mode 1)
+	  (let ((num (read-number "Goto line: ")))
+	    (goto-char (point-min))
+	    (forward-line (1- num))))
+      (nlinum-mode -1)))
+  :init
+  (bind-key "C-c g" #'goto-line)
+  (global-set-key [remap goto-line] 'goto-line-with-feedback))
+
 ;;Stop the startup message
 (setq inhibit-startup-message t)
 (setq inhibit-startup-echo-area-message t)
