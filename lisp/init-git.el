@@ -1,4 +1,4 @@
-(use-package git-blamed
+(use-package git-blame
   :ensure t)
 (use-package gitignore-mode
   :ensure t)
