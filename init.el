@@ -11,9 +11,11 @@
 (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
 
 (require 'init-package)
+(use-package init-utils)
 (use-package init-ui)
 (use-package init-theme)
 (use-package init-completion)
+(use-package init-whitespace)
 (use-package init-editing)
 (use-package init-macos)
 (use-package init-navigation)
@@ -21,6 +23,7 @@
 (use-package init-misc)
 (use-package init-lisp)
 (use-package init-coding)
+(use-package init-git)
 (when window-system
   (let ((elapsed (float-time (time-subtract (current-time)
                                             emacs-start-time))))
