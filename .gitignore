@@ -73,11 +73,9 @@ Thumbs.db
 
 # Misc Files #
 ##############
-dnewman.el
 savehist
 bookmarks
 projectile-bookmarks.eld
-sachaorgmode.org
 *.txt
 eshell
 .recentf
