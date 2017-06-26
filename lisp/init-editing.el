@@ -103,4 +103,42 @@
   :init
   (add-hook 'prog-mode-hook 'indent-guide-mode))
 
+;;----------------------------------------------------------------------------
+;; Don't disable narrowing commands
+;;----------------------------------------------------------------------------
+(put 'narrow-to-region 'disabled nil)
+(put 'narrow-to-page 'disabled nil)
+(put 'narrow-to-defun 'disabled nil)
+
+;;----------------------------------------------------------------------------
+;; Don't disable case-change functions
+;;----------------------------------------------------------------------------
+(put 'upcase-region 'disabled nil)
+(put 'downcase-region 'disabled nil)
+
+;;----------------------------------------------------------------------------
+;; Rectangle selections, and overwrite text when the selection is active
+;;----------------------------------------------------------------------------
+(cua-selection-mode t)                  ; for rectangles, CUA is nice
+
+
+;;----------------------------------------------------------------------------
+;; Handy key bindings
+;;----------------------------------------------------------------------------
+(global-set-key (kbd "C-.") 'set-mark-command)
+(global-set-key (kbd "C-x C-.") 'pop-global-mark)
+
+(use-package multiple-cursors
+  :ensure t
+  :bind (("C-<" . mc/mark-previous-like-this)
+         ("C->" . mc/mark-next-like-this)
+         ("C-+" . mc/mark-next-like)
+         ("C-c C-<" . mc/mark-all-like-this)
+         ;; From active region to multiple cursors:
+         ("C-c c r" . set-rectangular-region-anchor)
+         ("C-c c c" . mc/edit-lines)
+         ("C-c c e" . mc/edit-ends-of-lines)
+         ("C-c c a" . mc/edit-beginnings-of-lines)))
+
+
 (provide 'init-editing)

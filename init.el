@@ -25,6 +25,7 @@
 (use-package init-coding)
 (use-package init-git)
 (use-package init-dired)
+(use-package init-python)
 (when window-system
   (let ((elapsed (float-time (time-subtract (current-time)
                                             emacs-start-time))))
@@ -49,7 +50,7 @@
     ("bb08c73af94ee74453c90422485b29e5643b73b05e8de029a6909af6a3fb3f58" "1b8d67b43ff1723960eb5e0cba512a2c7a2ad544ddb2533a90101fd1852b426e" default)))
  '(package-selected-packages
    (quote
-    (diff-hl dired-sort dired+ yasnippet use-package smex redshank rainbow-delimiters projectile paredit nlinum indent-guide ido-ubiquitous guide-key golden-ratio flycheck exec-path-from-shell erefactor company-quickhelp color-theme-sanityinc-tomorrow color-theme-sanityinc-solarized auto-compile))))
+    (company-anaconda multiple-cursors diff-hl dired-sort dired+ yasnippet use-package smex redshank rainbow-delimiters projectile paredit nlinum indent-guide ido-ubiquitous guide-key golden-ratio flycheck exec-path-from-shell erefactor company-quickhelp color-theme-sanityinc-tomorrow color-theme-sanityinc-solarized auto-compile))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
