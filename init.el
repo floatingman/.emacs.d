@@ -28,6 +28,7 @@
 (use-package init-paredit)
 (use-package init-editing)
 (use-package init-macos)
+(use-package init-elm)
 (use-package init-navigation)
 ;;(use-package init-snippets)
 (use-package init-misc)
