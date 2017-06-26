@@ -2,11 +2,6 @@
 (setq debug-on-error t)
 (setq debug-on-quit t)
 
-(defconst emacs-start-time (current-time))
-
-(unless noninteractive
-  (message "Loading %s..." load-file-name))
-
 (setq message-log-max 16384)
 
 ;;Setup some variables for use in other config files
@@ -21,12 +16,12 @@
 (package-initialize)
 ;; Setup load path
 (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
-
+(require 'init-benchmarking)
 (require 'init-package)
-(use-package init-benchmarking)
 (use-package init-utils)
 (use-package init-ui)
 (use-package init-theme)
+(use-package init-ibuffer)
 (use-package init-completion)
 (use-package init-whitespace)
 (use-package init-flycheck)
@@ -37,6 +32,7 @@
 ;;(use-package init-snippets)
 (use-package init-misc)
 (use-package init-lisp)
+(use-package init-vc)
 (use-package init-git)
 (use-package init-dired)
 (use-package init-python)
@@ -47,19 +43,6 @@
 ;; turn off debugging after emacs starts
 (setq debug-on-error nil)
 (setq debug-on-quit nil)
-
-(when window-system
-  (let ((elapsed (float-time (time-subtract (current-time)
-                                            emacs-start-time))))
-    (message "Loading %s...done (%.3fs)" load-file-name elapsed))
-
-  (add-hook 'after-init-hook
-            `(lambda ()
-               (let ((elapsed (float-time (time-subtract (current-time)
-                                                         emacs-start-time))))
-                 (message "Loading %s...done (%.3fs) [after-init]"
-                          ,load-file-name elapsed)))
-            t))
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
