@@ -37,7 +37,6 @@
       apropos-do-all t
       mouse-yank-at-point t)
 
-(blink-cursor-mode 0)
 (setq-default cursor-type 'bar)
 (set-cursor-color "#cccccc")
 (setq ring-bell-function 'ignore)

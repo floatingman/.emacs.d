@@ -1,4 +1,4 @@
-(use-package git-blame
+(use-package git-blamed
   :ensure t)
 (use-package gitignore-mode
   :ensure t)
@@ -57,5 +57,21 @@
   :ensure t
   :bind (("C-x v p" . git-messenger:popup-message)))
 
+(use-package yagist
+  :ensure t)
+
+(use-package bug-reference-github
+  :ensure t
+  :config
+  (add-hook 'prog-mode-hook 'bug-reference-prog-mode))
+
+(use-package github-clone
+  :ensure t)
+
+(use-package github-issues
+  :ensure t)
+
+(use-package magit-gh-pulls
+  :ensure t)
 
 (provide 'init-git)
