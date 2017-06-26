@@ -31,7 +31,7 @@
 (use-package init-editing)
 (use-package init-macos)
 (use-package init-navigation)
-(use-package init-snippets)
+;;(use-package init-snippets)
 (use-package init-misc)
 (use-package init-lisp)
 (use-package init-coding)
@@ -39,7 +39,7 @@
 (use-package init-dired)
 (use-package init-python)
 (use-package init-grep)
-
+(use-package init-ivy)
 ;; turn off debugging after emacs starts
 (setq debug-on-error nil)
 (setq debug-on-quit nil)
