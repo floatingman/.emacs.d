@@ -1,3 +1,7 @@
+;; turn on emacs debugging when starting, turn it off later
+(setq debug-on-error t)
+(setq debug-on-quit t)
+
 (defconst emacs-start-time (current-time))
 
 (unless noninteractive
@@ -5,6 +9,14 @@
 
 (setq message-log-max 16384)
 
+;;Setup some variables for use in other config files
+
+(defconst *spell-check-support-enabled* t) ;; Enable with t if you prefer
+(defconst *is-a-mac* (eq system-type 'darwin))
+(defconst *is-windows* (eq system-type 'windows-nt))
+(defconst *is-linux* (eq system-type 'gnu/linux))
+(defconst *is-gui* (not (eq window-system nil)))
+(defvar running-alternate-emacs nil)
 
 (package-initialize)
 ;; Setup load path
@@ -26,6 +38,12 @@
 (use-package init-git)
 (use-package init-dired)
 (use-package init-python)
+(use-package init-grep)
+
+;; turn off debugging after emacs starts
+(setq debug-on-error nil)
+(setq debug-on-quit nil)
+
 (when window-system
   (let ((elapsed (float-time (time-subtract (current-time)
                                             emacs-start-time))))

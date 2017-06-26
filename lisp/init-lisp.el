@@ -79,6 +79,7 @@ couldn't figure things out (ex: syntax errors)."
 
   (unbind-key "M-r" paredit-mode-map)
   (unbind-key "M-s" paredit-mode-map)
+  (unbind-key "M-?" paredit-mode-map)
 
   (bind-key "C-. D" #'paredit-forward-down paredit-mode-map)
   (bind-key "C-. B" #'paredit-splice-sexp-killing-backward paredit-mode-map)
