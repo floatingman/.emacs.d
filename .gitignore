@@ -1,5 +1,10 @@
+initialize.sh
 *.sh
 *.el
+*.el~
+out/
+sh/
+images/
 /el-get
 /url/cache
 /.emacs.desktop

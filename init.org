@@ -15,10 +15,50 @@ did things the way I did
 I am going to attempt to arrange my code in modules and provide a
 makefile to make installing convienent
 
+** Intialization and Installation
+:PROPERTIES:
+:CUSTOM_ID: Initial-prep
+:END:
+
+This creates two files which are ran by the ==Makefile== which
+basically creates default directories and copies some useful utilities
+to the bin folder
+
+#+BEGIN_SRC sh :tangle initialize.sh
+# Directory for user-installed scripts
+mkdir -p ~/bin
+
+# GnuPG
+mkdir -p ~/.gnupg
+chmod 700 ~/.gnupg
+
+# SSH
+mkdir -p ~/.ssh
+chmod 700 ~/.ssh
+
+# Emacs configuration folders
+mkdir -p ~/.emacs.d
+mkdir -p ~/.emacs.d/eshell
+#+END_SRC
+
+#+BEGIN_SRC sh :tangle install.sh :eval no
+cp -vf $PWD/init-*.el ~/.emacs.d/lisp
+cp -vf bin/* ~/bin
+#+END_SRC
+
+** Emacs Initialization
+:PROPERTIES:
+:CUSTOM_ID: emacs-initialization
+:END:
+
+This is where the magic starts
+
 #+BEGIN_SRC emacs-lisp
 ;; turn on emacs debugging when starting, turn it off later
 (setq debug-on-error t)
 (setq debug-on-quit t)
+
+(require 'cl)
 
 (require 'package)
 (package-initialize)
@@ -37,7 +77,7 @@ makefile to make installing convienent
 (when (file-exists-p custom-file)
   (load custom-file))
 
-(defvar eos/did-refresh-packages nil
+(defvar deos/did-refresh-packages nil
   "Flag for whether packages have been refreshed yet")
 
 (defun install-pkgs (list)
@@ -45,9 +85,9 @@ makefile to make installing convienent
     (progn
       (if (not (package-installed-p pkg))
           (progn
-            (if (not eos/did-refresh-packages)
+            (if (not deos/did-refresh-packages)
                 (progn (package-refresh-contents)
-                       (setq eos/did-refresh-packages t)))
+                       (setq deos/did-refresh-packages t)))
             (package-install pkg))))))
 
 (install-pkgs '(use-package))
@@ -92,8 +132,8 @@ makefile to make installing convienent
 (defconst *is-gui* (not (eq window-system nil)))
 (defvar running-alternate-emacs nil)
 
-(defvar after-eos-hook nil
-  "Hooks to run after all of the EOS has been loaded")
+(defvar after-deos-hook nil
+  "Hooks to run after all of the DEOS has been loaded")
 
 (defvar emacs-start-time (current-time)
   "Time Emacs was started.")
@@ -106,12 +146,10 @@ makefile to make installing convienent
   `(condition-case ex
        (require ,module)
      ('error
-      (message "EOS: Unable to load [%s] module: %s" ,module ex))))
+      (message "DEOS: Unable to load [%s] module: %s" ,module ex))))
 
 
 ;; Setup load path
-
-(try-load 'init-benchmarking)
 (try-load 'init-utils)
 (try-load 'init-ui)
 (try-load 'init-theme)
@@ -133,7 +171,29 @@ makefile to make installing convienent
 (try-load 'init-python)
 (try-load 'init-grep)
 (try-load 'init-ivy)
+(try-load 'init-eshell)
 (try-load 'init-session)
+
+;; Hooks
+(add-hook 'after-deos-hook
+          (lambda ()
+            (message "The Daniel Newman Emacs System has been loaded")))
+
+(defun deos/time-since-start ()
+  (float-time (time-subtract (current-time)
+                             emacs-start-time)))
+
+(add-hook 'after-deos-hook
+          `(lambda ()
+             (let ((elapsed (deos/time-since-start)))
+               (message "Loading %s...done (%.3fs)"
+                        ,load-file-name elapsed))) t)
+(add-hook 'after-init-hook
+          `(lambda ()
+             (let ((elapsed (deos/time-since-start)))
+               (message "Loading %s...done (%.3fs) [after-init]"
+                        ,load-file-name elapsed))) t)
+(run-hooks 'after-deos-hook)
 
 (setq initial-scratch-message ";; ╔═╗┌─┐┬─┐┌─┐┌┬┐┌─┐┬ ┬\n;; ╚═╗│  ├┬┘├─┤ │ │  ├─┤\n;; ╚═╝└─┘┴└─┴ ┴ ┴ └─┘┴ ┴\n")
 
