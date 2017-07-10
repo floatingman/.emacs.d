@@ -1,3 +1,6 @@
+;; Turn on the burn
+(global-font-lock-mode t)
+
 (use-package golden-ratio
   :ensure t
   :diminish golden-ratio-mode

@@ -4,6 +4,19 @@
 
 (setq message-log-max 16384)
 
+;; It's about to get personal
+(setq user-full-name "Daniel Newman"
+      user-mail-address "dwnewman78@gmail.com")
+
+(set-charset-priority 'unicode)
+(set-default-coding-systems 'utf-8)
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+(set-selection-coding-system 'utf-8)
+(prefer-coding-system 'utf-8)
+(setq default-process-coding-system '(utf-8-unix . utf-8-unix))
+
+
 ;;Setup some variables for use in other config files
 
 (defconst *spell-check-support-enabled* t) ;; Enable with t if you prefer

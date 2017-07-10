@@ -14,7 +14,7 @@
   (setq recentf-save-file (concat user-emacs-directory ".recentf"))
   (setq recentf-max-menu-items 40))
 
-(use-package ido-ubiquitous
+(use-package ido-completing-read+
   :ensure t
   :config
   (ido-ubiquitous-mode 1))
