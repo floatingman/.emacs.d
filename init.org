@@ -56,6 +56,18 @@ makefile to make installing convienent
 ;; Set to t to debug package loading or nil to disable
 (setq use-package-verbose nil)
 
+(add-to-list 'load-path "~/.emacs.d/el-get/el-get")
+
+(unless (require 'el-get nil 'noerror)
+  (with-current-buffer
+      (url-retrieve-synchronously
+       "https://raw.githubusercontent.com/dimitri/el-get/master/el-get-install.el")
+    (goto-char (point-max))
+    (eval-print-last-sexp)))
+
+(add-to-list 'el-get-recipe-path "~/.emacs.d/el-get-user/recipes")
+;;(el-get 'sync)
+
 (setq message-log-max 16384)
 
 ;; It's about to get personal
@@ -80,32 +92,50 @@ makefile to make installing convienent
 (defconst *is-gui* (not (eq window-system nil)))
 (defvar running-alternate-emacs nil)
 
-(package-initialize)
-;; Setup load path
+(defvar after-eos-hook nil
+  "Hooks to run after all of the EOS has been loaded")
+
+(defvar emacs-start-time (current-time)
+  "Time Emacs was started.")
+
+;; Installed by `make install`
 (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
-(require 'init-benchmarking)
-(use-package init-utils)
-(use-package init-ui)
-(use-package init-theme)
-(use-package init-ibuffer)
-(use-package init-completion)
-(use-package init-whitespace)
-(use-package init-flycheck)
-(use-package init-paredit)
-(use-package init-editing)
-(use-package init-macos)
-(use-package init-elm)
-(use-package init-navigation)
-;;(use-package init-snippets)
-(use-package init-misc)
-(use-package init-lisp)
-(use-package init-vc)
-(use-package init-git)
-(use-package init-dired)
-(use-package init-python)
-(use-package init-grep)
-(use-package init-ivy)
-(use-package init-session)
+
+(defmacro try-load (module)
+  "Try to load the given module, logging an error if unable to load"
+  `(condition-case ex
+       (require ,module)
+     ('error
+      (message "EOS: Unable to load [%s] module: %s" ,module ex))))
+
+
+;; Setup load path
+
+(try-load 'init-benchmarking)
+(try-load 'init-utils)
+(try-load 'init-ui)
+(try-load 'init-theme)
+(try-load 'init-ibuffer)
+(try-load 'init-completion)
+(try-load 'init-whitespace)
+(try-load 'init-flycheck)
+(try-load 'init-paredit)
+(try-load 'init-editing)
+(try-load 'init-macos)
+(try-load 'init-elm)
+(try-load 'init-navigation)
+;;(try-load 'init-snippets)
+(try-load 'init-misc)
+(try-load 'init-lisp)
+(try-load 'init-vc)
+(try-load 'init-git)
+(try-load 'init-dired)
+(try-load 'init-python)
+(try-load 'init-grep)
+(try-load 'init-ivy)
+(try-load 'init-session)
+
+(setq initial-scratch-message ";; ╔═╗┌─┐┬─┐┌─┐┌┬┐┌─┐┬ ┬\n;; ╚═╗│  ├┬┘├─┤ │ │  ├─┤\n;; ╚═╝└─┘┴└─┴ ┴ ┴ └─┘┴ ┴\n")
 
 ;; turn off debugging after emacs starts
 (setq debug-on-error nil)
