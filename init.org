@@ -172,7 +172,7 @@ This is where the magic starts
 (try-load 'init-grep)
 (try-load 'init-ivy)
 (try-load 'init-eshell)
-(try-load 'init-session)
+;;(try-load 'init-session)
 
 ;; Hooks
 (add-hook 'after-deos-hook
