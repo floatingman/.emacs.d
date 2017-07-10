@@ -1,9 +1,19 @@
+## Indiviual files
 initialize.sh
 *.sh
 *.el
 *.el~
 *.elc
+.historian
+.recentf
+.smex-items
+projectile-bookmarks.eld
+
+## Directories
 out/
 sh/
 images/
-
+el-get/
+elpa/
+eshell/
+auto-save-list/
