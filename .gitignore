@@ -8,6 +8,9 @@ initialize.sh
 .recentf
 .smex-items
 projectile-bookmarks.eld
+.DS_Store
+recentf
+savehist
 
 ## Directories
 out/

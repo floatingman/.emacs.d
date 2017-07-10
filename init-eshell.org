@@ -376,7 +376,7 @@ Like zsh, I use a lot of aliases in eshell, so I need to set those up here:
 alias aria2c aria2c -c -x5 -s10 -m0 $*
 alias bdt gdate "+%Y%m%dT%H%M%S.%3N%z"
 alias delete curl -s -XDELETE $*
-alias dt gdate "+%Y-%m-%dT%H:%M:%S.%3N%zZ"
+alias dt date "+%Y-%m-%dT%H:%M:%S.%3N%zZ"
 alias epoch date +%s
 alias get curl -s -XGET $*
 alias post curl -s -XPOST $*

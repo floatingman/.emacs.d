@@ -43,4 +43,14 @@
 	try-expand-dabbrev-from-kill
         ))
 
+(use-package yasnippet
+  :ensure t
+  :bind (("M-=" . yas-insert-snippet))
+  :diminish yas-minor-mode
+  :init
+  (yas-global-mode 1)
+  :config
+  (add-to-list 'yas-snippet-dirs "~/.emacs.d/snippets")
+  (yas-reload-all))
+
 (provide 'init-completion)

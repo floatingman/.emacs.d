@@ -1,7 +1,9 @@
 # Directory where this Makefile exists (the dotfiles directory)
 EMACS_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-el-modules = init-eshell.el \
+el-modules = init-core.el \
+init-theme.el \
+init-eshell.el \
 init.el
 
 all: init $(el-modules)
