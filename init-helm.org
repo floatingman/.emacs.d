@@ -3,4 +3,30 @@
 #+EMAIL:   dwnewman78@gmail.com
 #+SETUPFILE: ~/.emacs.d/setupfiles/emacs.setup
 
-*
+* Helm
+#+BEGIN_SRC emacs-lisp
+(provide 'init-helm)
+#+END_SRC
+
+* Helm config
+
+Loading helm-flx before loading helm
+
+#+BEGIN_SRC emacs-lisp
+  (use-package helm-flx
+    :ensure t
+    :disabled t
+    :init
+    (helm-flx-mode 1)
+    ;; garbage collection
+    (defun deos/minibuffer-setup-hook ()
+      (setq gc-cons-threshold most-positive-fixnum))
+
+    (defun deos/minibuffer-exit-hook ()
+      ;; 20mb
+      (setq gc-cons-threshold (* 20 1024 1024)))
+
+    (add-hook 'minibuffer-setup-hook #'deos/minibuffer-setup-hook)
+    (add-hook 'minibuffer-exit-hook #'deos/minibuffer-exit-hook)
+    )
+#+END_SRC
