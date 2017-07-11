@@ -136,7 +136,6 @@ This is where the magic starts
   (try-load 'init-flycheck)
   (try-load 'init-paredit)
   (try-load 'init-editing)
-  (try-load 'init-macos)
   (try-load 'init-elm)
   (try-load 'init-navigation)
   ;;(try-load 'init-snippets)

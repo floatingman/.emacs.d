@@ -20,3 +20,6 @@ el-get/
 elpa/
 eshell/
 auto-save-list/
+/.#recentf
+/.session
+/history

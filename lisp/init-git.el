@@ -16,7 +16,6 @@
 	 ("C-M-<up>" . magit-section-up))
   :config
   (setq-default magit-diff-refine-hunk t)
-  (add-hook 'magit-popup-mode-hook 'sanityinc/no-trailing-whitespace)
   (fullframe magit-status magit-mode-quit-window))
 
 (use-package fullframe

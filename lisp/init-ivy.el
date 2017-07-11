@@ -1,34 +1,30 @@
+
+(provide 'init-ivy)
+
 (use-package ivy
   :ensure t
-  :diminish ivy-mode
-  :config
-  (setq-default ivy-use-virtual-buffers t
-                ivy-virtual-abbreviate 'fullpath
-                ivy-count-format ""
-                projectile-completion-system 'ivy
-                ivy-initial-inputs-alist
-                '((man . "^")
-                  (woman . "^")))
-  ;; IDO-style directory navigation
-  (define-key ivy-minibuffer-map (kbd "RET") #'ivy-alt-done)
-  (dolist (k '("C-j" "C-RET"))
-    (define-key ivy-minibuffer-map (kbd k) #'ivy-immediate-done))
+  :demand t
+  :diminish (ivy-mode . "")
+  :bind
+  (("C-M-z" . ivy-resume)
+   ("C-x C-r" . ivy-switch-buffer))
 
-  (define-key ivy-minibuffer-map (kbd "<up>") #'ivy-previous-line-or-history)
-  (defun sanityinv/enable-ivy-flx-matching ()
-    "Make `ivy' matching work more like IDO."
-    (interactive)
-    (use-package flx
-      :ensure t)
-    (setq-default ivy-re-builders-alist
-                  '((t . ivy--regex-fuzzy))))
-  (add-hook 'after-init-hook
-            (lambda ()
-              (when (bound-and-true-p ido-ubiquitous-mode)
-                (ido-ubiquitous-mode -1))
-              (when (bound-and-true-p ido-mode)
-                (ido-mode -1))
-              (ivy-mode 1))))
+  :init
+  (ivy-mode 1)
+  :config
+  (bind-key "C-s" 'swiper)
+    (setq-default ivy-use-virtual-buffers t
+              ivy-virtual-abbreviate 'fullpath
+              ivy-count-format "%d/%d "
+              projectile-completion-system 'ivy
+              ivy-initial-inputs-alist
+              '((man . "^")
+                (woman . "^")))
+    (use-package counsel-ag)
+    (use-package counsel-projectile
+      :ensure t
+      :init
+      (counsel-projectile-on)))
 
 (use-package ivy-historian
   :ensure t
@@ -62,6 +58,3 @@
     (swiper sym))
   (define-key ivy-mode-map (kbd "M-s /")
     'sanityinc/swiper-at-point))
-
-
-(provide 'init-ivy)

@@ -17,7 +17,7 @@
 (global-set-key (kbd "C-;") 'toggle-comment-on-line)
 
 (add-hook 'after-init-hook #'global-flycheck-mode)
-(add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
+
 
 (use-package indent-guide
   :ensure t
