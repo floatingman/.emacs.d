@@ -42,8 +42,8 @@ mkdir -p ~/.emacs.d/eshell
 #+END_SRC
 
 #+BEGIN_SRC sh :tangle install.sh :eval no
-cp -vf $PWD/init-*.el ~/.emacs.d/lisp
-cp -vf bin/* ~/bin
+  ln -sfv $PWD/init-*.el ~/.emacs.d/lisp
+  cp -vf bin/* ~/bin
 #+END_SRC
 
 ** Emacs Initialization
@@ -137,7 +137,7 @@ This is where the magic starts
   (try-load 'init-paredit)
   (try-load 'init-editing)
   (try-load 'init-elm)
-  (try-load 'init-navigation)
+  (try-load 'init-ido)
   ;;(try-load 'init-snippets)
   (try-load 'init-misc)
   (try-load 'init-lisp)
@@ -146,7 +146,8 @@ This is where the magic starts
   (try-load 'init-dired)
   (try-load 'init-python)
   (try-load 'init-grep)
-  (try-load 'init-ivy)
+(try-load 'init-helm)
+  ;;(try-load 'init-ivy)
   (try-load 'init-eshell)
 
   ;; Hooks

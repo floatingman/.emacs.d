@@ -23,3 +23,5 @@ auto-save-list/
 /.#recentf
 /.session
 /history
+/helm-adaptive-history
+/ido.last

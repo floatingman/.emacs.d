@@ -2,8 +2,10 @@
 EMACS_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 el-modules = init-core.el \
+init-helm.el \
 init-theme.el \
 init-ivy.el \
+init-ido-mode.el \
 init-eshell.el \
 init.el
 
