@@ -25,3 +25,5 @@ auto-save-list/
 /history
 /helm-adaptive-history
 /ido.last
+*~
+/persistent-scratch
