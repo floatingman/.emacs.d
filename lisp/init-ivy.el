@@ -1,1 +1,0 @@
-/home/dnewman/.emacs.d/init-ivy.el
