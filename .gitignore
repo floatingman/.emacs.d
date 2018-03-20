@@ -28,3 +28,4 @@ auto-save-list/
 /persistent-scratch
 /config.el
 /.org-id-locations
+/smex-items

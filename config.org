@@ -1,7 +1,8 @@
 #+TITLE: Daniel Newman's Literate Emacs Configuration
 #+AUTHOR: Daniel Newman
 #+EMAIL: dwnewman78@gmail.com
-#+SETUPFILE: ~/deos/setupfiles/emacs.setup
+#+SETUPFILE: ~/.emacs.d/setupfiles/emacs.setup
+#+STARTUP: overview
 
 * The Beginning
 :PROPERTIES:
@@ -650,13 +651,6 @@ littering everywhere.
 
 ;; delete old backups silently
 (setq delete-old-versions t)
-#+END_SRC
-
-Need to make sure the directory exists in the initializing shell script, so this
-goes into =core-deos.sh=
-
-#+BEGIN_SRC sh :tangle sh/core-deos.sh
-mkdir -p ~/.emacs_backups
 #+END_SRC
 
 Before saving a buffer, cleans up whitespace only for the lines that I have
@@ -1518,7 +1512,13 @@ but they also have a bit of downsides...
   :config
   (which-key-mode))
 #+END_SRC
-
+** Key-chords
+#+BEGIN_SRC emacs-lisp
+  (use-package use-package-chords
+    :ensure t
+    :config
+    (key-chord-mode 1))
+#+END_SRC
 ** Open the config file
 #+BEGIN_SRC emacs-lisp
 (defun find-config ()
@@ -1966,6 +1966,7 @@ Some things org-mode overwrites, I change them back
 
 Turn on some defaults
 #+BEGIN_SRC emacs-lisp
+(setq org-startup-indented 'f)
 (defun deos/org-mode-hook ()
   (interactive)
   (setq-local fill-column 100)
@@ -4002,8 +4003,9 @@ to use the development (read: local) version of it when available.
    (ruby . t)
    (python . t)))
 
-;; this is where Fedora installs it, YMMV
+   ;; this is where Fedora installs it, YMMV
 (setq org-plantuml-jar-path "~/personal/bin/plantuml.jar")
+(setq plantuml-jar-path "~/personal/bin/plantuml.jar")
 
 ;; Use org.css from the :wq website for export document stylesheets
 (setq org-html-head-include-default-style nil)
@@ -4777,4 +4779,160 @@ Follow these steps https://github.com/myuhe/org-gcal.el/blob/master/README.org
   :ensure t
   :config
   (require 'calfw-gcal))
+#+END_SRC
+* Appearance
+** Theme
+
+I vant to suck your blood
+#+BEGIN_SRC emacs-lisp
+(use-package dracula-theme
+  :disabled
+  :ensure t
+  :config
+  (load-theme 'dracula t))
+#+END_SRC
+
+For kicks
+#+BEGIN_SRC emacs-lisp
+(use-package apropospriate-theme
+  :ensure t)
+#+END_SRC
+
+This panda theme seems cool
+#+BEGIN_SRC emacs-lisp
+(use-package panda-theme
+  :ensure t
+  :config
+  (load-theme 'panda t))
+#+END_SRC
+** Fonts
+#+BEGIN_SRC emacs-lisp
+;; The original font height (so it can be restored too at a later time)
+(setq deos/original-height 180)
+
+(defun deos/setup-fonts ()
+(when *is-gui*
+;; default font and variable-pitch fonts
+(set-face-attribute 'default nil
+                    :family "Iosevka"
+                    :height deos/original-height)
+    (dolist (face '(mode-line mode-line-inactive minibuffer-prompt))
+      (set-face-attribute face nil :family "Iosevka"
+                          :height deos/original-height))
+    (set-face-attribute 'variable-pitch nil
+                        :family "DejaVu Sans" :height deos/original-height)
+    ;; font for all unicode characters
+    ;;(set-fontset-font t 'unicode "DejaVu Sans Mono" nil 'prepend)
+    ))
+
+(when *is-gui*
+  (add-hook 'after-init-hook #'deos/setup-fonts))
+#+END_SRC
+** Monitor Switching
+Sometimes I want to plug my laptop into a larger monitor, or give presentations,
+so I'd like to have a single function I can call to adjust any sizes that are
+necessary.
+
+The =deos/height-modifier= can be added or subtracted to the size of the font for
+Emacs. I usually bind this in the Hydra toggle map.
+
+#+BEGIN_SRC emacs-lisp
+(defvar deos/height-modifier 15
+  "Default value to increment the size by when jacking into a monitor.")
+
+(defun deos/monitor-jack-in ()
+  "Increase the font size by `deos/height-modifier' amount, for
+when you jack into an external monitor."
+  (interactive)
+  (dolist (face '(default
+                   mode-line
+                   mode-line-inactive
+                   minibuffer-prompt
+                   variable-pitch))
+    (set-face-attribute face nil :height (+ (face-attribute face :height)
+                                            deos/height-modifier))))
+
+(defun deos/monitor-jack-out ()
+  "Decreas the font size by `deos/height-modifier' amount, for
+when you jack out of an external monitor."
+  (interactive)
+  (dolist (face '(default
+                   mode-line
+                   mode-line-inactive
+                   minibuffer-prompt
+                   variable-pitch))
+    (set-face-attribute face nil :height (- (face-attribute face :height)
+                                            deos/height-modifier))))
+
+(defun deos/monitor-reset ()
+  "Go back to the default font size and `line-spacing'"
+  (interactive)
+  (dolist (face '(default
+                   mode-line
+                   mode-line-inactive
+                   minibuffer-prompt
+                   variable-pitch))
+    (set-face-attribute face nil :height deos/original-height))
+  (text-scale-adjust 0)
+  (when (fboundp 'minimap-mode)
+    (condition-case err
+        (minimap-mode 0)
+      ('error 0)))
+  (setq line-spacing 0))
+
+(defun deos/code-reading-mode ()
+  "Do a bunch of fancy stuff to make reading/browsing code
+easier. When you're done, `deos/monitor-jack-out' is a great way
+to go back to a normal setup."
+  (interactive)
+  (delete-other-windows)
+  (text-scale-increase 1)
+  (setq line-spacing 5)
+  (use-package minimap :ensure t)
+  (when (not minimap-mode)
+    (minimap-mode 1)))
+#+END_SRC
+* Command completion
+** Smart M-x
+#+BEGIN_SRC emacs-lisp
+  (use-package smex
+    :ensure t)
+#+END_SRC
+** Ivy
+#+BEGIN_SRC emacs-lisp
+  (use-package ivy
+      :ensure t
+      :diminish ivy-mode
+      :config
+      (ivy-mode t))
+#+END_SRC
+
+By default =ivy= starts filters with =^=. I don't normally want that and can easily type it manually when I do.
+
+#+BEGIN_SRC emacs-lisp
+  (setq ivy-initial-inputs-alist nil)
+#+END_SRC
+
+=counsel= is a collection of =ivy= enhanced versions of common Emacs commands. I haven't bound much as =ivy-mode= takes care of most things.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package counsel
+    :ensure t
+    :bind (("M-x" . counsel-M-x))
+    :chords (("yy" . counsel-yank-pop)))
+#+END_SRC
+
+=swiper= is an =ivy= enhanced version of isearch.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package swiper
+    :ensure t
+    :bind (("M-s" . swiper)))
+#+END_SRC
+
+=hydra= presents menus for =ivy= commands.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package ivy-hydra
+    :ensure t)
 #+END_SRC
