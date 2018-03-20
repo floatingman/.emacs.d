@@ -936,6 +936,7 @@ pdf-tools-install= every time the package is updated, to actually *build* the
 tool that it uses.
 
 #+BEGIN_SRC emacs-lisp
+
 (use-package pdf-tools
   :ensure t
   :when window-system
@@ -1264,7 +1265,7 @@ I use =gpg2= everywhere, including in Emacs.
 :END:
 
 #+BEGIN_SRC emacs-lisp
-(when (eq system-type 'gnu/linux)
+(when *is-linux*
 
   ;; Whether to use GTK tooltips or emacs ones
   ;; (setq x-gtk-use-system-tooltips nil)
@@ -1290,7 +1291,7 @@ I use =gpg2= everywhere, including in Emacs.
 :END:
 
 #+BEGIN_SRC emacs-lisp
-(when (eq system-type 'darwin)
+(when *is-a-mac*
   (setq ns-use-native-fullscreen nil)
   ;; brew install coreutils
   (if (executable-find "gls")
@@ -1301,7 +1302,7 @@ I use =gpg2= everywhere, including in Emacs.
   (defun copy-from-osx ()
     "Handle copy/paste intelligently on osx."
     (let ((pbpaste (purecopy "/usr/bin/pbpaste")))
-      (if (and (eq system-type 'darwin)
+      (if (and *is-a-mac*
                (file-exists-p pbpaste))
           (let ((tramp-mode nil)
                 (default-directory "~"))
@@ -1328,7 +1329,7 @@ https://github.com/railwaycat/emacs-mac-port , which has a whole other set of
 issues, so this is special handling of it...
 
 #+BEGIN_SRC emacs-lisp
-(when (eq window-system 'mac)
+(when *is-a-mac*
 
   (defun deos/max-fullscreen ()
     (interactive)

@@ -29,3 +29,6 @@ auto-save-list/
 /config.el
 /.org-id-locations
 /smex-items
+/network-security.data
+/org-gcal/.org-gcal*
+/org-gcal/.org-gcal-tokendaniel.newman@digitalreasoning.com
