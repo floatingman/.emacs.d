@@ -1712,6 +1712,7 @@ Show me the parenthesys
 #+BEGIN_SRC emacs-lisp
   (use-package rainbow-mode
     :ensure t
+    :diminish rainbow-mode
     :config
     (setq rainbow-x-colors nil)
     (add-hook 'prog-mode-hook 'rainbow-mode))
@@ -1736,6 +1737,65 @@ Show me the parenthesys
     (add-hook 'python-mode-hook 'smart-dash-mode))
 #+END_SRC
 
+** Projectile
+Useful for navigating projects structures
+#+BEGIN_SRC emacs-lisp
+(use-package projectile
+  :ensure t
+  :commands projectile-global-mode
+  :diminish projectile-mode
+  :init (add-hook 'after-init-hook #'projectile-global-mode)
+  :config
+  (bind-key "C-c p b" #'projectile-switch-to-buffer #'projectile-command-map)
+  (bind-key "C-c p K" #'projectile-kill-buffers #'projectile-command-map)
+
+  ;; global ignores
+  (add-to-list 'projectile-globally-ignored-files ".tern-port")
+  (add-to-list 'projectile-globally-ignored-files "GTAGS")
+  (add-to-list 'projectile-globally-ignored-files "GPATH")
+  (add-to-list 'projectile-globally-ignored-files "GRTAGS")
+  (add-to-list 'projectile-globally-ignored-files "GSYMS")
+  (add-to-list 'projectile-globally-ignored-files ".DS_Store")
+  ;; always ignore .class files
+  (add-to-list 'projectile-globally-ignored-file-suffixes ".class")
+
+  )
+#+END_SRC
+
+Wire projectile into counsel
+#+BEGIN_SRC emacs-lisp
+(use-package counsel-projectile
+  :ensure t
+  :config
+  (add-hook 'after-init-hook 'counsel-projectile-mode))
+#+END_SRC
+
+Here's a neat function that [[https://github.com/dakrone/eos][dakrone]] wrote that will find an associated eshell to a project and pop
+it up at the bottom of the screen
+#+BEGIN_SRC emacs-lisp
+(defun deos/popup-project-eshell ()
+  (interactive)
+  (when (projectile-project-p)
+    (save-excursion
+      (let ((project (projectile-project-name))
+            (candidate nil)
+            (i 0)
+            (buffers (buffer-list))
+            (found-p nil))
+        (while (and (not candidate)
+                    (<= i (length buffers)))
+          (let ((buffer (elt buffers i)))
+            (with-current-buffer buffer
+              (when (and (eq major-mode 'eshell-mode)
+                         (equal (projectile-project-name) project))
+                (setq candidate buffer))))
+          (setq i (+ i 1)))
+        (if candidate
+            (popwin:popup-buffer-tail candidate)
+          (message "No projectile eshell buffer found"))))))
+
+(global-set-key (kbd "C-x M-B") #'deos/popup-project-eshell)
+#+END_SRC
 * Completion
 ** Company
 #+BEGIN_SRC emacs-lisp
@@ -1946,6 +2006,13 @@ _q_uit _RET_: current
          (before-save . omnisharp-code-format-entire-file))
   :config
   (add-to-list 'company-backends 'company-omnisharp))
+#+END_SRC
+** Groovy
+#+BEGIN_SRC emacs-lisp
+(use-package groovy-mode
+  :ensure t
+  :config
+  (setq groovy-indent-offset 2))
 #+END_SRC
 * Org-mode
 ** Initial configuration
@@ -4936,4 +5003,82 @@ By default =ivy= starts filters with =^=. I don't normally want that and can eas
 #+BEGIN_SRC emacs-lisp
   (use-package ivy-hydra
     :ensure t)
+#+END_SRC
+* Extras
+** Stack Overflow
+SX is a stack overflow client that you can use in Emacs
+#+BEGIN_SRC emacs-lisp
+(use-package sx
+  :ensure t
+  :config
+  (bind-keys :prefix "C-c s"
+             :prefix-map my-sx-map
+             :prefix-docstring "Global keymap for SX."
+             ("q" . sx-tab-all-questions)
+             ("i" . sx-inbox)
+             ("o" . sx-open-link)
+             ("u" . sx-tab-unanswered-my-tags)
+             ("a" . sx-ask)
+             ("s" . sx-search)))
+#+END_SRC
+** Web Browsing
+Browse any url under the cursor
+#+BEGIN_SRC emacs-lisp
+(global-set-key (kbd "C-x m") 'browse-url-at-point)
+#+END_SRC
+*** EWW
+I rather like eww for browsing inside Emacs but some sites don't work well so I open them in an
+external browser
+#+BEGIN_SRC emacs-lisp
+(use-package eww
+  :defer t
+  :init
+  (setq browse-url-browser-function
+        '((".*google.*maps.*" . browse-url-generic)
+          ;; Github goes to firefox, but not gist
+          ("corp.digitalreasoning.com" . browse-url-generic)
+          ("http.*\/\/github.com" . browse-url-generic)
+          ("groups.google.com" . browse-url-generic)
+          ("docs.google.com" . browse-url-generic)
+          ("melpa.org" . browse-url-generic)
+          ("build.*\.elastic.co" . browse-url-generic)
+          (".*-ci\.elastic.co" . browse-url-generic)
+          ("internal-ci\.elastic\.co" . browse-url-generic)
+          ("zendesk\.com" . browse-url-generic)
+          ("salesforce\.com" . browse-url-generic)
+          ("stackoverflow\.com" . browse-url-generic)
+          ("apache\.org\/jira" . browse-url-generic)
+          ("thepoachedegg\.net" . browse-url-generic)
+          ("zoom.us" . browse-url-generic)
+          ("t.co" . browse-url-generic)
+          ("twitter.com" . browse-url-generic)
+          ("\/\/a.co" . browse-url-generic)
+          ("youtube.com" . browse-url-generic)
+          ("amazon.com" . browse-url-generic)
+          ("." . eww-browse-url)))
+  (setq shr-external-browser 'browse-url-generic)
+  (if *is-a-mac*
+        (setq browse-url-generic-program "open")
+    (setq browse-url-generic-program (executable-find "firefox")))
+  (add-hook 'eww-mode-hook #'toggle-word-wrap)
+  (add-hook 'eww-mode-hook #'visual-line-mode)
+  :config
+  (use-package s :ensure t)
+  (define-key eww-mode-map "o" 'eww)
+  (define-key eww-mode-map "O" 'eww-browse-with-external-browser)
+  (define-key eww-mode-map "j" 'next-line)
+  (define-key eww-mode-map "k" 'previous-line)
+
+  (use-package eww-lnum
+    :ensure t
+    :config
+    (bind-key "f" #'eww-lnum-follow eww-mode-map)
+    (bind-key "U" #'eww-lnum-universal eww-mode-map)))
+#+END_SRC
+
+Vimperator for EWW
+#+BEGIN_SRC emacs-lisp
+(use-package link-hint
+  :ensure t
+  :bind ("C-c f" . link-hint-open-link))
 #+END_SRC
