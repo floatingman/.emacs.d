@@ -2386,7 +2386,6 @@ The amount of time I spend entering the captured note is clocked. The capture te
 automatically clock in and out of the capture task. This is great for interruptions and telephone
 calls too.
 
-
 ** Refiling Tasks
 :PROPERTIES:
 :CUSTOM_ID: h:0104e42d-b6ba-48a6-ae62-d8a5c596cbe6
