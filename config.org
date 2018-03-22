@@ -1796,6 +1796,13 @@ it up at the bottom of the screen
 
 (global-set-key (kbd "C-x M-B") #'deos/popup-project-eshell)
 #+END_SRC
+
+** Code Style
+I like the google code style
+#+BEGIN_SRC emacs-lisp
+(use-package google-c-style
+  :ensure t)
+#+END_SRC
 * Completion
 ** Company
 #+BEGIN_SRC emacs-lisp
