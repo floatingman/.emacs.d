@@ -4948,7 +4948,6 @@ Follow these steps https://github.com/myuhe/org-gcal.el/blob/master/README.org
 I vant to suck your blood
 #+BEGIN_SRC emacs-lisp
 (use-package dracula-theme
-  :disabled
   :ensure t
   :config
   (load-theme 'dracula t))
@@ -5067,6 +5066,31 @@ to go back to a normal setup."
   (hl-line-mode -1))
 
 (add-hook 'prog-mode-hook #'deos/turn-on-hl-line)
+#+END_SRC
+** Mode line
+*** Powerline mode
+#+BEGIN_SRC emacs-lisp
+(use-package powerline
+  :ensure t
+  :config
+  (setq powerline-default-separator 'utf-8))
+#+END_SRC
+*** Feebleline mode
+Minimalist mode line
+#+BEGIN_SRC emacs-lisp
+(use-package feebleline
+  :ensure t)
+#+END_SRC
+*** Emoji
+#+BEGIN_SRC emacs-lisp
+(use-package emojify
+  :ensure t)
+#+END_SRC
+*** Nyan Cat
+Just for fun
+#+BEGIN_SRC emacs-lisp
+(use-package nyan-mode
+  :ensure t)
 #+END_SRC
 * Command completion
 ** Smart M-x
@@ -5200,7 +5224,6 @@ Here are some utilities to facilitate text communications between carbon based l
   :config
   (add-to-list 'jabber-account-list '("dwnewman78@gmail.com"
   (:network-server . "talk.google.com")
-  (:port . 5223)
   (:connection-type . ssl)))
   (add-hook 'jabber-post-connect-hooks 'jabber-autoaway-start)
   (setq
