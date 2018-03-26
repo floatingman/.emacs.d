@@ -1528,1042 +1528,154 @@ but they also have a bit of downsides...
   (find-file "~/.emacs.d/config.org"))
 (global-set-key (kbd "C-c I") 'find-config)
 #+END_SRC
+* Appearance
+** Theme
 
-* Writing
-** Skeleton Code
-:PROPERTIES:
-:CUSTOM_ID: skeletons
-:END:
-Skeletons are kind of like yasnippet, but they don't mess with my keybindings
-all over the place and take forever to load ಠ_ಠ
-
+I vant to suck your blood
 #+BEGIN_SRC emacs-lisp
-(require 'skeleton)
-
-(define-skeleton deos/org-header
-  "Insert a standard header for org-mode files"
-  "Title: "
-  "#+TITLE: " str \n
-  "#+AUTHOR: " (user-full-name) \n
-  "#+EMAIL: " user-mail-address \n
-  "#+SETUPFILE: ~/deos/setupfiles/emacs.setup
-
-| *Author* | {{{author}}} ({{{email}}})    |
-| *Date*   | {{{time(%Y-%m-%d %H:%M:%S)}}} |
-
-,* Introduction
-" \n)
-
-(define-skeleton deos/org-wrap-elisp
-  "Wrap text with #+BEGIN_SRC / #+END_SRC for the emacs-lisp code"
-  nil
-  > "#+BEGIN_SRC emacs-lisp" \n
-  > _ \n
-  > "#+END_SRC" \n)
-
-  (define-skeleton deos/org-wrap-source
-  "Wrap text with #+BEGIN_SRC / #+END_SRC for a code type"
-  "Language: "
-  > "#+BEGIN_SRC " str \n
-  > _ \n
-  > "#+END_SRC" \n)
-
-  (define-skeleton deos/es-make-index
-  "Insert boilerplate to create an index with `es-mode' syntax"
-  "Index name: "
-  "POST /" str \n
-  "{" \n
-  > "\"settings\": {" \n
-  > "\"index\": {" \n
-  > "\"number_of_shards\": 1," \n
-  > "\"number_of_replicas\": 0" \n
-  > "}" \n ;; index
-  > "}," \n ;; settings
-  > "\"mappings\": {" \n
-  > "\"" (skeleton-read "Type name: ") "\": {" \n
-  > "\"properties\": {" \n
-  > "\"body\": {" \n
-  > "\"type\": \"string\"" \n
-  > "}" \n ;; body
-  > "}" \n ;; properties
-  > "}" \n ;; type
-  > "}" \n ;; mappings
-  > "}" \n)
-
-  (define-skeleton deos/java-try-catch
-  "Wrap code in a Java try/catch"
-  nil
-  > "try {" \n
-  > _
-  > "} catch (Exception e) {" \n
-  > "throw e;" \n
-  > "}" \n)
-#+END_SRC
-
-And now let's add a hydra for the skeletons
-
-#+BEGIN_SRC emacs-lisp
-(defhydra deos/hydra-skeleton nil
-  "Insert Skeleton"
-  ("e" deos/org-wrap-elisp "Wrap as elisp" :exit t)
-  ("s" deos/org-wrap-source "Wrap as source" :exit t)
-  ("i" deos/es-make-index "ES Index" :exit t)
-  ("h" deos/org-header "Org Header" :exit t)
-  ("t" deos/java-try-catch "Wrap with try/catch" :exit t))
-#+END_SRC
-** Writegood mode
-#+BEGIN_SRC emacs-lisp
-(use-package writegood-mode
-  :ensure t
-  :bind ("C-c w" . writegood-mode)
-  :config
-  (add-to-list 'writegood-weasel-words "actionable"))
-#+END_SRC
-* Coding
-** Flycheck
-#+BEGIN_SRC emacs-lisp
-    (use-package flycheck
-      :ensure t
-      :config
-      (add-hook 'after-init-hook 'global-flycheck-mode)
-      (defun my/use-eslint-from-node-modules ()
-    (let* ((root (locate-dominating-file
-                  (or (buffer-file-name) default-directory)
-                  "node_modules"))
-           (eslint (and root
-                        (expand-file-name "node_modules/eslint/bin/eslint.js"
-                                          root))))
-      (when (and eslint (file-executable-p eslint))
-        (setq-local flycheck-javascript-eslint-executable eslint))))
-  (add-hook 'flycheck-mode-hook #'my/use-eslint-from-node-modules)
-(add-hook 'flycheck-mode-hook #'my/use-eslint-from-node-modules)
-      (add-to-list 'flycheck-checkers 'proselint)
-      (setq-default flycheck-highlighting-mode 'lines)
-      ;; Define fringe indicator / warning levels
-      (define-fringe-bitmap 'flycheck-fringe-bitmap-ball
-        (vector #b00000000
-                #b00000000
-                #b00000000
-                #b00000000
-                #b00000000
-                #b00000000
-                #b00000000
-                #b00011100
-                #b00111110
-                #b00111110
-                #b00111110
-                #b00011100
-                #b00000000
-                #b00000000
-                #b00000000
-                #b00000000
-                #b00000000))
-      (flycheck-define-error-level 'error
-        :severity 2
-        :overlay-category 'flycheck-error-overlay
-        :fringe-bitmap 'flycheck-fringe-bitmap-ball
-        :fringe-face 'flycheck-fringe-error)
-      (flycheck-define-error-level 'warning
-        :severity 1
-        :overlay-category 'flycheck-warning-overlay
-        :fringe-bitmap 'flycheck-fringe-bitmap-ball
-        :fringe-face 'flycheck-fringe-warning)
-      (flycheck-define-error-level 'info
-        :severity 0
-        :overlay-category 'flycheck-info-overlay
-        :fringe-bitmap 'flycheck-fringe-bitmap-ball
-        :fringe-face 'flycheck-fringe-info))
-#+END_SRC
-** Proselint
-Proselint is a cool flycheck checker for the English language, which helps me
-right more gooder
-#+BEGIN_SRC emacs-lisp
-(flycheck-define-checker proselint
-  "A linter for prose."
-  :command ("proselint" source-inplace)
-  :error-patterns
-  ((warning line-start (file-name) ":" line ":" column ": "
-            (id (one-or-more (not (any " "))))
-            (message (one-or-more not-newline)
-                     (zero-or-more "\n" (any " ") (one-or-more not-newline)))
-            line-end))
-  :modes (text-mode markdown-mode gfm-mode org-mode))
-#+END_SRC
-** Smartparens
-Help keep those parenthesys balanced
-
-#+BEGIN_SRC emacs-lisp
-  (use-package smartparens
-    :ensure t
-    :config
-    (add-hook 'prog-mode-hook 'smartparens-mode))
-#+END_SRC
-
-** Delimiters
-Show me the parenthesys
-#+BEGIN_SRC emacs-lisp
-  (use-package rainbow-delimiters
-    :ensure t
-    :config
-    (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
-#+END_SRC
-
-** Highlight colors
-#+BEGIN_SRC emacs-lisp
-  (use-package rainbow-mode
-    :ensure t
-    :diminish rainbow-mode
-    :config
-    (setq rainbow-x-colors nil)
-    (add-hook 'prog-mode-hook 'rainbow-mode))
-#+END_SRC
-
-** Indentation
-#+BEGIN_SRC emacs-lisp
-  (use-package aggressive-indent
-    :ensure t)
-#+END_SRC
-
-** Add them parenth pairs
-#+BEGIN_SRC emacs-lisp
-(add-hook 'prog-mode-hook 'electric-pair-mode)
-#+END_SRC
-
-** A dash of smartness
-#+BEGIN_SRC emacs-lisp
-  (use-package smart-dash
-    :ensure t
-    :config
-    (add-hook 'python-mode-hook 'smart-dash-mode))
-#+END_SRC
-
-** Projectile
-Useful for navigating projects structures
-#+BEGIN_SRC emacs-lisp
-(use-package projectile
-  :ensure t
-  :commands projectile-global-mode
-  :diminish projectile-mode
-  :init (add-hook 'after-init-hook #'projectile-global-mode)
-  :config
-  (bind-key "C-c p b" #'projectile-switch-to-buffer #'projectile-command-map)
-  (bind-key "C-c p K" #'projectile-kill-buffers #'projectile-command-map)
-
-  ;; global ignores
-  (add-to-list 'projectile-globally-ignored-files ".tern-port")
-  (add-to-list 'projectile-globally-ignored-files "GTAGS")
-  (add-to-list 'projectile-globally-ignored-files "GPATH")
-  (add-to-list 'projectile-globally-ignored-files "GRTAGS")
-  (add-to-list 'projectile-globally-ignored-files "GSYMS")
-  (add-to-list 'projectile-globally-ignored-files ".DS_Store")
-  ;; always ignore .class files
-  (add-to-list 'projectile-globally-ignored-file-suffixes ".class")
-
-  )
-#+END_SRC
-
-Wire projectile into counsel
-#+BEGIN_SRC emacs-lisp
-(use-package counsel-projectile
+(use-package dracula-theme
   :ensure t
   :config
-  (add-hook 'after-init-hook 'counsel-projectile-mode))
+  (load-theme 'dracula t))
 #+END_SRC
 
-Here's a neat function that [[https://github.com/dakrone/eos][dakrone]] wrote that will find an associated eshell to a project and pop
-it up at the bottom of the screen
+For kicks
 #+BEGIN_SRC emacs-lisp
-(defun deos/popup-project-eshell ()
-  (interactive)
-  (when (projectile-project-p)
-    (save-excursion
-      (let ((project (projectile-project-name))
-            (candidate nil)
-            (i 0)
-            (buffers (buffer-list))
-            (found-p nil))
-        (while (and (not candidate)
-                    (<= i (length buffers)))
-          (let ((buffer (elt buffers i)))
-            (with-current-buffer buffer
-              (when (and (eq major-mode 'eshell-mode)
-                         (equal (projectile-project-name) project))
-                (setq candidate buffer))))
-          (setq i (+ i 1)))
-        (if candidate
-            (popwin:popup-buffer-tail candidate)
-          (message "No projectile eshell buffer found"))))))
-
-(global-set-key (kbd "C-x M-B") #'deos/popup-project-eshell)
-#+END_SRC
-
-** Code Style
-I like the google code style
-#+BEGIN_SRC emacs-lisp
-(use-package google-c-style
+(use-package apropospriate-theme
   :ensure t)
 #+END_SRC
-* Shell
-Things for running shells inside of emacs
 
-
-
-Sets up the =with-editor= package so things that invoke =$EDITOR= will use the
-current emacs if I'm already inside of emacs
-
+This panda theme seems cool
 #+BEGIN_SRC emacs-lisp
-(use-package with-editor
+(use-package panda-theme
   :ensure t
-  :init
-  (progn
-    (add-hook 'shell-mode-hook  'with-editor-export-editor)
-    (add-hook 'eshell-mode-hook 'with-editor-export-editor)))
-#+END_SRC
-
-Also, let's set up any SSH or GPG keychains that the [[http://www.funtoo.org/Keychain][Keychain]] tool has set up
-for us (which I use at the shell)
-
-#+BEGIN_SRC emacs-lisp
-(use-package keychain-environment
-  :ensure t
-  :init
-  (add-hook 'after-init-hook #'keychain-refresh-environment))
-#+END_SRC
-
-First, Emacs doesn't handle =less= well, so use =cat= instead for the shell
-pager:
-
-#+BEGIN_SRC emacs-lisp
-(setenv "PAGER" "cat")
-#+END_SRC
-
-#+BEGIN_SRC emacs-lisp
-(setq comint-scroll-to-bottom-on-input t ;; always insert at the bottom
-      ;; always add output at the bottom
-      comint-scroll-to-bottom-on-output nil
-      ;; scroll to show max possible output
-      comint-scroll-show-maximum-output t
-      ;; no duplicates in command history
-      comint-input-ignoredups t
-      ;; insert space/slash after file completion
-      comint-completion-addsuffix t
-      ;; if this is t, it breaks shell-command
-      comint-prompt-read-only nil)
-
-(defun deos/shell-kill-buffer-sentinel (process event)
-  (when (memq (process-status process) '(exit signal))
-    (kill-buffer)))
-
-(defun deos/kill-process-buffer-on-exit ()
-  (set-process-sentinel (get-buffer-process (current-buffer))
-                        #'deos/shell-kill-buffer-sentinel))
-
-(dolist (hook '(ielm-mode-hook term-exec-hook comint-exec-hook))
-  (add-hook hook 'deos/kill-process-buffer-on-exit))
-
-(defun set-scroll-conservatively ()
-  "Add to shell-mode-hook to prevent jump-scrolling on newlines in shell buffers."
-  (set (make-local-variable 'scroll-conservatively) 10))
-
-(defadvice comint-previous-matching-input
-    (around suppress-history-item-messages activate)
-  "Suppress the annoying 'History item : NNN' messages from shell history isearch.
-If this isn't enough, try the same thing with
-comint-replace-by-expanded-history-before-point."
-  (let ((old-message (symbol-function 'message)))
-    (unwind-protect
-        (progn (fset 'message 'ignore) ad-do-it)
-      (fset 'message old-message))))
-
-(add-hook 'shell-mode-hook #'set-scroll-conservatively)
-;; truncate buffers continuously
-(add-hook 'comint-output-filter-functions #'comint-truncate-buffer)
-;; interpret and use ansi color codes in shell output windows
-(add-hook 'shell-mode-hook #'ansi-color-for-comint-mode-on)
-#+END_SRC
-
-* Eshell
-Eshell is great for most shell things. It's a great ZSH replacement. Regardless,
-it needs some tweaks in order to be fully useful.
-
-First, a function to be called when eshell-mode is entered
-
-#+BEGIN_SRC emacs-lisp
-(defun deos/setup-eshell ()
-  (interactive)
-  ;; turn off semantic-mode in eshell buffers
-  (semantic-mode -1)
-  ;; turn off hl-line-mode
-  (when (fboundp 'deos/turn-off-hl-line)
-    (deos/turn-off-hl-line))
-  (local-set-key (kbd "M-P") 'eshell-previous-prompt)
-  (local-set-key (kbd "M-N") 'eshell-next-prompt)
-  (local-set-key (kbd "M-R") 'eshell-previous-matching-input))
-#+END_SRC
-
-Add a nice helper to sudo-edit a file
-
-#+BEGIN_SRC emacs-lisp
-(defun sudoec (file)
-  (interactive)
-  (find-file (concat "/sudo::" (expand-file-name file))))
-#+END_SRC
-
-Also, after eshell has loaded its options, let's load some other niceties like
-completion, prompt and term settings:
-
-#+BEGIN_SRC emacs-lisp
-(use-package eshell
-  :commands (eshell eshell-command)
-  :bind ("C-c m" . eshell)
-  :init
-  (require 'em-smart)
-  (setq eshell-glob-case-insensitive nil
-        eshell-error-if-no-glob nil
-        eshell-scroll-to-bottom-on-input nil
-        eshell-where-to-jump 'begin
-        eshell-review-quick-commands nil
-        eshell-smart-space-goes-to-end t)
-  ;; Initialize "smart" mode
-  ;;(add-hook 'eshell-mode-hook #'eshell-smart-initialize)
   :config
-  (defalias 'emacs 'find-file)
-  (defalias 'hff 'hexl-find-file)
-  (defalias 'sec 'sudoec)
-  (setenv "PAGER" "cat")
-  (use-package esh-opt
-    :config
-    (use-package em-cmpl)
-    (use-package em-prompt
-      :init
-      (with-eval-after-load 'em-prompt
-        (defun eshell-next-prompt (n)
-          "Move to end of Nth next prompt in the buffer. See `eshell-prompt-regexp'."
-          (interactive "p")
-          (re-search-forward eshell-prompt-regexp nil t n)
-          (when eshell-highlight-prompt
-          (while (not (get-text-property (line-beginning-position) 'read-only))
-            (re-search-forward eshell-prompt-regexp nil t n)))
-          (eshell-skip-prompt))
-
-        (defun eshell-previous-prompt (n)
-          "Move to end of Nth previous prompt in the buffer. See `eshell-prompt-regexp'."
-          (interactive "p")
-          (backward-char)
-          (eshell-next-prompt (- n)))))
-    (use-package em-term)
-
-    ;; Shared history.
-    (defvar eshell-history-global-ring nil
-      "The history ring shared across Eshell sessions.")
-
-    ;; (defun eshell-hist-use-global-history ()
-    ;;   "Make Eshell history shared across different sessions."
-    ;;   (unless eshell-history-global-ring
-    ;;     (let (eshell-history-ring)
-    ;;       (when eshell-history-file-name
-    ;;         (eshell-read-history nil t))
-    ;;       (setq eshell-history-global-ring eshell-history-ring))
-    ;;     (unless eshell-history-ring (setq eshell-history-global-ring (make-ring eshell-history-size))))
-    ;;   (setq eshell-history-ring eshell-history-global-ring))
-    ;; (add-hook 'eshell-mode-hook 'eshell-hist-use-global-history)
-
-    (setq eshell-cmpl-cycle-completions nil
-          ;; auto truncate after 12k lines
-          eshell-buffer-maximum-lines 12000
-          ;; history size
-          eshell-history-size 500
-          ;; buffer shorthand -> echo foo > #'buffer
-          eshell-buffer-shorthand t
-          ;; my prompt is easy enough to see
-          eshell-highlight-prompt nil
-          ;; treat 'echo' like shell echo
-          eshell-plain-echo-behavior t
-          ;; add -lh to the `ls' flags
-          eshell-ls-initial-args "-lh")
-
-    ;; Visual commands
-    (setq eshell-visual-commands '("vi" "screen" "top" "less" "more" "lynx"
-                                   "ncftp" "pine" "tin" "trn" "elm" "vim"
-                                   "nmtui" "alsamixer" "htop" "el" "elinks"
-                                   "ssh" "nethack" "dtop" "dstat"))
-    (setq eshell-visual-subcommands '(("git" "log" "diff" "show")
-                                      ("vagrant" "ssh")))
-
-    (defun deos/truncate-eshell-buffers ()
-      "Truncates all eshell buffers"
-      (interactive)
-      (save-current-buffer
-        (dolist (buffer (buffer-list t))
-          (set-buffer buffer)
-          (when (eq major-mode 'eshell-mode)
-            (eshell-truncate-buffer)))))
-
-    ;; After being idle for 5 seconds, truncate all the eshell-buffers if
-    ;; needed. If this needs to be canceled, you can run `(cancel-timer
-    ;; deos/eshell-truncate-timer)'
-    (setq deos/eshell-truncate-timer
-          (run-with-idle-timer 5 t #'deos/truncate-eshell-buffers))
-
-    (defun eshell/cds ()
-      "Change directory to the project's root."
-      (eshell/cd (locate-dominating-file default-directory ".git")))
-
-    (defalias 'eshell/l 'eshell/ls)
-    (defalias 'eshell/ll 'eshell/ls)
-
-    (defun eshell/ec (pattern)
-      (if (stringp pattern)
-          (find-file pattern)
-        (mapc #'find-file (mapcar #'expand-file-name pattern))))
-    (defalias 'e 'eshell/ec)
-    (defalias 'ee 'find-file-other-window)
-
-    (defun eshell/d (&rest args)
-      (dired (pop args) "."))
-
-    (defun eshell/clear ()
-      "Clear the eshell buffer"
-      (interactive)
-      (let ((eshell-buffer-maximum-lines 0))
-        (eshell-truncate-buffer)
-        (let ((inhibit-read-only t))
-          (erase-buffer)
-          (eshell-send-input)))))
-
-  (defun eshell/icat (&rest args)
-    "Display image(s)."
-    (let ((elems (eshell-flatten-list args)))
-      (while elems
-        (eshell-printn
-         (propertize " "
-                     'display (create-image (expand-file-name (car elems)))))
-        (setq elems (cdr elems))))
-    nil)
-
-  (add-hook 'eshell-mode-hook #'deos/setup-eshell)
-
-  ;; See eshell-prompt-function below
-  (setq eshell-prompt-regexp "^[^#$\n]* [#$] ")
-
-  ;; So the history vars are defined
-  (require 'em-hist)
-  (if (boundp 'eshell-save-history-on-exit)
-      ;; Don't ask, just save
-      (setq eshell-save-history-on-exit t))
-
-  ;; See: https://github.com/kaihaosw/eshell-prompt-extras
-  (use-package eshell-prompt-extras
-    :ensure t
-    :init
-    (progn
-      (setq eshell-highlight-prompt nil
-            epe-git-dirty-char " Ϟ"
-            ;; epe-git-dirty-char "*"
-            eshell-prompt-function 'epe-theme-dakrone)))
-
-  (defun eshell/magit ()
-    "Function to open magit-status for the current directory"
-    (interactive)
-    (magit-status default-directory)
-    nil))
-
-  (use-package esh-autosuggest
-    :ensure t
-    :hook (eshell-mode . esh-autosuggest-mode))
+  (load-theme 'panda t))
 #+END_SRC
+** Fonts
+#+BEGIN_SRC emacs-lisp
+;; The original font height (so it can be restored too at a later time)
+(setq deos/original-height 180)
 
-I use a dedicated buffer for connection to my desktop, with a binding of =C-x
-d=, if the buffer doesn't exist it is created.
+(defun deos/setup-fonts ()
+(when *is-gui*
+;; default font and variable-pitch fonts
+(set-face-attribute 'default nil
+                    :family "Iosevka"
+                    :height deos/original-height)
+    (dolist (face '(mode-line mode-line-inactive minibuffer-prompt))
+      (set-face-attribute face nil :family "Iosevka"
+                          :height deos/original-height))
+    (set-face-attribute 'variable-pitch nil
+                        :family "DejaVu Sans" :height deos/original-height)
+    ;; font for all unicode characters
+    ;;(set-fontset-font t 'unicode "DejaVu Sans Mono" nil 'prepend)
+    ))
+
+(when *is-gui*
+  (add-hook 'after-init-hook #'deos/setup-fonts))
+#+END_SRC
+** Monitor Switching
+Sometimes I want to plug my laptop into a larger monitor, or give presentations,
+so I'd like to have a single function I can call to adjust any sizes that are
+necessary.
+
+The =deos/height-modifier= can be added or subtracted to the size of the font for
+Emacs. I usually bind this in the Hydra toggle map.
 
 #+BEGIN_SRC emacs-lisp
-(defun deos/create-or-switch-to-delta-buffer ()
-  "Switch to the *eshell delta* buffer, or create it"
+(defvar deos/height-modifier 15
+  "Default value to increment the size by when jacking into a monitor.")
+
+(defun deos/monitor-jack-in ()
+  "Increase the font size by `deos/height-modifier' amount, for
+when you jack into an external monitor."
   (interactive)
-  (if (get-buffer "*eshell-delta*")
-      (switch-to-buffer "*eshell-delta*")
-    (let ((eshell-buffer-name "*eshell-delta*"))
-      (eshell))))
+  (dolist (face '(default
+                   mode-line
+                   mode-line-inactive
+                   minibuffer-prompt
+                   variable-pitch))
+    (set-face-attribute face nil :height (+ (face-attribute face :height)
+                                            deos/height-modifier))))
 
-(global-set-key (kbd "C-x d") 'deos/create-or-switch-to-delta-buffer)
-
-(defun deos/create-or-switch-to-eshell-1 ()
-  "Switch to the *eshell* buffer, or create it"
+(defun deos/monitor-jack-out ()
+  "Decreas the font size by `deos/height-modifier' amount, for
+when you jack out of an external monitor."
   (interactive)
-  (if (get-buffer "*eshell*")
-      (switch-to-buffer "*eshell*")
-    (let ((eshell-buffer-name "*eshell*"))
-      (eshell))))
+  (dolist (face '(default
+                   mode-line
+                   mode-line-inactive
+                   minibuffer-prompt
+                   variable-pitch))
+    (set-face-attribute face nil :height (- (face-attribute face :height)
+                                            deos/height-modifier))))
 
-(defun deos/create-or-switch-to-eshell-2 ()
-  "Switch to the *eshell*<2> buffer, or create it"
+(defun deos/monitor-reset ()
+  "Go back to the default font size and `line-spacing'"
   (interactive)
-  (if (get-buffer "*eshell*<2>")
-      (switch-to-buffer "*eshell*<2>")
-    (let ((eshell-buffer-name "*eshell*<2>"))
-      (eshell))))
+  (dolist (face '(default
+                   mode-line
+                   mode-line-inactive
+                   minibuffer-prompt
+                   variable-pitch))
+    (set-face-attribute face nil :height deos/original-height))
+  (text-scale-adjust 0)
+  (when (fboundp 'minimap-mode)
+    (condition-case err
+        (minimap-mode 0)
+      ('error 0)))
+  (setq line-spacing 0))
 
-(defun deos/create-or-switch-to-eshell-3 ()
-  "Switch to the *eshell*<3> buffer, or create it"
+(defun deos/code-reading-mode ()
+  "Do a bunch of fancy stuff to make reading/browsing code
+easier. When you're done, `deos/monitor-jack-out' is a great way
+to go back to a normal setup."
   (interactive)
-  (if (get-buffer "*eshell*<3>")
-      (switch-to-buffer "*eshell*<3>")
-    (let ((eshell-buffer-name "*eshell*<3>"))
-      (eshell))))
-
-(defun deos/create-or-switch-to-eshell-4 ()
-  "Switch to the *eshell*<4> buffer, or create it"
-  (interactive)
-  (if (get-buffer "*eshell*<4>")
-      (switch-to-buffer "*eshell*<4>")
-    (let ((eshell-buffer-name "*eshell*<4>"))
-      (eshell))))
-
-(defun deos/create-all-eshell-buffers ()
-  "Create all my normal eshell buffers"
-  (interactive)
-  (let ((eshell-buffer-name "*eshell*")
-        (default-directory "~/"))
-    (eshell))
-  (let ((eshell-buffer-name "*eshell*<2>")
-        (default-directory "~/")) (eshell))
-  (let ((eshell-buffer-name "*eshell*<3>")
-        (default-directory "~/gitrepo"))
-    (eshell))
-  (let ((eshell-buffer-name "*eshell-delta*")
-        (default-directory "~/.emacs.d"))
-    (eshell))
-  (let ((eshell-buffer-name "*eshell downloads*")
-        (default-directory "~/Downloads"))
-    (eshell)))
-
-(global-set-key (kbd "M-@") #'deos/create-all-eshell-buffers)
-
-(global-set-key (kbd "H-1") 'deos/create-or-switch-to-eshell-1)
-(global-set-key (kbd "H-2") 'deos/create-or-switch-to-eshell-2)
-(global-set-key (kbd "H-3") 'deos/create-or-switch-to-eshell-3)
-(global-set-key (kbd "H-4") 'deos/create-or-switch-to-eshell-4)
-(global-set-key (kbd "s-1") 'deos/create-or-switch-to-eshell-1)
-(global-set-key (kbd "s-2") 'deos/create-or-switch-to-eshell-2)
-(global-set-key (kbd "s-3") 'deos/create-or-switch-to-eshell-3)
-(global-set-key (kbd "s-4") 'deos/create-or-switch-to-eshell-4)
-(global-set-key (kbd "M-1") 'deos/create-or-switch-to-eshell-1)
-(global-set-key (kbd "M-2") 'deos/create-or-switch-to-eshell-2)
-(global-set-key (kbd "M-3") 'deos/create-or-switch-to-eshell-3)
-(global-set-key (kbd "M-4") 'deos/create-or-switch-to-eshell-4)
+  (delete-other-windows)
+  (text-scale-increase 1)
+  (setq line-spacing 5)
+  (use-package minimap :ensure t)
+  (when (not minimap-mode)
+    (minimap-mode 1)))
 #+END_SRC
-
-Also, add the buffer stack option to eshell
-
+** Highlighting
 #+BEGIN_SRC emacs-lisp
-(use-package esh-buf-stack
+(setq deos/hl-line-enabled t)
+(defun deos/turn-on-hl-line ()
+  (interactive)
+  (when deos/hl-line-enabled
+    (hl-line-mode 1)))
+
+(defun deos/turn-off-hl-line ()
+  (interactive)
+  (hl-line-mode -1))
+
+(add-hook 'prog-mode-hook #'deos/turn-on-hl-line)
+#+END_SRC
+** Mode line
+*** Powerline mode
+#+BEGIN_SRC emacs-lisp
+(use-package powerline
   :ensure t
-  :commands eshell-push-command
   :config
-  (setup-eshell-buf-stack)
-  (define-key eshell-mode-map (kbd "M-q") 'eshell-push-command))
+  (setq powerline-default-separator 'utf-8))
 #+END_SRC
-
-Indicate the exit status of the previous command using the eshell-fringe-status
-package. Eh, disabled this for now, not sure I actually like it.
-
+*** Feebleline mode
+Minimalist mode line
 #+BEGIN_SRC emacs-lisp
-(use-package eshell-fringe-status
-  :disabled t
-  :ensure t
-  :init
-  (add-hook 'eshell-mode-hook 'eshell-fringe-status-mode))
-#+END_SRC
-** Open an eshell window here
-:PROPERTIES:
-:CUSTOM_ID: h:27886c4c-b283-496d-ac41-1fe2bdcaf977
-:END:
-
-#+BEGIN_SRC emacs-lisp
-(defun eshell-here ()
-  "Opens up a new shell in the directory associated with the
-current buffer's file. The eshell is renamed to match that
-directory to make multiple eshell windows easier."
-  (interactive)
-  (let* ((parent (if (buffer-file-name)
-                     (file-name-directory (buffer-file-name))
-                   default-directory))
-         (height (/ (window-total-height) 3))
-         (name   (car (last (split-string parent "/" t)))))
-    (split-window-vertically (- height))
-    (other-window 1)
-    (eshell "new")
-    (rename-buffer (concat "*eshell: " name "*"))
-
-    (insert (concat "ls"))
-    (eshell-send-input)))
-
-(global-set-key (kbd "C-!") #'eshell-here)
-#+END_SRC
-
-And some nice glue for quickly closing eshell windows
-
-#+BEGIN_SRC emacs-lisp
-(defun eshell/x ()
-  "Closes the EShell session and gets rid of the EShell window."
-   (delete-window)
-   (eshell/exit))
-#+END_SRC
-
-** Open an eshell window there
-:PROPERTIES:
-:CUSTOM_ID: h:321c7f37-a36f-4482-9727-88b651a452d1
-:END:
-
-Like opening one here, but for remote hosts
-
-#+BEGIN_SRC emacs-lisp
-(defun eshell-there (host)
-  (interactive "sHost: ")
-  (let ((default-directory (format "/%s:" host)))
-    (eshell host)))
-#+END_SRC
-* File Browsing
-** Directory Editing and Navigation
-#+BEGIN_SRC emacs-lisp
-(defun deos/dired-mode-hook ()
-      (setq-local truncate-lines t))
-
-    (use-package dired
-      :bind ("C-x C-j" . dired-jump)
-      :config
-      (use-package dired-x
-        :init (setq-default dired-omit-files-p t)
-        :config
-        (add-to-list 'dired-omit-extensions ".DS_Store"))
-      (customize-set-variable 'diredp-hide-details-initially-flag nil)
-      (use-package dired+
-        :disabled t
-        :ensure t)
-      (use-package dired-aux
-        :init
-        (use-package dired-async
-          :ensure async))
-      (put 'dired-find-alternate-file 'disabled nil)
-      (setq ls-lisp-dirs-first t
-            dired-recursive-copies 'always
-            dired-recursive-deletes 'always
-            dired-dwim-target t
-            ;; -F marks links with @
-            dired-ls-F-marks-symlinks t
-            delete-by-moving-to-trash t
-            ;; Don't auto refresh dired
-            global-auto-revert-non-file-buffers nil
-            wdired-allow-to-change-permissions t)
-      (define-key dired-mode-map (kbd "C-M-u") #'dired-up-directory)
-      (define-key dired-mode-map (kbd "M-o") #'my/dired-open)
-      (define-key dired-mode-map (kbd "C-x C-q") #'wdired-change-to-wdired-mode)
-      (bind-key "l" #'dired-up-directory dired-mode-map)
-      (bind-key "M-!" #'async-shell-command dired-mode-map)
-      (add-hook 'dired-mode-hook 'deos/turn-on-hl-line)
-      (add-hook 'dired-mode-hook #'deos/dired-mode-hook))
-#+END_SRC
-
-** Quick-preview provides a nice preview of the thing under the cursor
-#+BEGIN_SRC emacs-lisp
-(use-package quick-preview
-  :ensure t
-  :init
-  (global-set-key (kbd "C-c q") 'quick-preview-at-point)
-  (define-key dired-mode-map (kbd "Q") 'quick-preview-at-point))
-#+END_SRC
-
-** Let's use async for everything in dired
-#+BEGIN_SRC emacs-lisp
-(use-package async :ensure t)
-(autoload 'dired-async-mode "dired-async.el" nil t)
-(dired-async-mode 1)
-#+END_SRC
-
-** Filter dired results with a filter
-#+BEGIN_SRC emacs-lisp
-    (use-package dired-narrow
-      :ensure t
-      :bind (:map dired-mode-map ("/" . dired-narrow)))
-#+END_SRC
-
-** Icons in a buffer
-#+BEGIN_SRC emacs-lisp
-(use-package all-the-icons
+(use-package feebleline
   :ensure t)
-
-(use-package all-the-icons-dired
-  :ensure t
-  :diminish all-the-icons-dired-mode
-  :init
-  (add-hook 'dired-mode-hook 'all-the-icons-dired-mode))
 #+END_SRC
-
-** Neotree
+*** Emoji
 #+BEGIN_SRC emacs-lisp
-(use-package neotree
-  :ensure t
-  :config
-  (global-set-key (kbd "C-c n") 'neotree-toggle)
-  (setq neo-theme 'arrow)
-  (setq neo-window-fixed-size nil)
-  (setq neo-smart-open t)
-  (setq neo-window-width 40)
-  (setq neo-default-system-application "open"))
-#+END_SRC
-* Completion
-** Company
-#+BEGIN_SRC emacs-lisp
-  (use-package company
-    :ensure t
-    :diminish
-    :config
-    (add-hook 'after-init-hook 'global-company-mode)
-
-    (setq company-idle-delay t)
-
-    (use-package company-anaconda
-      :ensure t
-      :config
-      (add-to-list 'company-backends 'company-anaconda)))
-
-(setq company-dabbrev-downcase nil)
-#+END_SRC
-** Yasnippets
-#+BEGIN_SRC emacs-lisp
-(use-package yasnippet
-    :ensure t
-    :diminish yas-minor-mode
-    :config
-    (add-to-list 'yas-snippet-dirs "~/.emacs.d/snippets")
-    (yas-global-mode)
-    (global-set-key (kbd "M-/") 'company-yasnippet))
-#+END_SRC
-* Git
-** Magit
-The be all, end all mode for all things git
-#+BEGIN_SRC emacs-lisp
-    (use-package magit
-    :ensure t
-    :bind (("C-x g" . magit-status))
-    :init (add-hook 'magit-mode-hook 'deos/turn-on-hl-line)
-    :config
-    (setq git-commit-summary-max-length 70)
-    (setenv "GIT_PAGER" "")
-    (if (file-exists-p "/usr/local/bin/emacsclient")
-        (setq magit-emacsclient-executable (executable-find "emacsclient")))
-    (defun deos/magit-browse ()
-      "Browse to the project's github URL, if available"
-      (interactive)
-      (let ((url (with-temp-buffer
-                            (unless (zerop (call-process-shell-command
-                                            "git remote -v" nil t))
-                              (error "Failed: 'git remote -v'"))
-                            (goto-char (point-min))
-                            (when (re-search-forward
-                                   "github\\.com[:/]\\(.+?\\)\\.git" nil t)
-                              (format "https://github.com/%s" (match-string 1))))))
-        (unless url
-          (error "Can't find repository URL"))
-        (browse-url url)))
-
-  (define-key magit-mode-map (kbd "C-c C-b") #'deos/magit-browse)
-  ;; Magit has its own binding, so re-bind them
-  (bind-key "M-1" #'deos/create-or-switch-to-eshell-1 magit-mode-map)
-  (bind-key "M-2" #'deos/create-or-switch-to-eshell-2 magit-mode-map)
-  (bind-key "M-3" #'deos/create-or-switch-to-eshell-3 magit-mode-map)
-  (bind-key "M-4" #'deos/create-or-switch-to-eshell-4 magit-mode-map)
-
-  ;; Allow gpg signing merge commits
-  (magit-define-popup-option 'magit-merge-popup
-                             ?S "Sign using gpg" "--gpg-sign="
-                             #'magit-read-gpg-secret-key))
-#+END_SRC
-** Git Fringe
-This helps visualize version changes in a file
-#+BEGIN_SRC emacs-lisp
-(use-package git-gutter
-  :ensure t
-  :when window-system
-  :defer t
-  :bind (("C-x P" . git-gutter:popup-hunk)
-         ("C-x p" . git-gutter:previous-hunk)
-         ("C-x n" . git-gutter:next-hunk)
-         ("C-c G" . git-gutter:popup-hunk))
-  :diminish ""
-  :init
-  (add-hook 'prog-mode-hook #'git-gutter-mode)
-  (add-hook 'text-mode-hook #'git-gutter-mode)
-  :config
-  (use-package git-gutter-fringe
-    :ensure t
-    :init
-    (require 'git-gutter-fringe)
-    (when (fboundp 'define-fringe-bitmap)
-      (define-fringe-bitmap 'git-gutter-fr:added
-        [224 224 224 224 224 224 224 224 224 224 224 224 224
-             224 224 224 224 224 224 224 224 224 224 224 224]
-        nil nil 'center)
-      (define-fringe-bitmap 'git-gutter-fr:modified
-        [224 224 224 224 224 224 224 224 224 224 224 224 224
-             224 224 224 224 224 224 224 224 224 224 224 224]
-        nil nil 'center)
-      (define-fringe-bitmap 'git-gutter-fr:deleted
-        [0 0 0 0 0 0 0 0 0 0 0 0 0 128 192 224 240 248]
-        nil nil 'center))))
-#+END_SRC
-** Various Git helpers
-#+BEGIN_SRC emacs-lisp
-(use-package git-messenger
-  :ensure t
-  :commands git-messenger:popup-message
-  :bind (("C-c M" . git-messenger:popup-message))
-  :config
-  (setq git-messenger:show-detail t))
-
-  (use-package browse-at-remote
-  :ensure t
-  :commands browse-at-remote
-  :bind ("C-c g g" . browse-at-remote))
-
-  (use-package git-timemachine
+(use-package emojify
   :ensure t)
-
-  (use-package git-annex
-  :ensure t)
-
-  (use-package magit-annex
-  :ensure t)
-
-  (use-package ediff
-  :init
-  (setq
-   ;; Always split nicely for wide screens
-   ediff-split-window-function 'split-window-horizontally)
-  (defun ediff-copy-both-to-C ()
-    (interactive)
-    (ediff-copy-diff
-     ediff-current-difference nil 'C nil
-     (concat
-      (ediff-get-region-contents
-       ediff-current-difference 'A ediff-control-buffer)
-      (ediff-get-region-contents
-       ediff-current-difference 'B ediff-control-buffer))))
-  (defun add-d-to-ediff-mode-map ()
-    (define-key ediff-mode-map "d" 'ediff-copy-both-to-C))
-  (add-hook 'ediff-keymap-setup-hook 'add-d-to-ediff-mode-map))
-
-  (defhydra deos/hydra-smerge
-  (:color red :hint nil
-          :pre (smerge-mode 1))
-  "
-^Move^ ^Keep^ ^Diff^ ^Pair^
-------------------------------------------------------
-_n_ext _b_ase _R_efine _<_: base-mine
-_p_rev _m_ine _E_diff _=_: mine-other
-^ ^ _o_ther _C_ombine _>_: base-other
-^ ^ _a_ll _r_esolve
-_q_uit _RET_: current
-"
-  ("RET" smerge-keep-current)
-  ("C" smerge-combine-with-next)
-  ("E" smerge-ediff)
-  ("R" smerge-refine)
-  ("a" smerge-keep-all)
-  ("b" smerge-keep-base)
-  ("m" smerge-keep-mine)
-  ("n" smerge-next)
-  ("o" smerge-keep-other)
-  ("p" smerge-prev)
-  ("r" smerge-resolve)
-  ("<" smerge-diff-base-mine)
-  ("=" smerge-diff-mine-other)
-  (">" smerge-diff-base-other)
-  ("q" nil :color blue))
 #+END_SRC
-* Programming Modes
-** Python
+*** Nyan Cat
+Just for fun
 #+BEGIN_SRC emacs-lisp
-(use-package python
-  :config
-  (setq-default python-indent-offset 2)
-  (define-key python-mode-map (kbd "<backtab>") 'python-back-indent))
-
-(when (executable-find "jupyter")
-  (use-package ob-ipython
-    :ensure t
-    :config
-    (use-package company
-      :config
-      (add-to-list 'company-backends 'company-ob-ipython))
-    (add-to-list 'org-latex-minted-langs '(ipython "python"))))
-
-(use-package virtualenvwrapper
-  :ensure t
-  :defer t
-  :init
-  (progn
-    (venv-initialize-interactive-shells)
-    (venv-initialize-eshell)
-    (setq venv-location (or (getenv "WORKON_HOME")
-                            "~/.virtualenvs"))))
-;; this requires some setup pip install jedi flake8 autopep8 yapf
-(use-package elpy
-  :ensure t
-  :defer t
-  :init
-  (elpy-enable)
-  :config
-  (setq elpy-test-django-with-manage t))
-
-(use-package anaconda-mode
-  :ensure t
-  :config
-  (add-hook 'python-mode-hook 'anaconda-mode)
-  (add-hook 'python-mode-hook 'anaconda-eldoc-mode))
-#+END_SRC
-*** Kivy
-#+BEGIN_SRC emacs-lisp
-(use-package kivy-mode
-  :ensure t
-  :mode ("\\.kv\\'" . kivy-mode))
-#+END_SRC
-** C
-#+BEGIN_SRC emacs-lisp
-    (use-package irony
-      :ensure t
-      :hook (c-mode . irony-mode))
-  (use-package company-irony
-    :ensure t
-    :config
-    (add-to-list 'company-backends 'company-irony))
-(use-package flycheck-irony
-  :ensure t
-  :hook (flycheck-mode . flycheck-irony-setup))
-#+END_SRC
-** C Sharp
-#+BEGIN_SRC emacs-lisp
-  (use-package csharp-mode
-    :ensure t)
-
-(use-package omnisharp
-  :ensure t
-  :hook ((csharp-mode . omnisharp-mode)
-         ;; TODO: 'before-save runs globally - make this buffer local?
-         (before-save . omnisharp-code-format-entire-file))
-  :config
-  (add-to-list 'company-backends 'company-omnisharp))
-#+END_SRC
-** Groovy
-#+BEGIN_SRC emacs-lisp
-(use-package groovy-mode
-  :ensure t
-  :config
-  (setq groovy-indent-offset 2))
-#+END_SRC
-** Yaml
-#+BEGIN_SRC emacs-lisp
-(use-package yaml-mode
+(use-package nyan-mode
   :ensure t)
 #+END_SRC
 * Org-mode
@@ -5399,156 +4511,6 @@ Follow these steps https://github.com/myuhe/org-gcal.el/blob/master/README.org
   :config
   (require 'calfw-gcal))
 #+END_SRC
-* Appearance
-** Theme
-
-I vant to suck your blood
-#+BEGIN_SRC emacs-lisp
-(use-package dracula-theme
-  :ensure t
-  :config
-  (load-theme 'dracula t))
-#+END_SRC
-
-For kicks
-#+BEGIN_SRC emacs-lisp
-(use-package apropospriate-theme
-  :ensure t)
-#+END_SRC
-
-This panda theme seems cool
-#+BEGIN_SRC emacs-lisp
-(use-package panda-theme
-  :ensure t
-  :config
-  (load-theme 'panda t))
-#+END_SRC
-** Fonts
-#+BEGIN_SRC emacs-lisp
-;; The original font height (so it can be restored too at a later time)
-(setq deos/original-height 180)
-
-(defun deos/setup-fonts ()
-(when *is-gui*
-;; default font and variable-pitch fonts
-(set-face-attribute 'default nil
-                    :family "Iosevka"
-                    :height deos/original-height)
-    (dolist (face '(mode-line mode-line-inactive minibuffer-prompt))
-      (set-face-attribute face nil :family "Iosevka"
-                          :height deos/original-height))
-    (set-face-attribute 'variable-pitch nil
-                        :family "DejaVu Sans" :height deos/original-height)
-    ;; font for all unicode characters
-    ;;(set-fontset-font t 'unicode "DejaVu Sans Mono" nil 'prepend)
-    ))
-
-(when *is-gui*
-  (add-hook 'after-init-hook #'deos/setup-fonts))
-#+END_SRC
-** Monitor Switching
-Sometimes I want to plug my laptop into a larger monitor, or give presentations,
-so I'd like to have a single function I can call to adjust any sizes that are
-necessary.
-
-The =deos/height-modifier= can be added or subtracted to the size of the font for
-Emacs. I usually bind this in the Hydra toggle map.
-
-#+BEGIN_SRC emacs-lisp
-(defvar deos/height-modifier 15
-  "Default value to increment the size by when jacking into a monitor.")
-
-(defun deos/monitor-jack-in ()
-  "Increase the font size by `deos/height-modifier' amount, for
-when you jack into an external monitor."
-  (interactive)
-  (dolist (face '(default
-                   mode-line
-                   mode-line-inactive
-                   minibuffer-prompt
-                   variable-pitch))
-    (set-face-attribute face nil :height (+ (face-attribute face :height)
-                                            deos/height-modifier))))
-
-(defun deos/monitor-jack-out ()
-  "Decreas the font size by `deos/height-modifier' amount, for
-when you jack out of an external monitor."
-  (interactive)
-  (dolist (face '(default
-                   mode-line
-                   mode-line-inactive
-                   minibuffer-prompt
-                   variable-pitch))
-    (set-face-attribute face nil :height (- (face-attribute face :height)
-                                            deos/height-modifier))))
-
-(defun deos/monitor-reset ()
-  "Go back to the default font size and `line-spacing'"
-  (interactive)
-  (dolist (face '(default
-                   mode-line
-                   mode-line-inactive
-                   minibuffer-prompt
-                   variable-pitch))
-    (set-face-attribute face nil :height deos/original-height))
-  (text-scale-adjust 0)
-  (when (fboundp 'minimap-mode)
-    (condition-case err
-        (minimap-mode 0)
-      ('error 0)))
-  (setq line-spacing 0))
-
-(defun deos/code-reading-mode ()
-  "Do a bunch of fancy stuff to make reading/browsing code
-easier. When you're done, `deos/monitor-jack-out' is a great way
-to go back to a normal setup."
-  (interactive)
-  (delete-other-windows)
-  (text-scale-increase 1)
-  (setq line-spacing 5)
-  (use-package minimap :ensure t)
-  (when (not minimap-mode)
-    (minimap-mode 1)))
-#+END_SRC
-** Highlighting
-#+BEGIN_SRC emacs-lisp
-(setq deos/hl-line-enabled t)
-(defun deos/turn-on-hl-line ()
-  (interactive)
-  (when deos/hl-line-enabled
-    (hl-line-mode 1)))
-
-(defun deos/turn-off-hl-line ()
-  (interactive)
-  (hl-line-mode -1))
-
-(add-hook 'prog-mode-hook #'deos/turn-on-hl-line)
-#+END_SRC
-** Mode line
-*** Powerline mode
-#+BEGIN_SRC emacs-lisp
-(use-package powerline
-  :ensure t
-  :config
-  (setq powerline-default-separator 'utf-8))
-#+END_SRC
-*** Feebleline mode
-Minimalist mode line
-#+BEGIN_SRC emacs-lisp
-(use-package feebleline
-  :ensure t)
-#+END_SRC
-*** Emoji
-#+BEGIN_SRC emacs-lisp
-(use-package emojify
-  :ensure t)
-#+END_SRC
-*** Nyan Cat
-Just for fun
-#+BEGIN_SRC emacs-lisp
-(use-package nyan-mode
-  :ensure t)
-#+END_SRC
 * Command completion
 ** Smart M-x
 #+BEGIN_SRC emacs-lisp
@@ -5560,8 +4522,27 @@ Just for fun
   (use-package ivy
       :ensure t
       :diminish ivy-mode
+      :bind
+      (("C-M-z" . ivy-resume)
+       ("C-x C-r" . ivy-switch-buffer)
+       ("C-x o" . swiper))
+      :init
+      (ivy-mode 1)
       :config
-      (ivy-mode t))
+      (bind-key "C-s" 'swiper)
+      ;; add 'recentf-mode' and bookmarks to 'ivy-switch-buffer
+      (setq ivy-use-virtual-buffers t)
+      ;; number of result lines to display
+      ;; (setq ivy-height 10)
+      ;; does not count candiates
+      (setq ivy-count-format "%d/%d ")
+      ;; no regexp by default
+      ;; (setq ivy-initial-inputs-alist nil)
+      ;; configure regexp engine.
+      ;; (setq ivy-re-builders-alist
+      ;;       ;; allow input not in order
+      ;;       '((t . ivy--regex-ignore-order)))
+       )
 #+END_SRC
 
 By default =ivy= starts filters with =^=. I don't normally want that and can easily type it manually when I do.
@@ -5592,6 +4573,1243 @@ By default =ivy= starts filters with =^=. I don't normally want that and can eas
 #+BEGIN_SRC emacs-lisp
   (use-package ivy-hydra
     :ensure t)
+#+END_SRC
+* Completion
+** Company
+#+BEGIN_SRC emacs-lisp
+  (use-package company
+    :ensure t
+    :diminish
+    :config
+    (add-hook 'after-init-hook 'global-company-mode)
+
+    (setq company-idle-delay t)
+
+    (use-package company-anaconda
+      :ensure t
+      :config
+      (add-to-list 'company-backends 'company-anaconda)))
+
+(setq company-dabbrev-downcase nil)
+#+END_SRC
+** Yasnippets
+#+BEGIN_SRC emacs-lisp
+(use-package yasnippet
+    :ensure t
+    :diminish yas-minor-mode
+    :config
+    (add-to-list 'yas-snippet-dirs "~/.emacs.d/snippets")
+    (yas-global-mode)
+    (global-set-key (kbd "M-/") 'company-yasnippet))
+#+END_SRC
+
+* Writing
+** Skeleton Code
+:PROPERTIES:
+:CUSTOM_ID: skeletons
+:END:
+Skeletons are kind of like yasnippet, but they don't mess with my keybindings
+all over the place and take forever to load ಠ_ಠ
+
+#+BEGIN_SRC emacs-lisp
+(require 'skeleton)
+
+(define-skeleton deos/org-header
+  "Insert a standard header for org-mode files"
+  "Title: "
+  "#+TITLE: " str \n
+  "#+AUTHOR: " (user-full-name) \n
+  "#+EMAIL: " user-mail-address \n
+  "#+SETUPFILE: ~/deos/setupfiles/emacs.setup
+
+| *Author* | {{{author}}} ({{{email}}})    |
+| *Date*   | {{{time(%Y-%m-%d %H:%M:%S)}}} |
+
+,* Introduction
+" \n)
+
+(define-skeleton deos/org-wrap-elisp
+  "Wrap text with #+BEGIN_SRC / #+END_SRC for the emacs-lisp code"
+  nil
+  > "#+BEGIN_SRC emacs-lisp" \n
+  > _ \n
+  > "#+END_SRC" \n)
+
+  (define-skeleton deos/org-wrap-source
+  "Wrap text with #+BEGIN_SRC / #+END_SRC for a code type"
+  "Language: "
+  > "#+BEGIN_SRC " str \n
+  > _ \n
+  > "#+END_SRC" \n)
+
+  (define-skeleton deos/es-make-index
+  "Insert boilerplate to create an index with `es-mode' syntax"
+  "Index name: "
+  "POST /" str \n
+  "{" \n
+  > "\"settings\": {" \n
+  > "\"index\": {" \n
+  > "\"number_of_shards\": 1," \n
+  > "\"number_of_replicas\": 0" \n
+  > "}" \n ;; index
+  > "}," \n ;; settings
+  > "\"mappings\": {" \n
+  > "\"" (skeleton-read "Type name: ") "\": {" \n
+  > "\"properties\": {" \n
+  > "\"body\": {" \n
+  > "\"type\": \"string\"" \n
+  > "}" \n ;; body
+  > "}" \n ;; properties
+  > "}" \n ;; type
+  > "}" \n ;; mappings
+  > "}" \n)
+
+  (define-skeleton deos/java-try-catch
+  "Wrap code in a Java try/catch"
+  nil
+  > "try {" \n
+  > _
+  > "} catch (Exception e) {" \n
+  > "throw e;" \n
+  > "}" \n)
+#+END_SRC
+
+And now let's add a hydra for the skeletons
+
+#+BEGIN_SRC emacs-lisp
+(defhydra deos/hydra-skeleton nil
+  "Insert Skeleton"
+  ("e" deos/org-wrap-elisp "Wrap as elisp" :exit t)
+  ("s" deos/org-wrap-source "Wrap as source" :exit t)
+  ("i" deos/es-make-index "ES Index" :exit t)
+  ("h" deos/org-header "Org Header" :exit t)
+  ("t" deos/java-try-catch "Wrap with try/catch" :exit t))
+#+END_SRC
+** Writegood mode
+#+BEGIN_SRC emacs-lisp
+(use-package writegood-mode
+  :ensure t
+  :bind ("C-c w" . writegood-mode)
+  :config
+  (add-to-list 'writegood-weasel-words "actionable"))
+#+END_SRC
+** Markup
+#+BEGIN_SRC emacs-lisp
+(use-package markdown-mode
+  :ensure t
+  :mode (("\\`README\\.md\\'" . gfm-mode)
+         ("github\\.com.*\\.txt\\'" . gfm-mode)
+         ("\\.md\\'" . markdown-mode)
+         ("\\.markdown\\'" . markdown-mode))
+  :init
+  (setq markdown-enable-wiki-links t
+        markdown-italic-underscore t
+        markdown-make-gfm-checkboxes-buttons t
+        markdown-gfm-additional-languages '("sh"))
+  (add-hook 'markdown-mode-hook #'flyspell-mode))
+#+END_SRC
+** Asciidocs
+#+BEGIN_SRC emacs-lisp
+(use-package adoc-mode
+  :ensure t)
+#+END_SRC
+** Thesaurus
+#+BEGIN_SRC emacs-lisp
+(use-package synosaurus
+  :ensure t
+  :init
+  (setq-default synosaurus-backend 'synosaurus-backend-wordnet)
+  (add-hook 'after-init-hook #'synosaurus-mode))
+#+END_SRC
+** Fill me in
+#+BEGIN_SRC emacs-lisp
+(use-package fill-column-indicator
+  :ensure t
+  :config
+  ;; fix for org -> html export
+  (defun fci-mode-override-advice (&rest args))
+  (use-package org)
+  (advice-add 'org-html-fontify-code :around
+              (lambda (fun &rest args)
+                (advice-add 'fci-mode :override #'fci-mode-override-advice)
+                (let ((result (apply fun args)))
+                  (advice-remove 'fci-mode #'fci-mode-override-advice)
+                  result)))
+  (defvar deos/fci-disabled nil)
+  (make-variable-buffer-local 'deos/fci-disabled)
+   ;; Add a hook that disables fci if enabled when the window changes and it
+  ;; isn't wide enough to display it.
+  (defun deos/maybe-disable-fci ()
+    (interactive)
+    ;; Disable FCI if necessary
+    (when (and fci-mode
+               (< (window-width) (or fci-rule-column fill-column)))
+      (fci-mode -1)
+      (setq-local deos/fci-disabled t))
+    ;; Enable FCI if necessary
+    (when (and deos/fci-disabled
+               (eq fci-mode nil)
+               (> (window-width) (or fci-rule-column fill-column)))
+      (fci-mode 1)
+      (setq-local deos/fci-disabled nil)))
+
+  (defun deos/add-fci-disabling-hook ()
+    (interactive)
+    (add-hook 'window-configuration-change-hook
+              #'deos/maybe-disable-fci))
+  (add-hook 'prog-mode-hook #'deos/add-fci-disabling-hook))
+#+END_SRC
+** Whitespace
+#+BEGIN_SRC emacs-lisp
+;; A subset, only training lines and whitespace
+(setq whitespace-style '(spaces tabs newline space-mark tab-mark newline-mark))
+
+(setq whitespace-display-mappings
+      ;; all numbers are Unicode codepoint in decimal.
+      '(;;(space-mark 32 [183] [46])
+        ;; (newline-mark 10 [172 10]) ;; the paragraph sign
+        (newline-mark 10 [172 10]) ;; mathematical "not"
+        (tab-mark 9 [187 9] [92 9])))
+
+(defun deos/turn-on-whitespace-mode ()
+  (interactive)
+  (setq-local whitespace-line-column fill-column)
+  (whitespace-mode +1)
+  (diminish 'whitespace-mode)
+  (whitespace-newline-mode 1)
+  (diminish 'whitespace-newline-mode))
+
+(add-hook 'prog-mode-hook #'deos/turn-on-whitespace-mode)
+#+END_SRC
+
+Turn off whitespace mode when exporting org documents
+#+BEGIN_SRC emacs-lisp
+(use-package org
+  :config
+  (advice-add 'org-html-fontify-code :around
+              (lambda (fun &rest args)
+                (whitespace-mode -1)
+                (let ((result  (apply fun args)))
+                  (whitespace-mode +1)
+                  result))))
+#+END_SRC
+
+** Highlight indentions
+#+BEGIN_SRC emacs-lisp
+(use-package highlight-indent-guides
+  :ensure t
+  :init
+  (setq highlight-indent-guides-method 'character)
+  (add-hook 'prog-mode-hook #'highlight-indent-guides-mode))
+#+END_SRC
+* Coding
+** Flycheck
+#+BEGIN_SRC emacs-lisp
+    (use-package flycheck
+      :ensure t
+      :config
+      (add-hook 'after-init-hook 'global-flycheck-mode)
+      (defun my/use-eslint-from-node-modules ()
+    (let* ((root (locate-dominating-file
+                  (or (buffer-file-name) default-directory)
+                  "node_modules"))
+           (eslint (and root
+                        (expand-file-name "node_modules/eslint/bin/eslint.js"
+                                          root))))
+      (when (and eslint (file-executable-p eslint))
+        (setq-local flycheck-javascript-eslint-executable eslint))))
+  (add-hook 'flycheck-mode-hook #'my/use-eslint-from-node-modules)
+(add-hook 'flycheck-mode-hook #'my/use-eslint-from-node-modules)
+      (add-to-list 'flycheck-checkers 'proselint)
+      (setq-default flycheck-highlighting-mode 'lines)
+      ;; Define fringe indicator / warning levels
+      (define-fringe-bitmap 'flycheck-fringe-bitmap-ball
+        (vector #b00000000
+                #b00000000
+                #b00000000
+                #b00000000
+                #b00000000
+                #b00000000
+                #b00000000
+                #b00011100
+                #b00111110
+                #b00111110
+                #b00111110
+                #b00011100
+                #b00000000
+                #b00000000
+                #b00000000
+                #b00000000
+                #b00000000))
+      (flycheck-define-error-level 'error
+        :severity 2
+        :overlay-category 'flycheck-error-overlay
+        :fringe-bitmap 'flycheck-fringe-bitmap-ball
+        :fringe-face 'flycheck-fringe-error)
+      (flycheck-define-error-level 'warning
+        :severity 1
+        :overlay-category 'flycheck-warning-overlay
+        :fringe-bitmap 'flycheck-fringe-bitmap-ball
+        :fringe-face 'flycheck-fringe-warning)
+      (flycheck-define-error-level 'info
+        :severity 0
+        :overlay-category 'flycheck-info-overlay
+        :fringe-bitmap 'flycheck-fringe-bitmap-ball
+        :fringe-face 'flycheck-fringe-info))
+#+END_SRC
+** Proselint
+Proselint is a cool flycheck checker for the English language, which helps me
+right more gooder
+#+BEGIN_SRC emacs-lisp
+(flycheck-define-checker proselint
+  "A linter for prose."
+  :command ("proselint" source-inplace)
+  :error-patterns
+  ((warning line-start (file-name) ":" line ":" column ": "
+            (id (one-or-more (not (any " "))))
+            (message (one-or-more not-newline)
+                     (zero-or-more "\n" (any " ") (one-or-more not-newline)))
+            line-end))
+  :modes (text-mode markdown-mode gfm-mode org-mode))
+#+END_SRC
+** Smartparens
+Help keep those parenthesys balanced
+
+#+BEGIN_SRC emacs-lisp
+  (use-package smartparens
+    :ensure t
+    :config
+    (add-hook 'prog-mode-hook 'smartparens-mode))
+#+END_SRC
+
+** Delimiters
+Show me the parenthesys
+#+BEGIN_SRC emacs-lisp
+  (use-package rainbow-delimiters
+    :ensure t
+    :config
+    (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
+#+END_SRC
+
+** Highlight colors
+#+BEGIN_SRC emacs-lisp
+  (use-package rainbow-mode
+    :ensure t
+    :diminish rainbow-mode
+    :config
+    (setq rainbow-x-colors nil)
+    (add-hook 'prog-mode-hook 'rainbow-mode))
+#+END_SRC
+
+** Indentation
+#+BEGIN_SRC emacs-lisp
+  (use-package aggressive-indent
+    :ensure t)
+#+END_SRC
+
+** Add them parenth pairs
+#+BEGIN_SRC emacs-lisp
+(add-hook 'prog-mode-hook 'electric-pair-mode)
+#+END_SRC
+
+** A dash of smartness
+#+BEGIN_SRC emacs-lisp
+  (use-package smart-dash
+    :ensure t
+    :config
+    (add-hook 'python-mode-hook 'smart-dash-mode))
+#+END_SRC
+
+** Projectile
+Useful for navigating projects structures
+#+BEGIN_SRC emacs-lisp
+(use-package projectile
+  :ensure t
+  :commands projectile-global-mode
+  :diminish projectile-mode
+  :init (add-hook 'after-init-hook #'projectile-global-mode)
+  :config
+  (bind-key "C-c p b" #'projectile-switch-to-buffer #'projectile-command-map)
+  (bind-key "C-c p K" #'projectile-kill-buffers #'projectile-command-map)
+
+  ;; global ignores
+  (add-to-list 'projectile-globally-ignored-files ".tern-port")
+  (add-to-list 'projectile-globally-ignored-files "GTAGS")
+  (add-to-list 'projectile-globally-ignored-files "GPATH")
+  (add-to-list 'projectile-globally-ignored-files "GRTAGS")
+  (add-to-list 'projectile-globally-ignored-files "GSYMS")
+  (add-to-list 'projectile-globally-ignored-files ".DS_Store")
+  ;; always ignore .class files
+  (add-to-list 'projectile-globally-ignored-file-suffixes ".class")
+
+  )
+#+END_SRC
+
+Wire projectile into counsel
+#+BEGIN_SRC emacs-lisp
+(use-package counsel-projectile
+  :ensure t
+  :config
+  (add-hook 'after-init-hook 'counsel-projectile-mode))
+#+END_SRC
+
+
+Use Ripgrep for projectile
+#+BEGIN_SRC emacs-lisp
+(use-package projectile-ripgrep :ensure t)
+#+END_SRC
+
+Here's a neat function that [[https://github.com/dakrone/eos][dakrone]] wrote that will find an associated eshell to a project and pop
+it up at the bottom of the screen
+#+BEGIN_SRC emacs-lisp
+(defun deos/popup-project-eshell ()
+  (interactive)
+  (when (projectile-project-p)
+    (save-excursion
+      (let ((project (projectile-project-name))
+            (candidate nil)
+            (i 0)
+            (buffers (buffer-list))
+            (found-p nil))
+        (while (and (not candidate)
+                    (<= i (length buffers)))
+          (let ((buffer (elt buffers i)))
+            (with-current-buffer buffer
+              (when (and (eq major-mode 'eshell-mode)
+                         (equal (projectile-project-name) project))
+                (setq candidate buffer))))
+          (setq i (+ i 1)))
+        (if candidate
+            (popwin:popup-buffer-tail candidate)
+          (message "No projectile eshell buffer found"))))))
+
+(global-set-key (kbd "C-x M-B") #'deos/popup-project-eshell)
+#+END_SRC
+
+** Code Style
+I like the google code style
+#+BEGIN_SRC emacs-lisp
+(use-package google-c-style
+  :ensure t)
+#+END_SRC
+* Shell
+Things for running shells inside of emacs
+
+
+
+Sets up the =with-editor= package so things that invoke =$EDITOR= will use the
+current emacs if I'm already inside of emacs
+
+#+BEGIN_SRC emacs-lisp
+(use-package with-editor
+  :ensure t
+  :init
+  (progn
+    (add-hook 'shell-mode-hook  'with-editor-export-editor)
+    (add-hook 'eshell-mode-hook 'with-editor-export-editor)))
+#+END_SRC
+
+Also, let's set up any SSH or GPG keychains that the [[http://www.funtoo.org/Keychain][Keychain]] tool has set up
+for us (which I use at the shell)
+
+#+BEGIN_SRC emacs-lisp
+(use-package keychain-environment
+  :ensure t
+  :init
+  (add-hook 'after-init-hook #'keychain-refresh-environment))
+#+END_SRC
+
+First, Emacs doesn't handle =less= well, so use =cat= instead for the shell
+pager:
+
+#+BEGIN_SRC emacs-lisp
+(setenv "PAGER" "cat")
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+(setq comint-scroll-to-bottom-on-input t ;; always insert at the bottom
+      ;; always add output at the bottom
+      comint-scroll-to-bottom-on-output nil
+      ;; scroll to show max possible output
+      comint-scroll-show-maximum-output t
+      ;; no duplicates in command history
+      comint-input-ignoredups t
+      ;; insert space/slash after file completion
+      comint-completion-addsuffix t
+      ;; if this is t, it breaks shell-command
+      comint-prompt-read-only nil)
+
+(defun deos/shell-kill-buffer-sentinel (process event)
+  (when (memq (process-status process) '(exit signal))
+    (kill-buffer)))
+
+(defun deos/kill-process-buffer-on-exit ()
+  (set-process-sentinel (get-buffer-process (current-buffer))
+                        #'deos/shell-kill-buffer-sentinel))
+
+(dolist (hook '(ielm-mode-hook term-exec-hook comint-exec-hook))
+  (add-hook hook 'deos/kill-process-buffer-on-exit))
+
+(defun set-scroll-conservatively ()
+  "Add to shell-mode-hook to prevent jump-scrolling on newlines in shell buffers."
+  (set (make-local-variable 'scroll-conservatively) 10))
+
+(defadvice comint-previous-matching-input
+    (around suppress-history-item-messages activate)
+  "Suppress the annoying 'History item : NNN' messages from shell history isearch.
+If this isn't enough, try the same thing with
+comint-replace-by-expanded-history-before-point."
+  (let ((old-message (symbol-function 'message)))
+    (unwind-protect
+        (progn (fset 'message 'ignore) ad-do-it)
+      (fset 'message old-message))))
+
+(add-hook 'shell-mode-hook #'set-scroll-conservatively)
+;; truncate buffers continuously
+(add-hook 'comint-output-filter-functions #'comint-truncate-buffer)
+;; interpret and use ansi color codes in shell output windows
+(add-hook 'shell-mode-hook #'ansi-color-for-comint-mode-on)
+#+END_SRC
+
+* Eshell
+Eshell is great for most shell things. It's a great ZSH replacement. Regardless,
+it needs some tweaks in order to be fully useful.
+
+First, a function to be called when eshell-mode is entered
+
+#+BEGIN_SRC emacs-lisp
+(defun deos/setup-eshell ()
+  (interactive)
+  ;; turn off semantic-mode in eshell buffers
+  (semantic-mode -1)
+  ;; turn off hl-line-mode
+  (when (fboundp 'deos/turn-off-hl-line)
+    (deos/turn-off-hl-line))
+  (local-set-key (kbd "M-P") 'eshell-previous-prompt)
+  (local-set-key (kbd "M-N") 'eshell-next-prompt)
+  (local-set-key (kbd "M-R") 'eshell-previous-matching-input))
+#+END_SRC
+
+Add a nice helper to sudo-edit a file
+
+#+BEGIN_SRC emacs-lisp
+(defun sudoec (file)
+  (interactive)
+  (find-file (concat "/sudo::" (expand-file-name file))))
+#+END_SRC
+
+Also, after eshell has loaded its options, let's load some other niceties like
+completion, prompt and term settings:
+
+#+BEGIN_SRC emacs-lisp
+(use-package eshell
+  :commands (eshell eshell-command)
+  :bind ("C-c m" . eshell)
+  :init
+  (require 'em-smart)
+  (setq eshell-glob-case-insensitive nil
+        eshell-error-if-no-glob nil
+        eshell-scroll-to-bottom-on-input nil
+        eshell-where-to-jump 'begin
+        eshell-review-quick-commands nil
+        eshell-smart-space-goes-to-end t)
+  ;; Initialize "smart" mode
+  ;;(add-hook 'eshell-mode-hook #'eshell-smart-initialize)
+  :config
+  (defalias 'emacs 'find-file)
+  (defalias 'hff 'hexl-find-file)
+  (defalias 'sec 'sudoec)
+  (setenv "PAGER" "cat")
+  (use-package esh-opt
+    :config
+    (use-package em-cmpl)
+    (use-package em-prompt
+      :init
+      (with-eval-after-load 'em-prompt
+        (defun eshell-next-prompt (n)
+          "Move to end of Nth next prompt in the buffer. See `eshell-prompt-regexp'."
+          (interactive "p")
+          (re-search-forward eshell-prompt-regexp nil t n)
+          (when eshell-highlight-prompt
+          (while (not (get-text-property (line-beginning-position) 'read-only))
+            (re-search-forward eshell-prompt-regexp nil t n)))
+          (eshell-skip-prompt))
+
+        (defun eshell-previous-prompt (n)
+          "Move to end of Nth previous prompt in the buffer. See `eshell-prompt-regexp'."
+          (interactive "p")
+          (backward-char)
+          (eshell-next-prompt (- n)))))
+    (use-package em-term)
+
+    ;; Shared history.
+    (defvar eshell-history-global-ring nil
+      "The history ring shared across Eshell sessions.")
+
+    ;; (defun eshell-hist-use-global-history ()
+    ;;   "Make Eshell history shared across different sessions."
+    ;;   (unless eshell-history-global-ring
+    ;;     (let (eshell-history-ring)
+    ;;       (when eshell-history-file-name
+    ;;         (eshell-read-history nil t))
+    ;;       (setq eshell-history-global-ring eshell-history-ring))
+    ;;     (unless eshell-history-ring (setq eshell-history-global-ring (make-ring eshell-history-size))))
+    ;;   (setq eshell-history-ring eshell-history-global-ring))
+    ;; (add-hook 'eshell-mode-hook 'eshell-hist-use-global-history)
+
+    (setq eshell-cmpl-cycle-completions nil
+          ;; auto truncate after 12k lines
+          eshell-buffer-maximum-lines 12000
+          ;; history size
+          eshell-history-size 500
+          ;; buffer shorthand -> echo foo > #'buffer
+          eshell-buffer-shorthand t
+          ;; my prompt is easy enough to see
+          eshell-highlight-prompt nil
+          ;; treat 'echo' like shell echo
+          eshell-plain-echo-behavior t
+          ;; add -lh to the `ls' flags
+          eshell-ls-initial-args "-lh")
+
+    ;; Visual commands
+    (setq eshell-visual-commands '("vi" "screen" "top" "less" "more" "lynx"
+                                   "ncftp" "pine" "tin" "trn" "elm" "vim"
+                                   "nmtui" "alsamixer" "htop" "el" "elinks"
+                                   "ssh" "nethack" "dtop" "dstat"))
+    (setq eshell-visual-subcommands '(("git" "log" "diff" "show")
+                                      ("vagrant" "ssh")))
+
+    (defun deos/truncate-eshell-buffers ()
+      "Truncates all eshell buffers"
+      (interactive)
+      (save-current-buffer
+        (dolist (buffer (buffer-list t))
+          (set-buffer buffer)
+          (when (eq major-mode 'eshell-mode)
+            (eshell-truncate-buffer)))))
+
+    ;; After being idle for 5 seconds, truncate all the eshell-buffers if
+    ;; needed. If this needs to be canceled, you can run `(cancel-timer
+    ;; deos/eshell-truncate-timer)'
+    (setq deos/eshell-truncate-timer
+          (run-with-idle-timer 5 t #'deos/truncate-eshell-buffers))
+
+    (defun eshell/cds ()
+      "Change directory to the project's root."
+      (eshell/cd (locate-dominating-file default-directory ".git")))
+
+    (defalias 'eshell/l 'eshell/ls)
+    (defalias 'eshell/ll 'eshell/ls)
+
+    (defun eshell/ec (pattern)
+      (if (stringp pattern)
+          (find-file pattern)
+        (mapc #'find-file (mapcar #'expand-file-name pattern))))
+    (defalias 'e 'eshell/ec)
+    (defalias 'ee 'find-file-other-window)
+
+    (defun eshell/d (&rest args)
+      (dired (pop args) "."))
+
+    (defun eshell/clear ()
+      "Clear the eshell buffer"
+      (interactive)
+      (let ((eshell-buffer-maximum-lines 0))
+        (eshell-truncate-buffer)
+        (let ((inhibit-read-only t))
+          (erase-buffer)
+          (eshell-send-input)))))
+
+  (defun eshell/icat (&rest args)
+    "Display image(s)."
+    (let ((elems (eshell-flatten-list args)))
+      (while elems
+        (eshell-printn
+         (propertize " "
+                     'display (create-image (expand-file-name (car elems)))))
+        (setq elems (cdr elems))))
+    nil)
+
+  (add-hook 'eshell-mode-hook #'deos/setup-eshell)
+
+  ;; See eshell-prompt-function below
+  (setq eshell-prompt-regexp "^[^#$\n]* [#$] ")
+
+  ;; So the history vars are defined
+  (require 'em-hist)
+  (if (boundp 'eshell-save-history-on-exit)
+      ;; Don't ask, just save
+      (setq eshell-save-history-on-exit t))
+
+  ;; See: https://github.com/kaihaosw/eshell-prompt-extras
+  (use-package eshell-prompt-extras
+    :ensure t
+    :init
+    (progn
+      (setq eshell-highlight-prompt nil
+            epe-git-dirty-char " Ϟ"
+            ;; epe-git-dirty-char "*"
+            eshell-prompt-function 'epe-theme-dakrone)))
+
+  (defun eshell/magit ()
+    "Function to open magit-status for the current directory"
+    (interactive)
+    (magit-status default-directory)
+    nil))
+
+  (use-package esh-autosuggest
+    :ensure t
+    :hook (eshell-mode . esh-autosuggest-mode))
+#+END_SRC
+
+I use a dedicated buffer for connection to my desktop, with a binding of =C-x
+d=, if the buffer doesn't exist it is created.
+
+#+BEGIN_SRC emacs-lisp
+(defun deos/create-or-switch-to-delta-buffer ()
+  "Switch to the *eshell delta* buffer, or create it"
+  (interactive)
+  (if (get-buffer "*eshell-delta*")
+      (switch-to-buffer "*eshell-delta*")
+    (let ((eshell-buffer-name "*eshell-delta*"))
+      (eshell))))
+
+(global-set-key (kbd "C-x d") 'deos/create-or-switch-to-delta-buffer)
+
+(defun deos/create-or-switch-to-eshell-1 ()
+  "Switch to the *eshell* buffer, or create it"
+  (interactive)
+  (if (get-buffer "*eshell*")
+      (switch-to-buffer "*eshell*")
+    (let ((eshell-buffer-name "*eshell*"))
+      (eshell))))
+
+(defun deos/create-or-switch-to-eshell-2 ()
+  "Switch to the *eshell*<2> buffer, or create it"
+  (interactive)
+  (if (get-buffer "*eshell*<2>")
+      (switch-to-buffer "*eshell*<2>")
+    (let ((eshell-buffer-name "*eshell*<2>"))
+      (eshell))))
+
+(defun deos/create-or-switch-to-eshell-3 ()
+  "Switch to the *eshell*<3> buffer, or create it"
+  (interactive)
+  (if (get-buffer "*eshell*<3>")
+      (switch-to-buffer "*eshell*<3>")
+    (let ((eshell-buffer-name "*eshell*<3>"))
+      (eshell))))
+
+(defun deos/create-or-switch-to-eshell-4 ()
+  "Switch to the *eshell*<4> buffer, or create it"
+  (interactive)
+  (if (get-buffer "*eshell*<4>")
+      (switch-to-buffer "*eshell*<4>")
+    (let ((eshell-buffer-name "*eshell*<4>"))
+      (eshell))))
+
+(defun deos/create-all-eshell-buffers ()
+  "Create all my normal eshell buffers"
+  (interactive)
+  (let ((eshell-buffer-name "*eshell*")
+        (default-directory "~/"))
+    (eshell))
+  (let ((eshell-buffer-name "*eshell*<2>")
+        (default-directory "~/")) (eshell))
+  (let ((eshell-buffer-name "*eshell*<3>")
+        (default-directory "~/gitrepo"))
+    (eshell))
+  (let ((eshell-buffer-name "*eshell-delta*")
+        (default-directory "~/.emacs.d"))
+    (eshell))
+  (let ((eshell-buffer-name "*eshell downloads*")
+        (default-directory "~/Downloads"))
+    (eshell)))
+
+(global-set-key (kbd "M-@") #'deos/create-all-eshell-buffers)
+
+(global-set-key (kbd "H-1") 'deos/create-or-switch-to-eshell-1)
+(global-set-key (kbd "H-2") 'deos/create-or-switch-to-eshell-2)
+(global-set-key (kbd "H-3") 'deos/create-or-switch-to-eshell-3)
+(global-set-key (kbd "H-4") 'deos/create-or-switch-to-eshell-4)
+(global-set-key (kbd "s-1") 'deos/create-or-switch-to-eshell-1)
+(global-set-key (kbd "s-2") 'deos/create-or-switch-to-eshell-2)
+(global-set-key (kbd "s-3") 'deos/create-or-switch-to-eshell-3)
+(global-set-key (kbd "s-4") 'deos/create-or-switch-to-eshell-4)
+(global-set-key (kbd "M-1") 'deos/create-or-switch-to-eshell-1)
+(global-set-key (kbd "M-2") 'deos/create-or-switch-to-eshell-2)
+(global-set-key (kbd "M-3") 'deos/create-or-switch-to-eshell-3)
+(global-set-key (kbd "M-4") 'deos/create-or-switch-to-eshell-4)
+#+END_SRC
+
+Also, add the buffer stack option to eshell
+
+#+BEGIN_SRC emacs-lisp
+(use-package esh-buf-stack
+  :ensure t
+  :commands eshell-push-command
+  :config
+  (setup-eshell-buf-stack)
+  (define-key eshell-mode-map (kbd "M-q") 'eshell-push-command))
+#+END_SRC
+
+Indicate the exit status of the previous command using the eshell-fringe-status
+package. Eh, disabled this for now, not sure I actually like it.
+
+#+BEGIN_SRC emacs-lisp
+(use-package eshell-fringe-status
+  :disabled t
+  :ensure t
+  :init
+  (add-hook 'eshell-mode-hook 'eshell-fringe-status-mode))
+#+END_SRC
+** Open an eshell window here
+:PROPERTIES:
+:CUSTOM_ID: h:27886c4c-b283-496d-ac41-1fe2bdcaf977
+:END:
+
+#+BEGIN_SRC emacs-lisp
+(defun eshell-here ()
+  "Opens up a new shell in the directory associated with the
+current buffer's file. The eshell is renamed to match that
+directory to make multiple eshell windows easier."
+  (interactive)
+  (let* ((parent (if (buffer-file-name)
+                     (file-name-directory (buffer-file-name))
+                   default-directory))
+         (height (/ (window-total-height) 3))
+         (name   (car (last (split-string parent "/" t)))))
+    (split-window-vertically (- height))
+    (other-window 1)
+    (eshell "new")
+    (rename-buffer (concat "*eshell: " name "*"))
+
+    (insert (concat "ls"))
+    (eshell-send-input)))
+
+(global-set-key (kbd "C-!") #'eshell-here)
+#+END_SRC
+
+And some nice glue for quickly closing eshell windows
+
+#+BEGIN_SRC emacs-lisp
+(defun eshell/x ()
+  "Closes the EShell session and gets rid of the EShell window."
+   (delete-window)
+   (eshell/exit))
+#+END_SRC
+
+** Open an eshell window there
+:PROPERTIES:
+:CUSTOM_ID: h:321c7f37-a36f-4482-9727-88b651a452d1
+:END:
+
+Like opening one here, but for remote hosts
+
+#+BEGIN_SRC emacs-lisp
+(defun eshell-there (host)
+  (interactive "sHost: ")
+  (let ((default-directory (format "/%s:" host)))
+    (eshell host)))
+#+END_SRC
+* File Browsing
+** Directory Editing and Navigation
+#+BEGIN_SRC emacs-lisp
+(defun deos/dired-mode-hook ()
+      (setq-local truncate-lines t))
+
+    (use-package dired
+      :bind ("C-x C-j" . dired-jump)
+      :config
+      (use-package dired-x
+        :init (setq-default dired-omit-files-p t)
+        :config
+        (add-to-list 'dired-omit-extensions ".DS_Store"))
+      (customize-set-variable 'diredp-hide-details-initially-flag nil)
+      (use-package dired+
+        :disabled t
+        :ensure t)
+      (use-package dired-aux
+        :init
+        (use-package dired-async
+          :ensure async))
+      (put 'dired-find-alternate-file 'disabled nil)
+      (setq ls-lisp-dirs-first t
+            dired-recursive-copies 'always
+            dired-recursive-deletes 'always
+            dired-dwim-target t
+            ;; -F marks links with @
+            dired-ls-F-marks-symlinks t
+            delete-by-moving-to-trash t
+            ;; Don't auto refresh dired
+            global-auto-revert-non-file-buffers nil
+            wdired-allow-to-change-permissions t)
+      (define-key dired-mode-map (kbd "C-M-u") #'dired-up-directory)
+      (define-key dired-mode-map (kbd "M-o") #'my/dired-open)
+      (define-key dired-mode-map (kbd "C-x C-q") #'wdired-change-to-wdired-mode)
+      (bind-key "l" #'dired-up-directory dired-mode-map)
+      (bind-key "M-!" #'async-shell-command dired-mode-map)
+      (add-hook 'dired-mode-hook 'deos/turn-on-hl-line)
+      (add-hook 'dired-mode-hook #'deos/dired-mode-hook))
+#+END_SRC
+
+** Quick-preview provides a nice preview of the thing under the cursor
+#+BEGIN_SRC emacs-lisp
+(use-package quick-preview
+  :ensure t
+  :init
+  (global-set-key (kbd "C-c q") 'quick-preview-at-point)
+  (define-key dired-mode-map (kbd "Q") 'quick-preview-at-point))
+#+END_SRC
+
+** Let's use async for everything in dired
+#+BEGIN_SRC emacs-lisp
+(use-package async :ensure t)
+(autoload 'dired-async-mode "dired-async.el" nil t)
+(dired-async-mode 1)
+#+END_SRC
+
+** Filter dired results with a filter
+#+BEGIN_SRC emacs-lisp
+    (use-package dired-narrow
+      :ensure t
+      :bind (:map dired-mode-map ("/" . dired-narrow)))
+#+END_SRC
+
+** Icons in a buffer
+#+BEGIN_SRC emacs-lisp
+(use-package all-the-icons
+  :ensure t)
+
+(use-package all-the-icons-dired
+  :ensure t
+  :diminish all-the-icons-dired-mode
+  :init
+  (add-hook 'dired-mode-hook 'all-the-icons-dired-mode))
+#+END_SRC
+
+** Neotree
+#+BEGIN_SRC emacs-lisp
+(use-package neotree
+  :ensure t
+  :config
+  (global-set-key (kbd "C-c n") 'neotree-toggle)
+  (setq neo-theme 'arrow)
+  (setq neo-window-fixed-size nil)
+  (setq neo-smart-open t)
+  (setq neo-window-width 40)
+  (setq neo-default-system-application "open"))
+#+END_SRC
+* Git
+** Magit
+The be all, end all mode for all things git
+#+BEGIN_SRC emacs-lisp
+    (use-package magit
+    :ensure t
+    :bind (("C-x g" . magit-status))
+    :init (add-hook 'magit-mode-hook 'deos/turn-on-hl-line)
+    :config
+    (setq git-commit-summary-max-length 70)
+    (setenv "GIT_PAGER" "")
+    (if (file-exists-p "/usr/local/bin/emacsclient")
+        (setq magit-emacsclient-executable (executable-find "emacsclient")))
+    (defun deos/magit-browse ()
+      "Browse to the project's github URL, if available"
+      (interactive)
+      (let ((url (with-temp-buffer
+                            (unless (zerop (call-process-shell-command
+                                            "git remote -v" nil t))
+                              (error "Failed: 'git remote -v'"))
+                            (goto-char (point-min))
+                            (when (re-search-forward
+                                   "github\\.com[:/]\\(.+?\\)\\.git" nil t)
+                              (format "https://github.com/%s" (match-string 1))))))
+        (unless url
+          (error "Can't find repository URL"))
+        (browse-url url)))
+
+  (define-key magit-mode-map (kbd "C-c C-b") #'deos/magit-browse)
+  ;; Magit has its own binding, so re-bind them
+  (bind-key "M-1" #'deos/create-or-switch-to-eshell-1 magit-mode-map)
+  (bind-key "M-2" #'deos/create-or-switch-to-eshell-2 magit-mode-map)
+  (bind-key "M-3" #'deos/create-or-switch-to-eshell-3 magit-mode-map)
+  (bind-key "M-4" #'deos/create-or-switch-to-eshell-4 magit-mode-map)
+
+  ;; Allow gpg signing merge commits
+  (magit-define-popup-option 'magit-merge-popup
+                             ?S "Sign using gpg" "--gpg-sign="
+                             #'magit-read-gpg-secret-key))
+#+END_SRC
+** Git Fringe
+This helps visualize version changes in a file
+#+BEGIN_SRC emacs-lisp
+(use-package git-gutter
+  :ensure t
+  :when window-system
+  :defer t
+  :bind (("C-x P" . git-gutter:popup-hunk)
+         ("C-x p" . git-gutter:previous-hunk)
+         ("C-x n" . git-gutter:next-hunk)
+         ("C-c G" . git-gutter:popup-hunk))
+  :diminish ""
+  :init
+  (add-hook 'prog-mode-hook #'git-gutter-mode)
+  (add-hook 'text-mode-hook #'git-gutter-mode)
+  :config
+  (use-package git-gutter-fringe
+    :ensure t
+    :init
+    (require 'git-gutter-fringe)
+    (when (fboundp 'define-fringe-bitmap)
+      (define-fringe-bitmap 'git-gutter-fr:added
+        [224 224 224 224 224 224 224 224 224 224 224 224 224
+             224 224 224 224 224 224 224 224 224 224 224 224]
+        nil nil 'center)
+      (define-fringe-bitmap 'git-gutter-fr:modified
+        [224 224 224 224 224 224 224 224 224 224 224 224 224
+             224 224 224 224 224 224 224 224 224 224 224 224]
+        nil nil 'center)
+      (define-fringe-bitmap 'git-gutter-fr:deleted
+        [0 0 0 0 0 0 0 0 0 0 0 0 0 128 192 224 240 248]
+        nil nil 'center))))
+#+END_SRC
+** Various Git helpers
+#+BEGIN_SRC emacs-lisp
+(use-package git-messenger
+  :ensure t
+  :commands git-messenger:popup-message
+  :bind (("C-c M" . git-messenger:popup-message))
+  :config
+  (setq git-messenger:show-detail t))
+
+  (use-package browse-at-remote
+  :ensure t
+  :commands browse-at-remote
+  :bind ("C-c g g" . browse-at-remote))
+
+  (use-package git-timemachine
+  :ensure t)
+
+  (use-package git-annex
+  :ensure t)
+
+  (use-package magit-annex
+  :ensure t)
+
+  (use-package ediff
+  :init
+  (setq
+   ;; Always split nicely for wide screens
+   ediff-split-window-function 'split-window-horizontally)
+  (defun ediff-copy-both-to-C ()
+    (interactive)
+    (ediff-copy-diff
+     ediff-current-difference nil 'C nil
+     (concat
+      (ediff-get-region-contents
+       ediff-current-difference 'A ediff-control-buffer)
+      (ediff-get-region-contents
+       ediff-current-difference 'B ediff-control-buffer))))
+  (defun add-d-to-ediff-mode-map ()
+    (define-key ediff-mode-map "d" 'ediff-copy-both-to-C))
+  (add-hook 'ediff-keymap-setup-hook 'add-d-to-ediff-mode-map))
+
+  (defhydra deos/hydra-smerge
+  (:color red :hint nil
+          :pre (smerge-mode 1))
+  "
+^Move^ ^Keep^ ^Diff^ ^Pair^
+------------------------------------------------------
+_n_ext _b_ase _R_efine _<_: base-mine
+_p_rev _m_ine _E_diff _=_: mine-other
+^ ^ _o_ther _C_ombine _>_: base-other
+^ ^ _a_ll _r_esolve
+_q_uit _RET_: current
+"
+  ("RET" smerge-keep-current)
+  ("C" smerge-combine-with-next)
+  ("E" smerge-ediff)
+  ("R" smerge-refine)
+  ("a" smerge-keep-all)
+  ("b" smerge-keep-base)
+  ("m" smerge-keep-mine)
+  ("n" smerge-next)
+  ("o" smerge-keep-other)
+  ("p" smerge-prev)
+  ("r" smerge-resolve)
+  ("<" smerge-diff-base-mine)
+  ("=" smerge-diff-mine-other)
+  (">" smerge-diff-base-other)
+  ("q" nil :color blue))
+#+END_SRC
+* Programming Modes
+** Python
+#+BEGIN_SRC emacs-lisp
+(use-package python
+  :config
+  (setq-default python-indent-offset 2)
+  (define-key python-mode-map (kbd "<backtab>") 'python-back-indent))
+
+(when (executable-find "jupyter")
+  (use-package ob-ipython
+    :ensure t
+    :config
+    (use-package company
+      :config
+      (add-to-list 'company-backends 'company-ob-ipython))
+    (add-to-list 'org-latex-minted-langs '(ipython "python"))))
+
+(use-package virtualenvwrapper
+  :ensure t
+  :defer t
+  :init
+  (progn
+    (venv-initialize-interactive-shells)
+    (venv-initialize-eshell)
+    (setq venv-location (or (getenv "WORKON_HOME")
+                            "~/.virtualenvs"))))
+;; this requires some setup pip install jedi flake8 autopep8 yapf
+(use-package elpy
+  :ensure t
+  :defer t
+  :init
+  (elpy-enable)
+  :config
+  (setq elpy-test-django-with-manage t))
+
+(use-package anaconda-mode
+  :ensure t
+  :config
+  (add-hook 'python-mode-hook 'anaconda-mode)
+  (add-hook 'python-mode-hook 'anaconda-eldoc-mode))
+#+END_SRC
+*** Kivy
+#+BEGIN_SRC emacs-lisp
+(use-package kivy-mode
+  :ensure t
+  :mode ("\\.kv\\'" . kivy-mode))
+#+END_SRC
+** C
+#+BEGIN_SRC emacs-lisp
+    (use-package irony
+      :ensure t
+      :hook (c-mode . irony-mode))
+  (use-package company-irony
+    :ensure t
+    :config
+    (add-to-list 'company-backends 'company-irony))
+(use-package flycheck-irony
+  :ensure t
+  :hook (flycheck-mode . flycheck-irony-setup))
+#+END_SRC
+** C Sharp
+#+BEGIN_SRC emacs-lisp
+  (use-package csharp-mode
+    :ensure t)
+
+(use-package omnisharp
+  :ensure t
+  :hook ((csharp-mode . omnisharp-mode)
+         ;; TODO: 'before-save runs globally - make this buffer local?
+         (before-save . omnisharp-code-format-entire-file))
+  :config
+  (add-to-list 'company-backends 'company-omnisharp))
+#+END_SRC
+** Groovy
+#+BEGIN_SRC emacs-lisp
+(use-package groovy-mode
+  :ensure t
+  :config
+  (setq groovy-indent-offset 2))
+#+END_SRC
+** Java
+Prior art from https://github.com/dakrone/eos/blob/master/eos-java.org
+*** Which major mode
+let's try all of the major ones
+#+BEGIN_SRC emacs-lisp
+(setq deos/use-meghanda nil)
+(setq deos/use-eclim nil)
+(setq deos/use-lsp nil)
+#+END_SRC
+
+*** What style?
+#+BEGIN_SRC emacs-lisp
+(customize-set-variable 'c-default-style
+                        '((java-mode . "google-c-style")
+                          (awk-mode . "awk")
+                          (other . "google-c-style")))
+#+END_SRC
+
+*** Setup java mode
+#+BEGIN_SRC emacs-lisp
+(use-package shut-up :ensure t)
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+(defun deos/setup-java ()
+  (interactive)
+  (define-key java-mode-map (kbd "M-,") 'pop-tag-mark)
+  (define-key java-mode-map (kbd "C-c M-i") 'java-imports-add-import-dwim)
+  (define-key java-mode-map (kbd "C-c C-b") 'bool-flip-do-flip)
+  (c-set-style "google-c-style" t)
+  (subword-mode 1)
+  (shut-up (toggle-truncate-lines 1))
+  (setq-local fci-rule-column 99)
+  (setq-local fill-column 100)
+  (when (fboundp 'deos/turn-on-whitespace-mode)
+    (whitespace-mode -1)
+    (deos/turn-on-whitespace-mode))
+  ;; hide the initial comment in the file (usually a license) if hs-minor-mode
+  ;; is enabled
+  (when (boundp' hs-minor-mode)
+    (hs-hide-initial-comment-block)))
+(add-hook 'java-mode-hook #'deos/setup-java)
+(require 'compile)
+(add-to-list 'compilation-error-regexp-alist
+             '("^:[^/.\n]+\\(/.+\\):\\([[:digit:]]+\\):" 1 2))
+#+END_SRC
+
+*** Backspace deletes whole line
+#+BEGIN_SRC emacs-lisp
+(use-package smart-backspace
+  :ensure t
+  :bind ("<C-M-backspace>" . smart-backspace))
+#+END_SRC
+
+*** Java imports
+#+BEGIN_SRC emacs-lisp
+(use-package java-imports
+  :ensure t
+  :config
+  (setq java-imports-find-block-function 'java-imports-find-place-sorted-block)
+  (add-hook 'java-mode-hook 'java-imports-scan-file))
+#+END_SRC
+
+*** Eclim
+#+BEGIN_SRC emacs-lisp
+(use-package eclim
+  :ensure t
+  :disabled t
+  :init
+  ;; only show errors
+  (setq-default eclim--problems-filter "e")
+  (when deos/use-eclim
+    (add-hook 'java-mode-hook #'eclim-mode)
+    (use-package company-emacs-eclim
+      :ensure t
+      :init (company-emacs-eclim-setup))))
+#+END_SRC
+
+*** SDKman
+First you have to install sdkman http://sdkman.io
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'tramp-remote-path "/home/d")
+#+END_SRC
+
+** Yaml
+#+BEGIN_SRC emacs-lisp
+(use-package yaml-mode
+  :ensure t)
 #+END_SRC
 * Extras
 ** Stack Overflow
