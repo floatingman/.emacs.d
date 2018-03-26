@@ -10,14 +10,13 @@ projectile-bookmarks.eld
 .DS_Store
 recentf
 savehist
+eshell/history
+eshell/lastdir
 
 ## Directories
-out/
-sh/
 images/
 el-get/
 elpa/
-eshell/
 auto-save-list/
 /.#recentf
 /.session
