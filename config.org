@@ -813,6 +813,41 @@ Also, add a thing for yanking the entire symbol into the query while searching:
 (define-key isearch-mode-map (kbd "C-M-w") #'isearch-yank-symbol)
 #+END_SRC
 
+** Avy mode
+#+BEGIN_SRC emacs-lisp
+(use-package avy
+  :init
+  (progn (bind-key "M-s M-s" 'avy-isearch isearch-mode-map))
+  :config
+  (progn
+    (use-package dash)
+
+    (defun avy-isearch ()
+      "Override to allow avy-background to work as configured."
+      (interactive)
+      (avy-with avy-isearch
+                (avy--process
+                 (avy--regex-candidates isearch-string)
+                 (avy--style-fn avy-style))
+                (isearch-done)))
+
+    (setq avy-background t)
+    (setq avy-all-windows 'all-frames)
+    (setq avy-style 'de-bruijn)
+    (setq avy-keys (-concat (number-sequence ?a ?z) (number-sequence ?A ?Z))))
+
+  :bind (("M-s M-s w" . avy-goto-word-0)
+         ("M-s s w"   . avy-goto-word-or-subword-1)
+         ("M-s s l"   . avy-goto-line)
+         ("M-s s i"   . avy-goto-char-in-line)
+         ("M-s s c"   . avy-goto-char)
+         ("M-s z t"   . avy-zap-to-char)
+         ("M-s z u"   . avy-zap-up-to-char)
+         ("M-s c c"   . avy-copy-line)
+         ("M-s c m"   . avy-move-line)
+         ("M-s c r"   . avy-copy-region)))
+#+END_SRC
+
 Automagically resizes the windows to be the golden ratio (1.618), nice when
 using a big font size and I need more eshell space
 
@@ -1029,7 +1064,8 @@ reasonable value
 #+BEGIN_SRC emacs-lisp
 (setq auto-revert-interval 10)
 #+END_SRC
-** Binding the EOS mega-map with Hydra
+** Binding the EOS mega-map
+with Hydra
 :PROPERTIES:
 :CUSTOM_ID: eos-hydra-map
 :END:
@@ -1677,6 +1713,13 @@ Just for fun
 #+BEGIN_SRC emacs-lisp
 (use-package nyan-mode
   :ensure t)
+#+END_SRC
+** Codenotes
+#+BEGIN_SRC emacs-lisp
+(add-hook 'prog-mode-hook
+          (lambda ()
+            (font-lock-add-keywords nil
+                                    '(("\\<\\(NOTE\\|FIXME\\|TODO\\|BUG\\|HACK\\|REFACTOR\\|THE HORROR\\)" 1 font-lock-warning-face t)))))
 #+END_SRC
 * Org-mode
 ** Initial configuration
@@ -2514,7 +2557,7 @@ I have the following org-mode settings for clocking:
 
 #+begin_src emacs-lisp
 ;; Resume clocking task when emacs is restarted
-;; (org-clock-persistence-insinuate)
+(org-clock-persistence-insinuate)
 ;; Show lot of clocking history so it's easy to pick items off the `C-c I` list
 (setq org-clock-history-length 23)
 ;; Resume clocking task on clock-in if the clock is open
@@ -2529,9 +2572,9 @@ I have the following org-mode settings for clocking:
 ;; Clock out when moving task to a done state
 (setq org-clock-out-when-done t)
 ;; Save the running clock and all clock history when exiting Emacs, load it on startup
-;; (setq org-clock-persist t)
+(setq org-clock-persist t)
 ;; Do not prompt to resume an active clock
-;; (setq org-clock-persist-query-resume nil)
+(setq org-clock-persist-query-resume nil)
 ;; Enable auto clock resolution for finding open clocks
 (setq org-clock-auto-clock-resolution (quote when-no-clock-is-running))
 ;; Include current clocking task in clock reports
@@ -2540,7 +2583,7 @@ I have the following org-mode settings for clocking:
 (setq org-pretty-entities nil)
 ;; If idle for more than 15 minutes, resolve the things by asking what to do
 ;; with the clock time
-(setq org-clock-idle-time 15)
+;;(setq org-clock-idle-time 15)
 
 (defun deos/org-clock-in ()
   (interactive)
@@ -4518,7 +4561,25 @@ Follow these steps https://github.com/myuhe/org-gcal.el/blob/master/README.org
     :ensure t)
 #+END_SRC
 ** Ivy
+
 #+BEGIN_SRC emacs-lisp
+(defvar +ivy-buffer-icons nil
+  "If non-nil, show buffer mode icons in `ivy-switch-buffer' and the like.")
+
+(defvar +ivy-task-tags
+  '(("TODO" . warning)
+    ("NOTE" . warning)
+    ("FIXME" . error))
+  "An alist of tags for `+ivy/tasks' to include in its search, whose CDR is the face to render it with.")
+
+(defmacro +ivy-do-action! (action)
+  "Returns an interactive lambda that sets the current ivy action and immediately runs it on the current candidate (ending the ivy session)."
+  `(lambda ()
+     (interactive)
+     (ivy-set-action ,action)
+     (setq ivy-exit 'done)
+     (exit-minibuffer)))
+
   (use-package ivy
       :ensure t
       :diminish ivy-mode
@@ -4529,51 +4590,100 @@ Follow these steps https://github.com/myuhe/org-gcal.el/blob/master/README.org
       :init
       (ivy-mode 1)
       :config
-      (bind-key "C-s" 'swiper)
-      ;; add 'recentf-mode' and bookmarks to 'ivy-switch-buffer
-      (setq ivy-use-virtual-buffers t)
-      ;; number of result lines to display
-      ;; (setq ivy-height 10)
-      ;; does not count candiates
-      (setq ivy-count-format "%d/%d ")
-      ;; no regexp by default
-      ;; (setq ivy-initial-inputs-alist nil)
-      ;; configure regexp engine.
-      ;; (setq ivy-re-builders-alist
-      ;;       ;; allow input not in order
-      ;;       '((t . ivy--regex-ignore-order)))
-       )
+      (setq ivy-height 12
+            ivy-do-completion-in-region nil
+            ivy-wrap t
+            ivy-fixed-height-minibuffer t
+            projectile-completion-system 'ivy
+            smex-completion-method 'ivy
+            ;; Don't use ^ as initial input
+            ivy-initial-inputs-alist nil
+            ;; highlight til EOL
+            ivy-format-function #'ivy-format-function-line
+            ;; disable magic slash on non-match
+            ivy-magic-slash-non-match-action nil))
 #+END_SRC
-
-By default =ivy= starts filters with =^=. I don't normally want that and can easily type it manually when I do.
-
+*** Ivy-hydra
 #+BEGIN_SRC emacs-lisp
-  (setq ivy-initial-inputs-alist nil)
-#+END_SRC
-
-=counsel= is a collection of =ivy= enhanced versions of common Emacs commands. I haven't bound much as =ivy-mode= takes care of most things.
-
-#+BEGIN_SRC emacs-lisp
-  (use-package counsel
+(use-package ivy-hydra
     :ensure t
-    :bind (("M-x" . counsel-M-x))
-    :chords (("yy" . counsel-yank-pop)))
+    :bind
+    (("C-o" . #'+ivy@coo/body)
+     ("M-o" . #'ivy-dispatching-done-hydra))
+    :config
+    (defhydra +ivy@coo (:hint nil :color pink)
+        "
+ Move     ^^^^^^^^^^ | Call         ^^^^ | Cancel^^ | Options^^ | Action _w_/_s_/_a_: %s(ivy-action-name)
+----------^^^^^^^^^^-+--------------^^^^-+-------^^-+--------^^-+---------------------------------
+ _g_ ^ ^ _k_ ^ ^ _u_ | _f_orward _o_ccur | _i_nsert | _c_alling: %-7s(if ivy-calling \"on\" \"off\") _C_ase-fold: %-10`ivy-case-fold-search
+ ^↨^ _h_ ^+^ _l_ ^↕^ | _RET_ done     ^^ | _q_uit   | _m_atcher: %-7s(ivy--matcher-desc) _t_runcate: %-11`truncate-lines
+ _G_ ^ ^ _j_ ^ ^ _d_ | _TAB_ alt-done ^^ | ^ ^      | _<_/_>_: shrink/grow
+"
+    ;; arrows
+    ("j" ivy-next-line)
+    ("k" ivy-previous-line)
+    ("l" ivy-alt-done)
+    ("h" ivy-backward-delete-char)
+    ("g" ivy-beginning-of-buffer)
+    ("G" ivy-end-of-buffer)
+    ("d" ivy-scroll-up-command)
+    ("u" ivy-scroll-down-command)
+    ("e" ivy-scroll-down-command)
+    ;; actions
+    ("q" keyboard-escape-quit :exit t)
+    ("C-g" keyboard-escape-quit :exit t)
+    ("<escape>" keyboard-escape-quit :exit t)
+    ("C-o" nil)
+    ("i" nil)
+    ("TAB" ivy-alt-done :exit nil)
+    ("C-j" ivy-alt-done :exit nil)
+    ("RET" ivy-done :exit t)
+    ("C-m" ivy-done :exit t)
+    ("C-SPC" ivy-call-and-recenter :exit nil)
+    ("f" ivy-call)
+    ("c" ivy-toggle-calling)
+    ("m" ivy-toggle-fuzzy)
+    (">" ivy-minibuffer-grow)
+    ("<" ivy-minibuffer-shrink)
+    ("w" ivy-prev-action)
+    ("s" ivy-next-action)
+    ("a" ivy-read-action)
+    ("t" (setq truncate-lines (not truncate-lines)))
+    ("C" ivy-toggle-case-fold)
+    ("o" ivy-occur :exit t)
+      )
+    )
 #+END_SRC
-
-=swiper= is an =ivy= enhanced version of isearch.
-
+** IDO
 #+BEGIN_SRC emacs-lisp
-  (use-package swiper
-    :ensure t
-    :bind (("M-s" . swiper)))
-#+END_SRC
-
-=hydra= presents menus for =ivy= commands.
-
-#+BEGIN_SRC emacs-lisp
-  (use-package ivy-hydra
-    :ensure t)
-#+END_SRC
+(use-package ido
+  :init
+  (progn
+    (ido-mode t)
+    (ido-everywhere 1)
+    (use-package ido-vertical-mode :ensure t)
+    (ido-vertical-mode t)
+    (use-package ido-completing-read+ :ensure t)
+    (ido-ubiquitous-mode t)
+    (use-package flx-ido :ensure t)
+    (flx-ido-mode t))
+  :config
+  (setq ido-ignore-buffers '("\\` " "^\\*ESS\\*" "^\\*Messages\\*" "^\\*Help\\*" "^\\*Buffer"
+                             "^\\*.*Completions\\*$" "^\\*Ediff" "^\\*tramp" "^\\*cvs-" "_region_"
+                             " output\\*$" "^TAGS$" "^\*Ido")
+        ido-use-faces nil
+        ido-confirm-unique-completion t
+        ido-case-fold t
+        ido-enable-tramp-completion nil
+        ido-enable-flex-matching t
+        ido-create-new-buffer 'always
+        ido-enable-tramp-completion t
+        ido-enable-last-directory-history t
+        )
+  (push "\\`.DS_Store$" ido-ignore-files)
+  (push "Icon\\?$" ido-ignore-files)
+  )
+  #+END_SRC
 * Completion
 ** Company
 #+BEGIN_SRC emacs-lisp
@@ -4929,6 +5039,7 @@ Useful for navigating projects structures
   :diminish projectile-mode
   :init (add-hook 'after-init-hook #'projectile-global-mode)
   :config
+  (global-set-key (kbd "C-x f") #'projectile-find-file)
   (bind-key "C-c p b" #'projectile-switch-to-buffer #'projectile-command-map)
   (bind-key "C-c p K" #'projectile-kill-buffers #'projectile-command-map)
 
@@ -4952,7 +5063,6 @@ Wire projectile into counsel
   :config
   (add-hook 'after-init-hook 'counsel-projectile-mode))
 #+END_SRC
-
 
 Use Ripgrep for projectile
 #+BEGIN_SRC emacs-lisp
@@ -4991,6 +5101,18 @@ I like the google code style
 #+BEGIN_SRC emacs-lisp
 (use-package google-c-style
   :ensure t)
+#+END_SRC
+
+** Dumb-jump
+For jumping dumbly
+#+BEGIN_SRC emacs-lisp
+(use-package dumb-jump
+    :ensure t
+    :diminish dumb-jump-mode
+    :bind (("C-M-g" . dumb-jump-go)
+           ("C-M-p" . dumb-jump-back)
+           ("C-M-q" . dumb-jump-quick-look)))
+
 #+END_SRC
 * Shell
 Things for running shells inside of emacs
