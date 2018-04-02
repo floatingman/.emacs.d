@@ -5209,14 +5209,14 @@ all over the place and take forever to load ಠ_ಠ
 (define-skeleton deos/org-wrap-elisp
   "Wrap text with #+BEGIN_SRC / #+END_SRC for the emacs-lisp code"
   nil
-  > "#+BEGIN_SRC emacs-lisp" \n
+  > "#+BEGIN_SRC emacs-lisp :tangle yes" \n
   > _ \n
   > "#+END_SRC" \n)
 
   (define-skeleton deos/org-wrap-source
   "Wrap text with #+BEGIN_SRC / #+END_SRC for a code type"
   "Language: "
-  > "#+BEGIN_SRC " str \n
+  > "#+BEGIN_SRC " str ":tangle yes" \n
   > _ \n
   > "#+END_SRC" \n)
 
@@ -6363,6 +6363,103 @@ First you have to install sdkman http://sdkman.io
 (use-package yaml-mode
   :ensure t)
 #+END_SRC
+
+** Javascript
+Indent to 2 spaces
+#+BEGIN_SRC emacs-lisp
+(setq-default js-indent-level 2)
+#+END_SRC
+
+Use JS2 mode
+#+BEGIN_SRC emacs-lisp
+(use-package js2-mode
+  :ensure t
+  :mode "\\.js\\'"
+  :config
+  (setq-default js2-ignored-warnings '("msg.extra.trailing.comma")))
+#+END_SRC
+
+Use JS2-Refactor for refactoring goodness
+#+BEGIN_SRC emacs-lisp
+(use-package js2-refactor
+  :ensure t
+  :config
+  (js2r-add-keybindings-with-prefix "C-c C-m")
+  (add-hook 'js2-mode-hook 'js2-refactor-mode))
+#+END_SRC
+
+Use RJSX mode for all your templating language needs
+#+BEGIN_SRC emacs-lisp
+(use-package rjsx-mode
+  :ensure t)
+#+END_SRC
+
+Make your JS oh so pretty
+#+BEGIN_SRC emacs-lisp
+(use-package prettier-js
+  :ensure t
+  :config
+  (setq prettier-js-args '(
+                           "--trailing-comma" "es5"
+                           "--single-quote" "true"
+                           "--print-width" "100"
+                           ))
+  (add-hook 'js2-mode-hook 'prettier-js-mode)
+  (add-hook 'rjsx-mode-hook 'prettier-js-mode))
+#+END_SRC
+
+Document your JS with js-doc
+#+BEGIN_SRC emacs-lisp
+(use-package js-doc
+  :ensure t
+  :bind (:map js2-mode-map
+              ("C-c i" . js-doc-insert-function-doc)
+              ("@" . js-doc-insert-tag))
+  :config
+  (setq js-doc-mail-address "dwnewman78@gmail.com"
+        js-doc-author (format "Daniel Newman <%s>" js-doc-mail-address)
+        js-doc-url "danlovesprogramming.com"
+        js-doc-license "MIT License"))
+#+END_SRC
+
+Use projects eslint if it is present
+#+BEGIN_SRC emacs-lisp
+(defun my/use-eslint-from-node-modules ()
+  "Set local eslint if available."
+  (let* ((root (locate-dominating-file
+                (or (buffer-file-name) default-directory)
+                "node_modules"))
+         (eslint (and root
+                      (expand-file-name "node_modules/eslint/bin/eslint.js"
+                                        root))))
+    (when (and eslint (file-executable-p eslint))
+      (setq-local flycheck-javascript-eslint-executable eslint))))
+#+END_SRC
+
+** Web
+#+BEGIN_SRC emacs-lisp
+(use-package web-mode
+  :ensure t
+  :mode ("\\.html\\'")
+  :config
+  (setq web-mode-markup-indent-offset 2)
+  (setq web-mode-engines-alist
+        '(("django" . "focus/.*\\.html\\'")
+          ("ctemplate" . "realtimecrm/.*\\.html\\'"))))
+#+END_SRC
+
+*** Web beautify
+Beautify your web code with web-beautify
+NOTE: You have to install it globally with "npm install -g js-beautify"
+#+BEGIN_SRC emacs-lisp
+(use-package web-beautify
+  :ensure t
+  :bind (:map web-mode-map
+              ("C-c b" . web-beautify-html)
+              :map js2-mode-map
+              ("C-c b" . web-beautify-js)))
+#+END_SRC
+
 * Extras
 ** Stack Overflow
 SX is a stack overflow client that you can use in Emacs
