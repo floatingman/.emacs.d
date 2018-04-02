@@ -1064,8 +1064,7 @@ reasonable value
 #+BEGIN_SRC emacs-lisp
 (setq auto-revert-interval 10)
 #+END_SRC
-** Binding the EOS mega-map
-with Hydra
+** Binding the EOS mega-map with Hydra
 :PROPERTIES:
 :CUSTOM_ID: eos-hydra-map
 :END:
@@ -4562,7 +4561,7 @@ Follow these steps https://github.com/myuhe/org-gcal.el/blob/master/README.org
 #+END_SRC
 ** Ivy
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
 (defvar +ivy-buffer-icons nil
   "If non-nil, show buffer mode icons in `ivy-switch-buffer' and the like.")
 
@@ -4604,7 +4603,7 @@ Follow these steps https://github.com/myuhe/org-gcal.el/blob/master/README.org
             ivy-magic-slash-non-match-action nil))
 #+END_SRC
 *** Ivy-hydra
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
 (use-package ivy-hydra
     :ensure t
     :bind
@@ -4684,6 +4683,475 @@ Follow these steps https://github.com/myuhe/org-gcal.el/blob/master/README.org
   (push "Icon\\?$" ido-ignore-files)
   )
   #+END_SRC
+** HELM
+There are many helm things. I use it a lot.
+
+A lot of things are taken from taken from
+https://tuhdo.github.io/helm-intro.html
+
+Before we load any helm things, need to load [[https://github.com/PythonNut/helm-flx][helm-flx]] so it uses flx instead of
+helm's fuzzy matching. This has to happen before helm is loaded, so it goes
+here.
+
+Now we can load the big Helm configuration. Here is a breakdown of the helm
+bindings I use more frequently:
+
+| Key     | Action                                          |
+|---------+-------------------------------------------------|
+| M-x     | helm meta-x                                     |
+| C-x C-f | helm find files                                 |
+| C-x C-d | helm browse project                             |
+| C-x f   | helm projectile                                 |
+| C-x C-r | helm mini (includes recentf)                    |
+| C-x C-o | helm occur (search in buffer)                   |
+| M-y     | helm kill ring                                  |
+| C-h a   | helm appropos (search functions/vars/commands)  |
+| C-h m   | helm man (man pages)                            |
+| C-h SPC | helm registers                                  |
+| C-x b   | helm mini                                       |
+| C-h t   | helm world time (show time in different places) |
+| C-x C-i | helm semantic or imenu (depending on the mode)  |
+
+
+#+BEGIN_SRC emacs-lisp
+(use-package helm-flx
+  :ensure t
+  :init
+  (setq helm-flx-for-helm-find-files nil)
+  (helm-flx-mode 1))
+
+(use-package helm-config
+  :ensure helm
+  :demand t ;; demand it be loaded!
+  :diminish helm-mode
+  :bind
+  (("C-M-z" . helm-resume)
+   ("C-x C-f" . helm-find-files)
+   ("C-x C-r" . helm-mini)
+   ("C-x o" . helm-occur)
+   ("M-y" . helm-show-kill-ring)
+   ("C-h a" . helm-apropos)
+   ("C-h m" . helm-man-woman)
+   ("C-h SPC" . helm-all-mark-rings)
+   ("C-x C-i" . helm-semantic-or-imenu)
+   ("M-x" . helm-M-x)
+   ("C-x C-b" . helm-buffers-list)
+   ("C-x C-r" . helm-mini)
+   ("C-x b" . helm-mini)
+   ("C-x R" . helm-register)
+   ("C-h t" . helm-world-time)
+   ("M-g a" . helm-do-grep-ag)
+   ("M-g p" . helm-do-ag-project-root)
+   ("M-g G" . helm-grep-do-git-grep))
+  :init
+  (defvar deos/helm-display-help-buffer-regexp '("*.*Helm.*Help.**"))
+  (defvar deos/helm-display-buffer-regexp
+    `("*.*helm.**"
+      (display-buffer-in-side-window)
+      (inhibit-same-window . t)
+      (side . bottom)
+      (window-width . 0.6)
+      (window-height . 0.4)))
+
+  (defun deos/display-helm-window (buffer &optional resume)
+    "Display the Helm window."
+    (let ((display-buffer-alist
+           (list deos/helm-display-help-buffer-regexp
+                 ;; this or any specialized case of Helm buffer must be
+                 ;; added AFTER `deos/helm-display-buffer-regexp'.
+                 ;; Otherwise, `deos/helm-display-buffer-regexp' will
+                 ;; be used before
+                 ;; `deos/helm-display-help-buffer-regexp' and display
+                 ;; configuration for normal Helm buffer is applied for helm
+                 ;; help buffer, making the help buffer unable to be
+                 ;; displayed.
+                 deos/helm-display-buffer-regexp)))
+      (helm-default-display-buffer buffer)))
+
+  (setq helm-grep-default-command
+        "grep -a -d skip %e -n%cH -e %p %f"
+        ;; may be overridden if 'ggrep' is in path (see below)
+        helm-grep-default-recurse-command
+        "grep -a -d recurse %e -n%cH -e %p %f"
+        ;; use CURL, not url-retrieve-synchronously
+        helm-net-prefer-curl t
+        ;; be idle for this many seconds, before updating in delayed sources.
+        helm-input-idle-delay 0
+        ;; wider buffer name in helm-buffers-list
+        helm-buffer-max-length 28 ;; default is 20
+        ;; instead of "..." use a smaller unicode ellipsis
+        helm-buffers-end-truncated-string "…"
+        ;; open helm buffer in another window
+        ;;helm-split-window-default-side 'other
+        ;; set to nil and use <C-backspace> to toggle it in helm-find-files
+        helm-ff-auto-update-initial-value nil
+        ;; if I change the resplit state, re-use my settings
+        helm-reuse-last-window-split-state t
+        ;; don't delete windows to always have 2
+        helm-always-two-windows nil
+        ;; open helm buffer inside current window, don't occupy whole other window
+        helm-split-window-inside-p t
+        ;; display using my function, not helm's (helm is too slow here)
+        helm-display-function #'deos/display-helm-window
+        ;; display helm in a separate frame
+        ;; helm-display-function 'helm-display-buffer-in-own-frame
+        ;; reuse frame so display is faster on Emacs 26+
+        ;; helm-display-buffer-reuse-frame t
+        ;; helm-display-buffer-width 144
+        ;; helm-display-buffer-height 24
+        ;; use undecorated frame on Emacs 26+
+        helm-use-undecorated-frame-option t
+        ;; don't check if the file exists on remote files
+        helm-buffer-skip-remote-checking t
+        ;; limit the number of displayed canidates
+        helm-candidate-number-limit 100
+        ;; don't use recentf stuff in helm-ff, I use C-x C-r for this
+        helm-ff-file-name-history-use-recentf nil
+        ;; move to end or beginning of source when reaching top or bottom
+        ;; of source
+        helm-move-to-line-cycle-in-source t
+        ;; don't display the header line
+        helm-display-header-line nil
+        ;; verbosity for helm tramp messages
+        helm-tramp-verbose 0
+        ;; fuzzy matching
+        helm-recentf-fuzzy-match t
+        helm-locate-fuzzy-match nil ;; locate fuzzy is worthless
+        helm-M-x-fuzzy-match t
+        helm-buffers-fuzzy-matching t
+        helm-semantic-fuzzy-match nil
+        helm-gtags-fuzzy-match nil
+        helm-imenu-fuzzy-match nil
+        helm-apropos-fuzzy-match nil
+        helm-lisp-fuzzy-completion nil
+        helm-completion-in-region-fuzzy-match nil
+        ;; autoresize to 25 rows
+        helm-autoresize-min-height 25
+        helm-autoresize-max-height 25
+        ;; Here are the things helm-mini shows, I add `helm-source-bookmarks'
+        ;; here to the regular default list
+        helm-mini-default-sources '(helm-source-buffers-list
+                                    helm-source-recentf
+                                    helm-source-bookmarks
+                                    helm-source-buffer-not-found)
+        ;; Reduce the list of things for helm-apropos
+        helm-apropos-function-list '(helm-def-source--emacs-commands
+                                     helm-def-source--emacs-functions
+                                     helm-def-source--emacs-variables
+                                     helm-def-source--emacs-faces))
+  :config
+  (use-package helm-files
+    :config (setq helm-ff-file-compressed-list '("gz" "bz2" "zip" "tgz" "xz" "txz")))
+  (use-package helm-buffers
+    :config
+    (add-to-list 'helm-boring-buffer-regexp-list "^TAGS$")
+    (add-to-list 'helm-boring-buffer-regexp-list "git-gutter:diff"))
+  (use-package helm-mode
+    :diminish helm-mode
+    :init
+    (add-hook 'after-init-hook #'helm-mode)
+    (add-hook 'after-init-hook #'helm-autoresize-mode)
+    (add-hook 'after-init-hook #'helm-adaptive-mode)
+    (add-hook 'after-init-hook #'helm-popup-tip-mode))
+  (use-package helm-sys
+    :init (add-hook 'after-init-hook #'helm-top-poll-mode))
+  (use-package helm-grep
+    :config
+    (setq helm-grep-truncate-lines nil)
+    (define-key helm-grep-mode-map (kbd "<return>")  'helm-grep-mode-jump-other-window)
+    (define-key helm-grep-mode-map (kbd "n")  'helm-grep-mode-jump-other-window-forward)
+    (define-key helm-grep-mode-map (kbd "p")  'helm-grep-mode-jump-other-window-backward)
+    (when (executable-find "rg")
+      (setq helm-grep-ag-command "rg --color=always --colors 'match:fg:black' --colors 'match:bg:yellow' --smart-case --no-heading --line-number %s %s %s"
+            helm-grep-ag-pipe-cmd-switches '("--colors 'match:fg:black'" "--colors 'match:bg:yellow'"))))
+  (use-package helm-man)
+  (use-package helm-misc)
+  (use-package helm-elisp)
+  (use-package helm-imenu)
+  (use-package helm-semantic)
+  (use-package helm-ring)
+  (use-package smex :ensure t)
+  (use-package helm-smex :ensure t)
+  (use-package helm-bookmark
+    :bind ("C-x M-b" . helm-bookmarks))
+  (use-package projectile-ripgrep :ensure t)
+  (use-package helm-projectile
+    :ensure t
+    :demand t ;; demand it be loaded!
+    :bind (:map projectile-command-map
+                ("b" . helm-projectile-switch-to-buffer)
+                ("d" . helm-projectile-find-dir)
+                ("f" . helm-projectile-find-file)
+                ("p" . helm-projectile-switch-project)
+                ("s s" . helm-projectile-ag)
+                ("s r" . projectile-ripgrep))
+    :init
+    (setq projectile-switch-project-action 'helm-projectile)
+    (helm-projectile-on)
+    (helm-delete-action-from-source
+     "Grep in projects `C-s'"
+     helm-source-projectile-projects)
+    (helm-add-action-to-source
+     "Ag in project C-s'"
+     'helm-do-ag helm-source-projectile-projects)
+    (bind-key "C-s" (defun helm-projectile-do-ag ()
+                      (interactive)
+                      (helm-exit-and-execute-action #'helm-do-ag))
+              helm-projectile-projects-map)
+    (global-set-key (kbd "C-x f") #'helm-projectile-find-file)
+    :config
+    (setq-default helm-truncate-lines t
+                  helm-projectile-truncate-lines t))
+
+  (global-set-key (kbd "C-c h") 'helm-command-prefix)
+  (global-unset-key (kbd "C-x c"))
+
+  ;; Use popwin for helm buffers, otherwise I can't get helm to display the way
+  ;; I want (at the bottom, without deleting windows)
+  ;; (when (fboundp 'popwin:special-display-config)
+  ;;   (push '("^\*helm.+\*$" :regexp t :height 20) popwin:special-display-config)
+  ;;   (setq helm-display-function 'popwin:pop-to-buffer))
+
+  ;; Shows helm input in the header instead of the footer
+  (setq helm-echo-input-in-header-line t)
+  (defun helm-hide-minibuffer-maybe ()
+    "Hide minibuffer in Helm session if we use the header line as input field."
+    (when (with-helm-buffer helm-echo-input-in-header-line)
+      (let ((ov (make-overlay (point-min) (point-max) nil nil t)))
+        (overlay-put ov 'window (selected-window))
+        (overlay-put ov 'face
+                     (let ((bg-color (face-background 'default nil)))
+                       `(:background ,bg-color :foreground ,bg-color)))
+        (setq-local cursor-type nil))))
+  (add-hook 'helm-minibuffer-set-up-hook #'helm-hide-minibuffer-maybe)
+
+  ;; Files that helm should know how to open
+  (setq helm-external-programs-associations
+        '(("avi"  . "mpv")
+          ("part" . "mpv")
+          ("mkv"  . "mpv")
+          ("webm" . "mpv")
+          ("mp4"  . "mpv")))
+
+  ;; List of times to show in helm-world-time
+  (setq display-time-world-list '(("PST8PDT" "Mountain View")
+                                  ("America/Denver" "Denver")
+                                  ("EST5EDT" "Boston")
+                                  ("UTC" "UTC")
+                                  ("Europe/London" "London")
+                                  ("Europe/Amsterdam" "Amsterdam")
+                                  ("Asia/Bangkok" "Bangkok")
+                                  ("Asia/Tokyo" "Tokyo")
+                                  ("Australia/Sydney" "Sydney")))
+
+  ;; rebind tab to do persistent action
+  (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action)
+  ;; make TAB works in terminal
+  (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action)
+  ;; list actions using C-z
+  (define-key helm-map (kbd "C-z")  'helm-select-action)
+
+  (define-key helm-map (kbd "C-p")   'helm-previous-line)
+  (define-key helm-map (kbd "C-n")   'helm-next-line)
+  (define-key helm-map (kbd "C-M-n") 'helm-next-source)
+  (define-key helm-map (kbd "C-M-p") 'helm-previous-source)
+  (define-key helm-map (kbd "M-N")   'helm-next-source)
+  (define-key helm-map (kbd "M-P")   'helm-previous-source)
+
+  (when (executable-find "curl")
+    (setq helm-google-suggest-use-curl-p t))
+
+  ;; ggrep is gnu grep on OSX
+  (when (executable-find "ggrep")
+    (setq helm-grep-default-command
+          "ggrep -a -d skip %e -n%cH -e %p %f"
+          helm-grep-default-recurse-command
+          "ggrep -a -d recurse %e -n%cH -e %p %f"))
+
+  ;; helm-mini instead of recentf
+  (define-key 'help-command (kbd "C-f") 'helm-apropos)
+  (define-key 'help-command (kbd "r") 'helm-info-emacs)
+
+  (defvar helm-httpstatus-source
+    '((name . "HTTP STATUS")
+      (candidates . (("100 Continue") ("101 Switching Protocols")
+                     ("102 Processing") ("200 OK")
+                     ("201 Created") ("202 Accepted")
+                     ("203 Non-Authoritative Information") ("204 No Content")
+                     ("205 Reset Content") ("206 Partial Content")
+                     ("207 Multi-Status") ("208 Already Reported")
+                     ("300 Multiple Choices") ("301 Moved Permanently")
+                     ("302 Found") ("303 See Other")
+                     ("304 Not Modified") ("305 Use Proxy")
+                     ("307 Temporary Redirect") ("400 Bad Request")
+                     ("401 Unauthorized") ("402 Payment Required")
+                     ("403 Forbidden") ("404 Not Found")
+                     ("405 Method Not Allowed") ("406 Not Acceptable")
+                     ("407 Proxy Authentication Required") ("408 Request Timeout")
+                     ("409 Conflict") ("410 Gone")
+                     ("411 Length Required") ("412 Precondition Failed")
+                     ("413 Request Entity Too Large")
+                     ("414 Request-URI Too Large")
+                     ("415 Unsupported Media Type")
+                     ("416 Request Range Not Satisfiable")
+                     ("417 Expectation Failed") ("418 I'm a teapot")
+                     ("421 Misdirected Request")
+                     ("422 Unprocessable Entity") ("423 Locked")
+                     ("424 Failed Dependency") ("425 No code")
+                     ("426 Upgrade Required") ("428 Precondition Required")
+                     ("429 Too Many Requests")
+                     ("431 Request Header Fields Too Large")
+                     ("449 Retry with") ("500 Internal Server Error")
+                     ("501 Not Implemented") ("502 Bad Gateway")
+                     ("503 Service Unavailable") ("504 Gateway Timeout")
+                     ("505 HTTP Version Not Supported")
+                     ("506 Variant Also Negotiates")
+                     ("507 Insufficient Storage") ("509 Bandwidth Limit Exceeded")
+                     ("510 Not Extended")
+                     ("511 Network Authentication Required")))
+      (action . message)))
+
+  (defvar helm-clj-http-source
+    '((name . "clj-http options")
+      (candidates
+       .
+       ((":accept - keyword for content type to accept")
+        (":as - output coercion: :json, :json-string-keys, :clojure, :stream, :auto or string")
+        (":basic-auth - string or vector of basic auth creds")
+        (":body - body of request")
+        (":body-encoding - encoding type for body string")
+        (":client-params - apache http client params")
+        (":coerce - when to coerce response body: :always, :unexceptional, :exceptional")
+        (":conn-timeout - timeout for connection")
+        (":connection-manager - connection pooling manager")
+        (":content-type - content-type for request")
+        (":cookie-store - CookieStore object to store/retrieve cookies")
+        (":cookies - map of cookie name to cookie map")
+        (":debug - boolean to print info to stdout")
+        (":debug-body - boolean to print body debug info to stdout")
+        (":decode-body-headers - automatically decode body headers")
+        (":decompress-body - whether to decompress body automatically")
+        (":digest-auth - vector of digest authentication")
+        (":follow-redirects - boolean whether to follow HTTP redirects")
+        (":form-params - map of form parameters to send")
+        (":headers - map of headers")
+        (":ignore-unknown-host? - whether to ignore inability to resolve host")
+        (":insecure? - boolean whether to accept invalid SSL certs")
+        (":json-opts - map of json options to be used for form params")
+        (":keystore - file path to SSL keystore")
+        (":keystore-pass - password for keystore")
+        (":keystore-type - type of SSL keystore")
+        (":length - manually specified length of body")
+        (":max-redirects - maximum number of redirects to follow")
+        (":mime-subtype - type for multipart mime parts")
+        (":multipart - vector of multipart options")
+        (":oauth-token - oauth token")
+        (":proxy-host - hostname of proxy server")
+        (":proxy-ignore-hosts - set of hosts to ignore for proxy")
+        (":proxy-post - port for proxy server")
+        (":query-params - map of query parameters")
+        (":raw-headers - boolean whether to return raw headers with response")
+        (":response-interceptor - function called for each redirect")
+        (":retry-handler - function to handle HTTP retries on IOException")
+        (":save-request? - boolean to return original request with response")
+        (":socket-timeout - timeout for establishing socket")
+        (":throw-entire-message? - whether to throw the entire response on errors")
+        (":throw-exceptions - boolean whether to throw exceptions on 5xx & 4xx")
+        (":trust-store - file path to trust store")
+        (":trust-store-pass - password for trust store")
+        (":trust-store-type - type of trust store")))
+      (action . message)))
+
+  (defun helm-httpstatus ()
+    (interactive)
+    (helm-other-buffer '(helm-httpstatus-source) "*helm httpstatus*"))
+
+  (defun helm-clj-http ()
+    (interactive)
+    (helm-other-buffer '(helm-clj-http-source) "*helm clj-http flags*")))
+
+  (use-package helm-ls-git
+    :ensure t
+    :bind ("C-x C-d" . helm-browse-project))
+
+  (use-package helm-ls-hg
+    :ensure t)
+
+    (use-package helm-ag
+  :ensure t)
+
+(use-package helm-swoop
+  :ensure t
+  :bind (("M-i" . helm-swoop)
+         ("M-I" . helm-swoop-back-to-last-point)
+         ("C-c M-i" . helm-multi-swoop))
+  :config
+  ;; When doing isearch, hand the word over to helm-swoop
+  (define-key isearch-mode-map (kbd "M-i") 'helm-swoop-from-isearch)
+  ;; From helm-swoop to helm-multi-swoop-all
+  (define-key helm-swoop-map (kbd "M-i") 'helm-multi-swoop-all-from-helm-swoop)
+  ;; Save buffer when helm-multi-swoop-edit complete
+  (setq helm-multi-swoop-edit-save t
+        ;; If this value is t, split window inside the current window
+        helm-swoop-split-with-multiple-windows t
+        ;; Split direcion. 'split-window-vertically or 'split-window-horizontally
+        helm-swoop-split-direction 'split-window-vertically
+        ;; don't auto select the thing at point
+        helm-swoop-pre-input-function (lambda () "")
+        ;; If nil, you can slightly boost invoke speed in exchange for text
+        ;; color. If I want pretty I'll use helm-occur since it keeps colors
+        helm-swoop-speed-or-color nil))
+(use-package helm-descbinds
+  :ensure t
+  :bind ("C-h b" . helm-descbinds)
+  :init (fset 'describe-bindings 'helm-descbinds))
+
+(use-package helm-flyspell
+  :ensure t
+  :after helm
+  :bind (:map flyspell-mode-map
+              ("C-;" . helm-flyspell-correct)))
+
+(use-package projectile
+  :ensure t
+  :defer 5
+  :commands projectile-global-mode
+  :diminish projectile-mode
+  :init (add-hook 'after-init-hook #'projectile-global-mode)
+  :config
+  (bind-key "C-c p b" #'projectile-switch-to-buffer #'projectile-command-map)
+  (bind-key "C-c p K" #'projectile-kill-buffers #'projectile-command-map)
+
+  ;; global ignores
+  (add-to-list 'projectile-globally-ignored-files ".tern-port")
+  (add-to-list 'projectile-globally-ignored-files "GTAGS")
+  (add-to-list 'projectile-globally-ignored-files "GPATH")
+  (add-to-list 'projectile-globally-ignored-files "GRTAGS")
+  (add-to-list 'projectile-globally-ignored-files "GSYMS")
+  (add-to-list 'projectile-globally-ignored-files ".DS_Store")
+  ;; always ignore .class files
+  (add-to-list 'projectile-globally-ignored-file-suffixes ".class")
+  (use-package helm-projectile
+    :ensure t
+    :init
+    (use-package grep) ;; required for helm-ag to work properly
+    (setq projectile-completion-system 'helm)
+    ;; no fuzziness for projectile-helm
+    (setq helm-projectile-fuzzy-match nil)
+    (helm-projectile-on)
+    :config
+    ;; Add multi-compile to the mix for projects
+    (defun helm-projectile-multi-compile-project (dir)
+      "A Helm action to invoke multi-compile on a project.
+`dir' is the project root."
+      (let ((default-directory dir))
+        (multi-compile-run)))
+
+    ;; Add new projectile binding for multi-compile
+    (helm-projectile-define-key helm-projectile-projects-map
+      (kbd "M-m")  #'helm-projectile-multi-compile-project)))
+
+              #+END_SRC
 * Completion
 ** Company
 #+BEGIN_SRC emacs-lisp
@@ -5030,45 +5498,7 @@ Show me the parenthesys
     (add-hook 'python-mode-hook 'smart-dash-mode))
 #+END_SRC
 
-** Projectile
-Useful for navigating projects structures
-#+BEGIN_SRC emacs-lisp
-(use-package projectile
-  :ensure t
-  :commands projectile-global-mode
-  :diminish projectile-mode
-  :init (add-hook 'after-init-hook #'projectile-global-mode)
-  :config
-  (global-set-key (kbd "C-x f") #'projectile-find-file)
-  (bind-key "C-c p b" #'projectile-switch-to-buffer #'projectile-command-map)
-  (bind-key "C-c p K" #'projectile-kill-buffers #'projectile-command-map)
-
-  ;; global ignores
-  (add-to-list 'projectile-globally-ignored-files ".tern-port")
-  (add-to-list 'projectile-globally-ignored-files "GTAGS")
-  (add-to-list 'projectile-globally-ignored-files "GPATH")
-  (add-to-list 'projectile-globally-ignored-files "GRTAGS")
-  (add-to-list 'projectile-globally-ignored-files "GSYMS")
-  (add-to-list 'projectile-globally-ignored-files ".DS_Store")
-  ;; always ignore .class files
-  (add-to-list 'projectile-globally-ignored-file-suffixes ".class")
-
-  )
-#+END_SRC
-
-Wire projectile into counsel
-#+BEGIN_SRC emacs-lisp
-(use-package counsel-projectile
-  :ensure t
-  :config
-  (add-hook 'after-init-hook 'counsel-projectile-mode))
-#+END_SRC
-
-Use Ripgrep for projectile
-#+BEGIN_SRC emacs-lisp
-(use-package projectile-ripgrep :ensure t)
-#+END_SRC
-
+** Eshell Popup
 Here's a neat function that [[https://github.com/dakrone/eos][dakrone]] wrote that will find an associated eshell to a project and pop
 it up at the bottom of the screen
 #+BEGIN_SRC emacs-lisp
