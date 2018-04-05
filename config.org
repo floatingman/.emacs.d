@@ -1306,13 +1306,6 @@ I use =gpg2= everywhere, including in Emacs.
   ;; (setq x-gtk-use-system-tooltips nil)
   (setq x-gtk-use-system-tooltips t)
 
-  (defun tsp/max-fullscreen ()
-    (interactive)
-    (toggle-frame-maximized))
-
-  ;; fullscreen
-  (add-hook 'after-init-hook #'tsp/max-fullscreen)
-
   (setq dired-listing-switches "-lFaGh1v --group-directories-first")
 
   ;; suspend-frame isn't working on Linux?
@@ -1365,13 +1358,6 @@ issues, so this is special handling of it...
 
 #+BEGIN_SRC emacs-lisp
 (when *is-a-mac*
-
-  (defun deos/max-fullscreen ()
-    (interactive)
-    (set-frame-parameter nil 'fullscreen 'fullboth))
-
-  ;; fullscreen
-  (add-hook 'after-init-hook #'deos/max-fullscreen)
   ;; use alt as hyper
   (setq mac-option-modifier 'meta)
   ;; use command as meta
@@ -4753,9 +4739,9 @@ Follow these steps https://github.com/myuhe/org-gcal.el/blob/master/README.org
 (use-package ido
   :init
   (ido-mode 1)
-  (use-package ido-ubiquitous
+  (use-package ido-completing-read+
     :ensure t
-    :init (ido-ubiquitous 1))
+    :init (ido-ubiquitous-mode 1))
   (use-package ido-vertical-mode
     :ensure t
     :init (ido-vertical-mode 1))
@@ -5631,6 +5617,63 @@ For jumping dumbly
            ("C-M-q" . dumb-jump-quick-look)))
 
 #+END_SRC
+** Semantics
+#+BEGIN_SRC emacs-lisp :tangle yes
+;; Use the full Java 1.5 grammar to parse Java files
+(autoload 'wisent-java-default-setup "semantic/wisent/java"
+  "Hook run to setup Semantic in `java-mode'." nil nil)
+
+(defun deos/setup-semantic-mode ()
+  (interactive)
+  (use-package semantic
+    :init
+    (require 'semantic/wisent)
+    (require 'semantic/wisent/java)
+    (require 'semantic/wisent/java-wy)
+    (require 'semantic/ia)
+    (setq semantic-default-submodes
+          '(;; Perform semantic actions during idle time
+            global-semantic-idle-scheduler-mode
+            ;; Use a database of parsed tags
+            global-semanticdb-minor-mode
+            ;; Decorate buffers with additional semantic information
+            global-semantic-decoration-mode
+            ;; Highlight the name of the function you're currently in
+            global-semantic-highlight-func-mode
+            ;; Generate a summary of the current tag when idle
+            global-semantic-idle-summary-mode
+            ;; Switch to recently changed tags with `semantic-mrub-switch-tags',
+            ;; or `C-x B'
+            global-semantic-mru-bookmark-mode))
+    (semantic-mode t)
+    ;; Fixing a bug in semantic, see #22287
+    (defun semanticdb-save-all-db-idle ()
+      "Save all semantic tag databases from idle time.
+Exit the save between databases if there is user input."
+      (semantic-safe "Auto-DB Save: %S"
+        ;; FIXME: Use `while-no-input'?
+        (save-mark-and-excursion ;; <-- added line
+         (semantic-exit-on-input 'semanticdb-idle-save
+           (mapc (lambda (db)
+                   (semantic-throw-on-input 'semanticdb-idle-save)
+                   (semanticdb-save-db db t))
+                 semanticdb-database-list)))))))
+
+(add-hook 'c-mode-hook #'deos/setup-semantic-mode)
+(add-hook 'java-mode-hook #'deos/setup-semantic-mode)
+(add-hook 'emacs-lisp-mode-hook #'semantic-mode)
+#+END_SRC
+** Watchwords
+#+BEGIN_SRC emacs-lisp :tangle yes
+(defun deos/add-watchwords ()
+  "Highlight FIXME, TODO, and NOCOMMIT in code TODO"
+  (font-lock-add-keywords
+   nil '(("\\<\\(TODO\\(?:(.*)\\)?:?\\)\\>"  1 'warning prepend)
+         ("\\<\\(FIXME\\(?:(.*)\\)?:?\\)\\>" 1 'error prepend)
+         ("\\<\\(NOCOMMIT\\(?:(.*)\\)?:?\\)\\>"  1 'error prepend))))
+
+(add-hook 'prog-mode-hook #'deos/add-watchwords)
+#+END_SRC
 * Shell
 Things for running shells inside of emacs
 
@@ -6366,7 +6409,7 @@ Prior art from https://github.com/dakrone/eos/blob/master/eos-java.org
 *** Which major mode
 let's try all of the major ones
 #+BEGIN_SRC emacs-lisp
-(setq deos/use-meghanda nil)
+(setq deos/use-meghanada 1)
 (setq deos/use-eclim nil)
 (setq deos/use-lsp nil)
 #+END_SRC
@@ -6442,7 +6485,147 @@ let's try all of the major ones
 *** SDKman
 First you have to install sdkman http://sdkman.io
 #+BEGIN_SRC emacs-lisp
-(add-to-list 'tramp-remote-path "/home/d")
+(add-to-list 'tramp-remote-path "/home/dnewman/.sdkman/candiates/gradle/current/bin")
+(add-to-list 'tramp-remote-path "/home/dnewman/.sdkman/candiates/groovy/current/bin")
+#+END_SRC
+
+*** GTAGS
+#+BEGIN_SRC emacs-lisp :tangle yes
+(defun deos/setup-helm-gtags ()
+  (interactive)
+  ;; this variables must be set before load helm-gtags
+  ;; you can change to any prefix key of your choice
+  (setq helm-gtags-prefix-key "\C-cg")
+  (setq helm-gtags-ignore-case t
+        helm-gtags-auto-update t
+        helm-gtags-use-input-at-cursor t
+        helm-gtags-pulse-at-cursor t
+        helm-gtags-suggested-key-mapping t)
+  (use-package helm-gtags
+    :ensure t
+    ;; not needed because of smart-jump
+    :init (helm-gtags-mode t)
+    :diminish ""
+    :bind (:map helm-gtags-mode-map
+                ("M-S" . helm-gtags-select)
+                ("M-." . helm-gtags-dwim)
+                ("M-," . helm-gtags-pop-stack)
+                ("C-c <" . helm-gtags-previous-history)
+                ("C-c >" . helm-gtags-next-history)))
+  (helm-gtags-mode t))
+
+(defun deos/setup-ggtags ()
+  (interactive)
+  (ggtags-mode 1)
+  ;; turn on eldoc with ggtags
+  (setq-local eldoc-documentation-function #'ggtags-eldoc-function)
+  ;; add ggtags to the hippie completion
+  (setq-local hippie-expand-try-functions-list
+              (cons 'ggtags-try-complete-tag
+                    hippie-expand-try-functions-list))
+  ;; use helm for completion
+  (setq ggtags-completing-read-function nil))
+
+(use-package ggtags
+  :ensure t
+  :defer t
+  :init
+  (progn
+    (add-hook 'c-mode-common-hook
+              (lambda ()
+                (when (derived-mode-p 'c-mode 'c++-mode 'java-mode 'asm-mode)
+                  (deos/setup-semantic-mode)
+                  ;; helm-gtags
+                  (deos/setup-helm-gtags)
+                  ;; regular gtags
+                  ;;(my/setup-ggtags)
+                  )))))
+#+END_SRC
+
+*** JAVA debugging
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package realgud
+  :ensure t)
+#+END_SRC
+
+*** Meghanada
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package meghanada
+  :ensure t
+  :init
+  ;; Don't auto-start
+  (setq meghanada-auto-start nil)
+  (when deos/use-meghanada
+    (add-hook 'java-mode-hook #'meghanada-mode)
+    (add-hook 'java-mode-hook 'flycheck-mode)
+    (bind-key "C-c M-." 'meghanada-jump-declaration java-mode-map)))
+#+END_SRC
+
+*** LSP-mode
+#+BEGIN_SRC emacs-lisp :tangle yes
+(when (file-exists-p "~/.emacs.d/eclipse.jdt.ls")
+  (use-package lsp-mode
+    :ensure t
+    :init
+    (when deos/use-lsp
+      (use-package lsp-java
+        :ensure t
+        :init
+        (require 'lsp-java)
+        (require 'lsp-mode)
+        (add-hook 'java-mode-hook #'lsp-java-enable)))
+    :config
+    (use-package lsp-ui
+      :ensure t)))
+#+END_SRC
+
+*** Running tests
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package s
+  :ensure t
+  :init
+  (require 's)
+  (defun deos/run-java-tests-for-method ()
+    (interactive)
+    (if (projectile-project-p)
+        (let* ((bName (buffer-name))
+               (className (car (s-split "\\." bName)))
+               (testType (if (s-ends-with? "Tests" className)
+                             ":core:test"
+                           ":core:integTest"))
+               (methodName "test") // TODO: get real test name
+               (cmd (format "gradle %s -Dtests.class=*%s -Dtests.method=%s" testType className methodName))
+               (buff (window-buffer (deos/popup-project-eshell))))
+          (with-current-buffer buff
+            (insert cmd)))
+      (message "Not currently in a projectile project")))
+
+  (defun deos/run-java-tests-for-class ()
+    (interactive)
+    (if (projectile-project-p)
+        (let* ((bName (buffer-name))
+               (className (car (s-split "\\." bName)))
+               (testType (if (s-ends-with? "Tests" className)
+                             ":core:test"
+                           ":core:integTest"))
+               (cmd (format "gradle %s -Dtests.class=*%s" testType className))
+               (buff (window-buffer (deos/popup-project-eshell))))
+          (with-current-buffer buff
+            (insert cmd)))
+      (message "Not currently in a projectile project")))
+
+  (defun deos/run-java-test ()
+    (interactive)
+    (let ((toRun (completing-read "Test: " '("class" "method") nil t)))
+      (if (s-equals? toRun "method")
+          (deos/run-java-tests-for-method)
+        (deos/run-java-tests-for-class)))))
+#+END_SRC
+
+*** Auto disassemble johnny five
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package autodisass-java-bytecode
+  :ensure t)
 #+END_SRC
 
 ** Yaml
