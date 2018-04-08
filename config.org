@@ -970,7 +970,7 @@ files. The only real caveat for it is that it requires you to do the =M-x
 pdf-tools-install= every time the package is updated, to actually *build* the
 tool that it uses.
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
 
 (use-package pdf-tools
   :ensure t
