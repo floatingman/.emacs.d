@@ -21,6 +21,18 @@ makefile to make installing convenient
     (setq debug-on-error t)
     (setq debug-on-quit t)
 
+    ;; Adding custom versions of CEDET and Org-Mode These will require you to pull submodules
+    ;; and make each of these. I've also included a tar file with the latest working version
+    ;; if git is broken in some way for you.
+    ;; TODO: Automate this in the future
+    (when (file-exists-p "~/.emacs.d/elisp/cedet/cedet-devel-load.el")
+      (load "~/.emacs.d/elisp/cedet/cedet-devel-load.el"))
+
+    (when (file-exists-p "~/.emacs.d/elisp/org-mode/lisp")
+      (add-to-list 'load-path "~/.emacs.d/elisp/org-mode/lisp")
+      (add-to-list 'load-path "~/.emacs.d/elisp/org-mode/contrib/lisp")
+      (require 'org))
+
     (require 'cl)
 
     (require 'package)
@@ -93,42 +105,7 @@ makefile to make installing convenient
     (defvar emacs-start-time (current-time)
       "Time Emacs was started.")
 
-    ;; Installed by `make install`
-    (add-to-list 'load-path "~/.emacs.d/deos/")
     (add-to-list 'load-path "~/.emacs.d/site-lisp/")
-    (defmacro try-load (module)
-      "Try to load the given module, logging an error if unable to load"
-      `(condition-case ex
-           (require ,module)
-         ('error
-          (message "DEOS: Unable to load [%s] module: %s" ,module ex))))
-
- ;; Hooks
-    (add-hook 'after-deos-hook
-              (lambda ()
-                (message "The Daniel Newman Emacs System has been loaded")))
-
-    (defun deos/time-since-start ()
-      (float-time (time-subtract (current-time)
-                                 emacs-start-time)))
-
-    (add-hook 'after-deos-hook
-              `(lambda ()
-                 (let ((elapsed (deos/time-since-start)))
-                   (message "Loading %s...done (%.3fs)"
-                            ,load-file-name elapsed))) t)
-    (add-hook 'after-init-hook
-              `(lambda ()
-                 (let ((elapsed (deos/time-since-start)))
-                   (message "Loading %s...done (%.3fs) [after-init]"
-                            ,load-file-name elapsed))) t)
-    (run-hooks 'after-deos-hook)
-
-    (setq initial-scratch-message ";; ╔═╗┌─┐┬─┐┌─┐┌┬┐┌─┐┬ ┬\n;; ╚═╗│  ├┬┘├─┤ │ │  ├─┤\n;; ╚═╝└─┘┴└─┴ ┴ ┴ └─┘┴ ┴\n")
-
-    ;; turn off debugging after emacs starts
-    (setq debug-on-error nil)
-    (setq debug-on-quit nil)
 #+END_SRC
 
 * The Core
@@ -6825,4 +6802,34 @@ Here are some utilities to facilitate text communications between carbon based l
   jabber-use-global-history nil
   jabber-backlog-number 40
   jabber-backlog-days 30))
+#+END_SRC
+* Hooks
+Run some things after everything loads
+#+BEGIN_SRC emacs-lisp :tangle yes
+ ;; Hooks
+    (add-hook 'after-deos-hook
+              (lambda ()
+                (message "The Daniel Newman Emacs System has been loaded")))
+
+    (defun deos/time-since-start ()
+      (float-time (time-subtract (current-time)
+                                 emacs-start-time)))
+
+    (add-hook 'after-deos-hook
+              `(lambda ()
+                 (let ((elapsed (deos/time-since-start)))
+                   (message "Loading %s...done (%.3fs)"
+                            ,load-file-name elapsed))) t)
+    (add-hook 'after-init-hook
+              `(lambda ()
+                 (let ((elapsed (deos/time-since-start)))
+                   (message "Loading %s...done (%.3fs) [after-init]"
+                            ,load-file-name elapsed))) t)
+    (run-hooks 'after-deos-hook)
+
+    (setq initial-scratch-message ";; ╔═╗┌─┐┬─┐┌─┐┌┬┐┌─┐┬ ┬\n;; ╚═╗│  ├┬┘├─┤ │ │  ├─┤\n;; ╚═╝└─┘┴└─┴ ┴ ┴ └─┘┴ ┴\n")
+
+    ;; turn off debugging after emacs starts
+    (setq debug-on-error nil)
+    (setq debug-on-quit nil)
 #+END_SRC
