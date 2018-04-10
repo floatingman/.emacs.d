@@ -4,6 +4,3 @@
 [submodule "elisp/cedet"]
 	path = elisp/cedet
 	url = http://git.code.sf.net/p/cedet/git
-[submodule "elisp/org-mode"]
-	path = elisp/org-mode
-	url = https://code.orgmode.org/bzg/org-mode.git
