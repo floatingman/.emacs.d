@@ -6241,6 +6241,28 @@ This helps visualize version changes in a file
   :config
   (setq git-messenger:show-detail t))
 
+(use-package magit-gh-pulls
+   :ensure t
+   :init
+   (add-hook 'magit-mode-hook #'turn-on-magit-gh-pulls)
+   :config
+   ;; work around https://github.com/sigma/magit-gh-pulls/issues/83
+   (setq magit-gh-pulls-pull-detail-limit 50))
+
+(use-package magithub
+  :ensure t
+  :disabled t
+  :after magit
+  :config
+  (magithub-feature-autoinject t)
+
+  ;; Workaround for https://github.com/vermiculus/magithub/issues/71
+  (defun magithub-issue--sort (issues)
+    "Sort ISSUES by issue number."
+    (sort issues
+          (lambda (a b) (> (plist-get a :number)
+                      (plist-get b :number))))))
+
   (use-package browse-at-remote
   :ensure t
   :commands browse-at-remote
