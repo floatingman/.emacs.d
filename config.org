@@ -6692,9 +6692,10 @@ Use projects eslint if it is present
   (setq web-mode-markup-indent-offset 2)
   (setq web-mode-engines-alist
         '(("django" . "focus/.*\\.html\\'")
-          ("ctemplate" . "realtimecrm/.*\\.html\\'"))))
-#+END_SRC
+          ("ctemplate" . "realtimecrm/.*\\.html\\'")))
 
+  )
+#+END_SRC
 *** Web beautify
 Beautify your web code with web-beautify
 NOTE: You have to install it globally with "npm install -g js-beautify"
@@ -6705,6 +6706,11 @@ NOTE: You have to install it globally with "npm install -g js-beautify"
               ("C-c b" . web-beautify-html)
               :map js2-mode-map
               ("C-c b" . web-beautify-js)))
+#+END_SRC
+** Ember js
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package web-mode :ensure t)
+(add-to-list 'auto-mode-alist '("\\.hbs\\'" . web-mode))
 #+END_SRC
 
 * Extras
