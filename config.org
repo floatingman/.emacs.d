@@ -5651,6 +5651,13 @@ Exit the save between databases if there is user input."
 
 (add-hook 'prog-mode-hook #'deos/add-watchwords)
 #+END_SRC
+** Editorconfig support
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package editorconfig
+  :ensure t
+  :config
+  (editorconfig-mode 1))
+#+END_SRC
 * Shell
 Things for running shells inside of emacs
 
