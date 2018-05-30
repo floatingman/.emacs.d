@@ -407,7 +407,7 @@ These are some settings for version control stuff.
 
 Start a server if not running, but a only for gui-only:
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
 (set-default 'server-socket-dir "~/.emacs.d/server")
 (if (functionp 'window-system)
     (when (and (window-system)
