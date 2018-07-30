@@ -6741,6 +6741,10 @@ NOTE: You have to install it globally with "npm install -g js-beautify"
 (use-package web-mode :ensure t)
 (add-to-list 'auto-mode-alist '("\\.hbs\\'" . web-mode))
 #+END_SRC
+** Ansible
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package ansible-vault :ensure t)
+#+END_SRC
 
 * Extras
 ** Stack Overflow
