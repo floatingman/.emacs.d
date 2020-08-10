@@ -1,26 +1,21 @@
 # Directory where this Makefile exists (the dotfiles directory)
 EMACS_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-el-modules = init-core.el \
-init-helm.el \
-init-theme.el \
-init-ivy.el \
-init-ido-mode.el \
-init-eshell.el \
+el-modules = config.el \
 init.el
 
 all: init $(el-modules)
 
 clean:
-	rm -fv *.el
+	rm -fv config.el
 	rm -fv *.elc
 	rm -fv sh/*.sh
 
 init: initialize.sh
-initialize.sh: init.org
-	bin/tangle init.org
-install.sh: init.org
-	bin/tangle init.org
+initialize.sh: config.org
+	bin/tangle config.org
+install.sh: config.org
+	bin/tangle config.org
 run-init: init
 	bash initialize.sh
 

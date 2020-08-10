@@ -6725,7 +6725,25 @@ NOTE: You have to install it globally with "npm install -g js-beautify"
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package ansible-vault :ensure t)
 #+END_SRC
+** Lisp
+Fire up your proton packs it's time to get slimed
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package slime
+  :ensure t
+  :diminish " S ")
+#+END_SRC
 
+Paredit mode
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package paredit
+             :ensure t
+             :diminish " PE ")
+#+END_SRC
+
+Using SBCL
+#+BEGIN_SRC emacs-lisp :tangle yes
+(setq inferior-lisp-program "sbcl")
+#+END_SRC
 * Extras
 ** Stack Overflow
 SX is a stack overflow client that you can use in Emacs
