@@ -79,4 +79,9 @@ couldn't figure things out (ex: syntax errors)."
 
 (bind-key "C-x C-e" 'sanityinc/eval-last-sexp-or-region emacs-lisp-mode-map)
 
+(use-package slime
+  :defer t
+  :ensure t
+  :diminish "S")
+
 (provide 'init-lisp)

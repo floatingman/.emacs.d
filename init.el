@@ -67,9 +67,10 @@
  '(custom-safe-themes
    (quote
     ("bb08c73af94ee74453c90422485b29e5643b73b05e8de029a6909af6a3fb3f58" "1b8d67b43ff1723960eb5e0cba512a2c7a2ad544ddb2533a90101fd1852b426e" default)))
+ '(inferior-lisp-program "clisp")
  '(package-selected-packages
    (quote
-    (company-anaconda multiple-cursors diff-hl dired-sort dired+ yasnippet use-package smex redshank rainbow-delimiters projectile paredit nlinum indent-guide ido-ubiquitous guide-key golden-ratio flycheck exec-path-from-shell erefactor company-quickhelp color-theme-sanityinc-tomorrow color-theme-sanityinc-solarized auto-compile)))
+    (slime company-anaconda multiple-cursors diff-hl dired-sort dired+ yasnippet use-package smex redshank rainbow-delimiters projectile paredit nlinum indent-guide ido-ubiquitous guide-key golden-ratio flycheck exec-path-from-shell erefactor company-quickhelp color-theme-sanityinc-tomorrow color-theme-sanityinc-solarized auto-compile)))
  '(session-use-package t nil (session)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
