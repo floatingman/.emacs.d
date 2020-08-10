@@ -860,8 +860,7 @@ using a big font size and I need more eshell space
                                      calc-mode
                                      calc-trail-mode
                                      mu4e-view-mode
-                                     mu4e-headers-mode
-                                     magit-popup-mode)
+                                     mu4e-headers-mode)
         golden-ratio-recenter t))
 #+END_SRC
 
@@ -1491,17 +1490,6 @@ but they also have a bit of downsides...
   (defun deos/so-long-hook () "Used in `so-long-hook'.")
 
   (add-hook 'so-long-hook #'deos/so-long-hook))
-#+END_SRC
-
-** Lastpass
-#+BEGIN_SRC emacs-lisp
-(use-package lastpass
-  :ensure t
-  :config
-  ;; Set lastpass user
-  (setq lastpass-user "dwnewman78@gmail.com")
-  ;; Enable lastpass custom auth-source
-  (lastpass-auth-source-enable))
 #+END_SRC
 
 ** Which Key
@@ -6247,14 +6235,6 @@ This helps visualize version changes in a file
   :bind (("C-c M" . git-messenger:popup-message))
   :config
   (setq git-messenger:show-detail t))
-
-(use-package magit-gh-pulls
-   :ensure t
-   :init
-   (add-hook 'magit-mode-hook #'turn-on-magit-gh-pulls)
-   :config
-   ;; work around https://github.com/sigma/magit-gh-pulls/issues/83
-   (setq magit-gh-pulls-pull-detail-limit 50))
 
 (use-package magithub
   :ensure t
