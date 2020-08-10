@@ -102,3 +102,4 @@ network-security.data
 /override/
 anaconda-mode
 /.historian
+/transient/

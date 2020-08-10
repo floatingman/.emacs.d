@@ -1,14 +1,5 @@
 (use-package dired
   :config
-  (use-package dired+
-    :ensure t
-    :config
-    (setq-default diredp-hide-details-initially-flag nil
-	      dired-dwim-target t)
-    (let ((gls (executable-find "gls")))
-      (when gls (setq insert-directory-program gls))))
-  (use-package dired-sort
-    :ensure t)
   (use-package diff-hl
     :ensure t
     :config
