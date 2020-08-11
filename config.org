@@ -6721,9 +6721,11 @@ Fire up your proton packs it's time to get slimed
 (use-package slime
   :ensure t
   :diminish " S"
-  :init
-  (slime-setup)
-)
+  :config
+  (add-hook 'slime-mode-hook
+            (lambda ()
+              (unless (slime-connected-p)
+                (save-excursion (slime))))))
 #+END_SRC
 
 Paredit mode
