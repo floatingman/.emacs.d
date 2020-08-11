@@ -21,18 +21,6 @@ makefile to make installing convenient
     (setq debug-on-error t)
     (setq debug-on-quit t)
 
-    ;; Adding custom versions of CEDET and Org-Mode These will require you to pull submodules
-    ;; and make each of these. I've also included a tar file with the latest working version
-    ;; if git is broken in some way for you.
-    ;; TODO: Automate this in the future
-    (when (file-exists-p "~/.emacs.d/elisp/cedet/cedet-devel-load.el")
-      (load "~/.emacs.d/elisp/cedet/cedet-devel-load.el"))
-
- ;;   (when (file-exists-p "~/.emacs.d/elisp/org-mode/lisp")
- ;;     (add-to-list 'load-path "~/.emacs.d/elisp/org-mode/lisp")
- ;;     (add-to-list 'load-path "~/.emacs.d/elisp/org-mode/contrib/lisp")
- ;;     (require 'org))
-
     (require 'cl)
 
     (require 'package)
@@ -6730,14 +6718,17 @@ Fire up your proton packs it's time to get slimed
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package slime
   :ensure t
-  :diminish " S ")
+  :diminish " S"
+  :init
+  (slime-setup)
+)
 #+END_SRC
 
 Paredit mode
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package paredit
              :ensure t
-             :diminish " PE ")
+             :diminish " PE")
 #+END_SRC
 
 Using SBCL
