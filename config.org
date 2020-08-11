@@ -692,9 +692,6 @@ when they are popped up. I do this with Popwin
 
     (push '("*Occur*" :stick t) popwin:special-display-config)
 
-    ;; prodigy
-    (push '("*prodigy*" :stick t) popwin:special-display-config)
-
     ;; org-mode
     (push '("*Org tags*" :stick t :height 30)
           popwin:special-display-config)
@@ -1159,7 +1156,7 @@ And finally, the main EOS Hydra for entry:
 ╭────────────────────────────────────────────────────────╯
   [_a_] Org Agenda       [_E_] ERC       [_m_] Mail
   [_t_] Toggle map       [_T_] Twitter   [_M_] Music
-  [_s_] Skeletons        [_P_] Prodigy   [_g_] Gnus
+  [_s_] Skeletons                        [_g_] Gnus
   [_p_] Proced           [_W_] Weather   [(] Macros
   [_c_] Multi-compile    [_R_] RSS       [`] Errors
   [_d_] Downloads        [_D_] Debbugs   [_C_] ES-CC
@@ -1187,7 +1184,6 @@ And finally, the main EOS Hydra for entry:
   ("s" deos/hydra-skeleton/body :exit t)
   ("S" deos/hydra-smerge/body :exit t)
   ("p" proced :exit t)
-  ("P" prodigy :exit t)
   ("W" wttrin :exit t)
   ("q" nil :exit t))
 
@@ -6146,14 +6142,22 @@ The be all, end all mode for all things git
 #+BEGIN_SRC emacs-lisp
     (use-package magit
     :ensure t
-    :bind (("C-x g" . magit-status))
+    :bind (("C-x g" . magit-status) ("C-x M-g" . magit-dispatch))
     :init (add-hook 'magit-mode-hook 'deos/turn-on-hl-line)
     :config
     (setq git-commit-summary-max-length 70)
     (setenv "GIT_PAGER" "")
-    (if (file-exists-p "/usr/local/bin/emacsclient")
-        (setq magit-emacsclient-executable (executable-find "emacsclient")))
-    (defun deos/magit-browse ()
+    (defun sanityinc/magit-or-vc-log-file (&optional prompt)
+      (interactive "P")
+      (if (and (buffer-file-name)
+               (eq 'Git (vc-backend (buffer-file-name))))
+          (if prompt
+              (magit-log-buffer-file-popup)
+            (magit-log-buffer-file t))
+        (vc-print-log)))
+    (with-eval-after-load 'vc
+      (define-key vc-prefix-map (kbd "l") 'sanityinc/magit-or-vc-log-file))
+      (defun deos/magit-browse ()
       "Browse to the project's github URL, if available"
       (interactive)
       (let ((url (with-temp-buffer
@@ -6174,6 +6178,9 @@ The be all, end all mode for all things git
   (bind-key "M-2" #'deos/create-or-switch-to-eshell-2 magit-mode-map)
   (bind-key "M-3" #'deos/create-or-switch-to-eshell-3 magit-mode-map)
   (bind-key "M-4" #'deos/create-or-switch-to-eshell-4 magit-mode-map)
+
+  (with-eval-after-load 'magit
+    (define-key magit-status-mode-map (kbd "C-M-<up>") 'magit-section-up))
 
   ;; Allow gpg signing merge commits
   (magit-define-popup-option 'magit-merge-popup
@@ -6215,40 +6222,27 @@ This helps visualize version changes in a file
 #+END_SRC
 ** Various Git helpers
 #+BEGIN_SRC emacs-lisp
-(use-package git-messenger
-  :ensure t
-  :commands git-messenger:popup-message
-  :bind (("C-c M" . git-messenger:popup-message))
-  :config
-  (setq git-messenger:show-detail t))
+  (use-package git-blamed
+    :ensure t)
 
-(use-package magithub
-  :ensure t
-  :disabled t
-  :after magit
-  :config
-  (magithub-feature-autoinject t)
+  (use-package gitignore-mode
+    :ensure t)
 
-  ;; Workaround for https://github.com/vermiculus/magithub/issues/71
-  (defun magithub-issue--sort (issues)
-    "Sort ISSUES by issue number."
-    (sort issues
-          (lambda (a b) (> (plist-get a :number)
-                      (plist-get b :number))))))
-
-  (use-package browse-at-remote
-  :ensure t
-  :commands browse-at-remote
-  :bind ("C-c g g" . browse-at-remote))
+  (use-package gitconfig-mode
+    :ensure t)
 
   (use-package git-timemachine
-  :ensure t)
+    :ensure t
+    :bind (("C-x v t" . git-timemachine-toggle))
+    )
 
-  (use-package git-annex
-  :ensure t)
+  (use-package magit-todos
+    :ensure t)
 
-  (use-package magit-annex
-  :ensure t)
+  (use-package git-commit
+    :ensure t
+    :config
+    (add-hook 'git-commit-mode-hook 'goto-address-mode))
 
   (use-package ediff
   :init
