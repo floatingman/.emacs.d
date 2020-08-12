@@ -46,3 +46,4 @@ bookmarks
 tramp
 transient/
 .emacs.desktop
+/.emacs.desktop.lock

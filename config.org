@@ -102,37 +102,120 @@ makefile to make installing convenient
 :END:
 This is the place where a lot of default config is set. Most variables
 and functions should be in this file
+** Benchmarking
+#+BEGIN_SRC emacs-lisp :tangle yes
+(defun sanityinc/time-subtract-millis (b a)
+  (* 1000.0 (float-time (time-subtract b a))))
 
-It's about to get personal
+
+(defvar sanityinc/require-times nil
+  "A list of (FEATURE LOAD-START-TIME LOAD-DURATION).
+LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
+
+(defun sanityinc/require-times-wrapper (orig feature &rest args)
+  "Note in `sanityinc/require-times' the time taken to require each feature."
+  (let* ((already-loaded (memq feature features))
+         (require-start-time (and (not already-loaded) (current-time))))
+    (prog1
+        (apply orig feature args)
+      (when (and (not already-loaded) (memq feature features))
+        (let ((time (sanityinc/time-subtract-millis (current-time) require-start-time)))
+          (add-to-list 'sanityinc/require-times
+                       (list feature require-start-time time)
+                       t))))))
+
+(advice-add 'require :around 'sanityinc/require-times-wrapper)
+
+(define-derived-mode sanityinc/require-times-mode tabulated-list-mode "Require-Times"
+  "Show times taken to `require' packages."
+  (setq tabulated-list-format
+        [("Start time (ms)" 20 sanityinc/require-times-sort-by-start-time-pred)
+         ("Feature" 30 t)
+         ("Time (ms)" 12 sanityinc/require-times-sort-by-load-time-pred)])
+  (setq tabulated-list-sort-key (cons "Start time (ms)" nil))
+  ;; (setq tabulated-list-padding 2)
+  (setq tabulated-list-entries #'sanityinc/require-times-tabulated-list-entries)
+  (tabulated-list-init-header)
+  (when (fboundp 'tablist-minor-mode)
+    (tablist-minor-mode)))
+
+(defun sanityinc/require-times-sort-by-start-time-pred (entry1 entry2)
+  (< (string-to-number (elt (nth 1 entry1) 0))
+     (string-to-number (elt (nth 1 entry2) 0))))
+
+(defun sanityinc/require-times-sort-by-load-time-pred (entry1 entry2)
+  (> (string-to-number (elt (nth 1 entry1) 2))
+     (string-to-number (elt (nth 1 entry2) 2))))
+
+(defun sanityinc/require-times-tabulated-list-entries ()
+  (cl-loop for (feature start-time millis) in sanityinc/require-times
+           with order = 0
+           do (incf order)
+           collect (list order
+                         (vector
+                          (format "%.3f" (sanityinc/time-subtract-millis start-time before-init-time))
+                          (symbol-name feature)
+                          (format "%.3f" millis)))))
+
+(defun sanityinc/require-times ()
+  "Show a tabular view of how long various libraries took to load."
+  (interactive)
+  (with-current-buffer (get-buffer-create "*Require Times*")
+    (sanityinc/require-times-mode)
+    (tabulated-list-revert)
+    (display-buffer (current-buffer))))
+
+
+
+(defun sanityinc/show-init-time ()
+  (message "init completed in %.2fms"
+           (sanityinc/time-subtract-millis after-init-time before-init-time)))
+
+(add-hook 'after-init-hook 'sanityinc/show-init-time)
+
+#+END_SRC
+** It's about to get personal
 #+BEGIN_SRC emacs-lisp
 (setq user-full-name "Daniel Newman"
       user-mail-address "dwnewman78@gmail.com")
 #+END_SRC
 
-UTF-8 all the way!
+** UTF-8 all the way!
 #+begin_src emacs-lisp
-(set-charset-priority 'unicode)
-(set-default-coding-systems 'utf-8)
-(set-terminal-coding-system 'utf-8)
-(set-keyboard-coding-system 'utf-8)
-(set-selection-coding-system 'utf-8)
+(defun sanityinc/locale-var-encoding (v)
+  "Return the encoding portion of the locale string V, or nil if missing."
+  (when v
+    (save-match-data
+      (let ((case-fold-search t))
+        (when (string-match "\\.\\([^.]*\\)\\'" v)
+          (intern (downcase (match-string 1 v))))))))
+
+(dolist (varname '("LC_ALL" "LANG" "LC_CTYPE"))
+  (let ((encoding (sanityinc/locale-var-encoding (getenv varname))))
+    (unless (memq encoding '(nil utf8 utf-8))
+      (message "Warning: non-UTF8 encoding in environment variable %s may cause interop problems with this Emacs configuration." varname))))
+
+(when (fboundp 'set-charset-priority)
+  (set-charset-priority 'unicode))
 (prefer-coding-system 'utf-8)
-(setq default-process-coding-system '(utf-8-unix . utf-8-unix))
+(setq locale-coding-system 'utf-8)
+(unless (eq system-type 'windows-nt)
+  (set-selection-coding-system 'utf-8))
 #+end_src
 
-Turn on syntax highlighting for all buffers:
+** Turn on syntax highlighting for all buffers:
 
 #+BEGIN_SRC emacs-lisp
 (global-font-lock-mode t)
 #+END_SRC
 
-Raise the maximum number of logs in the =*Messages*= buffer:
+** Raise the maximum number of logs in the =*Messages*= buffer:
 
 #+BEGIN_SRC emacs-lisp
 (setq message-log-max 16384)
 #+END_SRC
 
-We don't really need to garbage collect as frequently as Emacs would like to by
+** We don't really need to garbage collect as frequently as Emacs would like to by
 default, so set the threshold up higher:
 
 #+BEGIN_SRC emacs-lisp
@@ -150,7 +233,7 @@ Wait a bit longer than the default (0.5 seconds) before assuming Emacs is idle
 (setq idle-update-delay 2)
 #+END_SRC
 
-Setup some variables for use in other config files
+** Setup some variables for use in other config files
 
 #+begin_src emacs-lisp
 (defconst *spell-check-support-enabled* t) ;; Enable with t if you prefer
@@ -161,40 +244,38 @@ Setup some variables for use in other config files
 (defvar running-alternate-emacs nil)
 #+end_src
 
-Make gnutls a bit safer, the default is an absurdly low 256
+** Make gnutls a bit safer, the default is an absurdly low 256
 
 #+BEGIN_SRC emacs-lisp
 (setq gnutls-min-prime-bits 4096)
 #+END_SRC
 
-When I select a region and start typing, just delete the region automatically.
-This ends up working great with =expand-region=
+** When I select a region and start typing, just delete the region automatically. This ends up working great with =expand-region=
 
 #+BEGIN_SRC emacs-lisp
 (delete-selection-mode 1)
 #+END_SRC
 
-Don't warn me about large files unless they're at least 25mb:
+** Don't warn me about large files unless they're at least 25mb:
 
 #+BEGIN_SRC emacs-lisp
 (setq large-file-warning-threshold (* 25 1024 1024))
 #+END_SRC
 
-If you change buffer, or focus, disable the current buffer's mark:
+** If you change buffer, or focus, disable the current buffer's mark:
 
 #+BEGIN_SRC emacs-lisp
 (transient-mark-mode 1)
 #+END_SRC
 
-Don't indicate empty lines or the end of a buffer with visual
-marks (the lines are cleaned up automatically anyway)
+** Don't indicate empty lines or the end of a buffer with visual marks (the lines are cleaned up automatically anyway)
 
 #+BEGIN_SRC emacs-lisp
 (setq-default indicate-empty-lines nil)
 (setq-default indicate-buffer-boundaries nil)
 #+END_SRC
 
-Turn off all kinds of modes, I don't need the menu bar, or the tool bar:
+** Turn off all kinds of modes, I don't need the menu bar, or the tool bar:
 
 #+BEGIN_SRC emacs-lisp
 (when (functionp 'menu-bar-mode)
@@ -209,23 +290,21 @@ Turn off all kinds of modes, I don't need the menu bar, or the tool bar:
   (blink-cursor-mode -1))
 #+END_SRC
 
-Beep bop boop I am a robot no more. Don't show the startup message, I
-know Emacs is starting.
+** Beep bop boop I am a robot no more. Don't show the startup message, I know Emacs is starting.
 
 #+BEGIN_SRC emacs-lisp
 (setq ring-bell-function (lambda ()))
 (setq inhibit-startup-screen t)
 #+END_SRC
 
-Why would you not want to know lines/columns in your mode-line?
+** Why would you not want to know lines/columns in your mode-line?
 
 #+BEGIN_SRC emacs-lisp
 (line-number-mode 1)
 (column-number-mode 1)
 #+END_SRC
 
-This allows a GUI emacs to inherit =$PATH= and other things from the shell when
-run. I use it for the path on OSX and JAVA_HOME everywhere else.
+** This allows a GUI emacs to inherit =$PATH= and other things from the shell when run. I use it for the path on OSX and JAVA_HOME everywhere else.
 
 #+BEGIN_SRC emacs-lisp
   (use-package exec-path-from-shell
@@ -243,41 +322,38 @@ run. I use it for the path on OSX and JAVA_HOME everywhere else.
   (exec-path-from-shell-initialize)))
 #+END_SRC
 
-Ignore case when using completion for file names:
+** Ignore case when using completion for file names:
 
 #+BEGIN_SRC emacs-lisp
 (setq read-file-name-completion-ignore-case t)
 #+END_SRC
 
-Nobody likes to have to type "yes" to questions, so change it to
-just hitting the =y= key to confirm:
+** Nobody likes to have to type "yes" to questions, so change it to just hitting the =y= key to confirm:
 
 #+BEGIN_SRC emacs-lisp
 (defalias 'yes-or-no-p 'y-or-n-p)
 #+END_SRC
 
-Confirm before killing emacs, but only on graphical sessions
+** Confirm before killing emacs, but only on graphical sessions
 
 #+BEGIN_SRC emacs-lisp
 (when (window-system)
   (setq confirm-kill-emacs 'yes-or-no-p))
 #+END_SRC
 
-It's much easier to move around lines based on how they are
-displayed, rather than the actual line. This helps a ton with long
-log file lines that may be wrapped:
+** It's much easier to move around lines based on how they are displayed, rather than the actual line. This helps a ton with long log file lines that may be wrapped:
 
 #+BEGIN_SRC emacs-lisp
 (setq line-move-visual t)
 #+END_SRC
 
-Hide the mouse while typing:
+** Hide the mouse while typing:
 
 #+BEGIN_SRC emacs-lisp
 (setq make-pointer-invisible t)
 #+END_SRC
 
-Set up the fill-column to 80 characters and set tab width to 2
+** Set up the fill-column to 80 characters and set tab width to 2
 
 #+BEGIN_SRC emacs-lisp
 (setq-default fill-column 80)
@@ -285,26 +361,25 @@ Set up the fill-column to 80 characters and set tab width to 2
 (setq-default indent-tabs-mode nil)
 #+END_SRC
 
-Fix some weird color escape sequences
+** Fix some weird color escape sequences
 
 #+BEGIN_SRC emacs-lisp
 (setq system-uses-terminfo nil)
 #+END_SRC
 
-Resolve symlinks:
+** Resolve symlinks:
 
 #+BEGIN_SRC emacs-lisp
 (setq-default find-file-visit-truename t)
 #+END_SRC
 
-Require a newline at the end of files:
+** Require a newline at the end of files:
 
 #+BEGIN_SRC emacs-lisp
 (setq require-final-newline t)
 #+END_SRC
 
-Uniquify buffers, using angle brackets, so you get =foo= and
-=foo<2>=:
+** Uniquify buffers, using angle brackets, so you get =foo= and =foo<2>=:
 
 #+BEGIN_SRC emacs-lisp
 (use-package uniquify
@@ -312,8 +387,7 @@ Uniquify buffers, using angle brackets, so you get =foo= and
   (setq uniquify-buffer-name-style 'post-forward-angle-brackets))
 #+END_SRC
 
-Search (and search/replace) using regex by default, since that's
-usually what I want to do:
+** Search (and search/replace) using regex by default, since that's usually what I want to do:
 
 #+BEGIN_SRC emacs-lisp
 (global-set-key (kbd "C-s") 'isearch-forward-regexp)
@@ -324,46 +398,44 @@ usually what I want to do:
 (global-set-key (kbd "M-L") 'reposition-window)
 #+END_SRC
 
-Just kill this buffer, don't prompt me. I'll use helm if I want to kill a
-different buffer
+** Just kill this buffer, don't prompt me. I'll use helm if I want to kill a different buffer
 
 #+BEGIN_SRC emacs-lisp
 (global-set-key (kbd "C-x k") #'kill-this-buffer)
 #+END_SRC
 
-Single space still ends a sentence:
+** Single space still ends a sentence:
 
 #+BEGIN_SRC emacs-lisp
 (setq sentence-end-double-space nil)
 #+END_SRC
 
-Split windows a bit better (don't split horizontally, I have a
-widescreen :P)
+** Split windows a bit better (don't split horizontally, I have a widescreen :P)
 
 #+BEGIN_SRC emacs-lisp
 (setq split-height-threshold nil)
 (setq split-width-threshold 180)
 #+END_SRC
 
-Make sure auto automatically rescan for imenu changes:
+** Make sure auto automatically rescan for imenu changes:
 
 #+BEGIN_SRC emacs-lisp
 (set-default 'imenu-auto-rescan t)
 #+END_SRC
 
-Seed the random number generator:
+** Seed the random number generator:
 
 #+BEGIN_SRC emacs-lisp
 (random t)
 #+END_SRC
 
-Switch to unified diffs by default:
+** Switch to unified diffs by default:
 
 #+BEGIN_SRC emacs-lisp
 (setq diff-switches "-u")
 #+END_SRC
 
-Turn on auto-fill mode in text buffers:
+** Turn on auto-fill mode in text buffers:
 
 #+BEGIN_SRC emacs-lisp
 (add-hook 'text-mode-hook 'turn-on-auto-fill)
@@ -373,13 +445,13 @@ Turn on auto-fill mode in text buffers:
   :init (diminish 'auto-fill-function ""))
 #+END_SRC
 
-Set the internal calculator not to go to scientific form quite so quickly:
+** Set the internal calculator not to go to scientific form quite so quickly:
 
 #+BEGIN_SRC emacs-lisp
 (setq calc-display-sci-low -5)
 #+END_SRC
 
-Bury the =*scratch*= buffer, never kill it:
+** Bury the =*scratch*= buffer, never kill it:
 
 #+BEGIN_SRC emacs-lisp
 (defadvice kill-buffer (around kill-buffer-around-advice activate)
@@ -389,9 +461,7 @@ Bury the =*scratch*= buffer, never kill it:
       ad-do-it)))
 #+END_SRC
 
-These are some settings for version control stuff.
-
-Start a server if not running, but a only for gui-only:
+** Start a server if not running, but a only for gui-only:
 
 #+BEGIN_SRC emacs-lisp :tangle no
 (set-default 'server-socket-dir "~/.emacs.d/server")
@@ -400,16 +470,9 @@ Start a server if not running, but a only for gui-only:
            (>= emacs-major-version 24))
 (server-start)))
 
-;; Lame, server has bad autoloads :(
-;; (require 'server nil t)
-;; (use-package server
-;;   :if window-system
-;;   :init
-;;   (when (not (server-running-p server-name))
-;;     (server-start)))
 #+END_SRC
 
-Prettify all the symbols, if available (an Emacs 24.4 feature):
+** Prettify all the symbols, if available (an Emacs 24.4 feature):
 
 #+BEGIN_SRC emacs-lisp
 (when (boundp 'global-prettify-symbols-mode)
@@ -422,8 +485,8 @@ Prettify all the symbols, if available (an Emacs 24.4 feature):
   (global-prettify-symbols-mode +1))
 #+END_SRC
 
-Emacs (foolishly) defaults to adding the =--insecure= flag. It also supports the
-(incredibly broken) SSL version 3. What are you thinking Emacs!?!
+** Emacs (foolishly) defaults to adding the =--insecure= flag.
+It also supports the (incredibly broken) SSL version 3. What are you thinking Emacs!?!
 
 Here I set it back to a *sane* value:
 
@@ -437,42 +500,7 @@ Here I set it back to a *sane* value:
         "openssl s_client -connect %h:%p -no_ssl2 -no_ssl3 -ign_eof"))
 #+END_SRC
 
-Desktop Save Mode[fn:18:
-http://www.gnu.org/software/emacs/manual/html_node/elisp/Desktop-Save-Mode.html]
-is the session management system for Emacs; it holds state of open buffers and
-session variables across instantiation of Emacs, which is super useful in mobile
-setups like laptops which reboot a lot. To make startup sane, I'm choosing to
-eagerly restore the 10 most recently used buffers on startup, and then in Idle
-the system will restore the remaining buffers.
-
-I've recently disabled this, because I enjoy starting clean when I restart
-Emacs, so it's nice to have the option if desired..
-
-Desktop+ will automatically save the desktop when Emacs exits
-
-#+BEGIN_src emacs-lisp
-  ;; (desktop-save-mode 1)
-  ;; load all values eagerly
-  (setq desktop-restore-eager 10)
-  ;; Don't save TRAMP, ftp, or "KILL" buffers
-  (setq desktop-files-not-to-save "\\(^/[^/:]*:\\|(ftp)$\\|KILL\\)")
-  ;; Don't restore different frames, only restore the one frame
-  (setq desktop-restore-frames nil)
-
-  (use-package desktop+
-    :ensure t
-    :disabled t
-    :init
-    (defun deos/load-default-desktop ()
-      "Load the default EOS desktop, assuming one has been saved
-  with the name `default'."
-      (interactive)
-      (desktop+-load "default")
-      (message "Loaded \"default\" desktop."))
-
-    (add-hook 'after-init-hook #'deos/load-default-desktop))
-#+END_SRC
-
+** Persistent scratch buffer
 By default, my machine drops me in to a =*scratch*= buffer. Originally designed
 to be an lisp playground that you could dive right in to on start up, it's sort
 of eclipsed that for me in to a general purpose buffer, where I will put things
@@ -500,82 +528,13 @@ on Emacs startup.
 (add-hook 'kill-emacs-hook 'save-persistent-scratch)
 #+END_SRC
 
-I restart emacs a lot, and it is nice to have the history of things like =M-x=
-saved across those sessions. =savehist= mode gives us that.
-
-#+begin_src emacs-lisp
-(require 'savehist)
-(setq savehist-file (concat user-emacs-directory "savehist"))
-(savehist-mode 1)
-(setq savehist-save-minibuffer-history 1)
-(setq savehist-additional-variables
-      '(kill-ring
-        search-ring
-        regexp-search-ring))
-(setq-default save-place t)
-#+end_src
-
-Toggle line wrapping with =C-x C-l=
+** Toggle line wrapping with =C-x C-l=
 
 #+begin_src emacs-lisp
 (global-set-key (kbd "C-x C-l") #'toggle-truncate-lines)
 #+end_src
 
-Set up keeping track of recent files, up to 2000 of them.
-
-If emacs has been idle for 10 minutes, clean up the recent files. Also save the
-list of recent files every 5 minutes.
-
-#+BEGIN_SRC emacs-lisp
-(setq recentf-max-saved-items 300
-      recentf-exclude '("/auto-install/" ".recentf" "/repos/" "/elpa/"
-                        "\\.mime-example" "\\.ido.last" "COMMIT_EDITMSG"
-                        ".gz" "~$" "/tmp/" "/ssh:" "/sudo:" "/scp:")
-      recentf-auto-cleanup 600)
-
-;; Enable when running interactively
-(when (not noninteractive) (recentf-mode 1))
-
-(defun recentf-save-list ()
-  "Save the recent list.
-Load the list from the file specified by `recentf-save-file',
-merge the changes of your current session, and save it back to
-the file."
-  (interactive)
-  (let ((instance-list (cl-copy-list recentf-list)))
-    (recentf-load-list)
-    (recentf-merge-with-default-list instance-list)
-    (recentf-write-list-to-file)))
-
-(defun recentf-merge-with-default-list (other-list)
-  "Add all items from `other-list' to `recentf-list'."
-  (dolist (oitem other-list)
-    ;; add-to-list already checks for equal'ity
-    (add-to-list 'recentf-list oitem)))
-
-(defun recentf-write-list-to-file ()
-  "Write the recent files list to file.
-Uses `recentf-list' as the list and `recentf-save-file' as the
-file to write to."
-  (condition-case error
-      (with-temp-buffer
-        (erase-buffer)
-        (set-buffer-file-coding-system recentf-save-file-coding-system)
-        (insert (format recentf-save-file-header (current-time-string)))
-        (recentf-dump-variable 'recentf-list recentf-max-saved-items)
-        (recentf-dump-variable 'recentf-filter-changer-current)
-        (insert "\n \n;;; Local Variables:\n"
-                (format ";;; coding: %s\n" recentf-save-file-coding-system)
-                ";;; End:\n")
-        (write-file (expand-file-name recentf-save-file))
-        (when recentf-save-file-modes
-          (set-file-modes recentf-save-file recentf-save-file-modes))
-        nil)
-    (error
-     (warn "recentf mode: %s" (error-message-string error)))))
-#+END_SRC
-
-Change the clipboard settings to better integrate into Linux:
+** Change the clipboard settings to better integrate into Linux:
 
 #+BEGIN_SRC emacs-lisp
 (setq x-select-enable-clipboard t)
@@ -583,46 +542,20 @@ Change the clipboard settings to better integrate into Linux:
 (setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
 #+END_SRC
 
-All restoring window placement with Emacs' built-in =winner-mode=
+** All restoring window placement with Emacs' built-in =winner-mode=
 
 #+BEGIN_SRC emacs-lisp
 (add-hook 'after-init-hook #'winner-mode)
 #+END_SRC
 
-Save whatever's in the current (system) clipboard before replacing it with the
-Emacs' text.
+** Save whatever's in the current (system) clipboard before replacing it with the Emacs' text.
 
 #+BEGIN_SRC emacs-lisp
 (setq save-interprogram-paste-before-kill t)
 #+END_SRC
 
-Settings for what to do with temporary files. I like to put them all in
-=~/.emacs_backups= if it exists, which puts them in a single place instead of
-littering everywhere.
 
-#+BEGIN_SRC emacs-lisp
-;; delete-auto-save-files
-(setq delete-auto-save-files t)
-;; Create the directory for backups if it doesn't exist
-(when (not (file-exists-p "~/.emacs_backups"))
-  (make-directory "~/.emacs_backups"))
-
-(setq-default backup-directory-alist
-              '((".*" . "~/.emacs_backups")))
-(setq auto-save-file-name-transforms
-      '((".*" "~/.emacs_backups/" t)))
-
-;; delete old backups silently
-(setq delete-old-versions t)
-#+END_SRC
-
-Before saving a buffer, cleans up whitespace only for the lines that I have
-touched. I used to have:
-
-: (add-hook 'before-save-hook #'delete-trailing-whitespace)
-
-But this ends up deleting a looot of whitespace in my work codebase ಠ_ಠ, so now
-I use [[https://github.com/lewang/ws-butler/][ws-butler]].
+** Clean up whitespace
 
 #+BEGIN_SRC emacs-lisp
 (use-package ws-butler
@@ -634,87 +567,14 @@ I use [[https://github.com/lewang/ws-butler/][ws-butler]].
   (add-hook 'text-mode-hook #'ws-butler-mode))
 #+END_SRC
 
-On the other hand, auto-indenting can be really handy.
+** On the other hand, auto-indenting can be really handy.
 
 #+BEGIN_SRC emacs-lisp
 (use-package auto-indent-mode
   :ensure t)
 #+END_SRC
 
-Let's configure some popup rules, so buffers don't take over the whole workspace
-when they are popped up. I do this with Popwin
-
-#+BEGIN_SRC emacs-lisp
-(use-package popwin
-  :ensure t
-  :commands popwin-mode
-  :init (popwin-mode 1)
-  :config
-  (progn
-    (defvar popwin:special-display-config-backup popwin:special-display-config)
-    (setq display-buffer-function 'popwin:display-buffer
-          popwin:popup-window-height 20)
-
-    ;; remove compilation-mode from popwin, I want a full window
-    (setq popwin:special-display-config
-          (remove '(compilation-mode :noselect t) popwin:special-display-config))
-
-    ;; basic
-    (push '("*Help*" :stick t) popwin:special-display-config)
-    (push '("*Pp Eval Output*" :stick t) popwin:special-display-config)
-
-    ;; dictionaly
-    (push '("*dict*" :stick t) popwin:special-display-config)
-    (push '("*sdic*" :stick t) popwin:special-display-config)
-
-    ;; popwin for slime
-    (push '(slime-repl-mode :stick t) popwin:special-display-config)
-
-    ;; man
-    (push '(Man-mode :stick t :height 20) popwin:special-display-config)
-
-    ;; Elisp
-    (push '("*ielm*" :stick t) popwin:special-display-config)
-    (push '("*eshell pop*" :stick t) popwin:special-display-config)
-
-    ;; python
-    (push '("*Python*"   :stick t) popwin:special-display-config)
-    (push '("*Python Help*" :stick t :height 20) popwin:special-display-config)
-    (push '("*jedi:doc*" :stick t :noselect t) popwin:special-display-config)
-
-    ;; Haskell
-    (push '("*haskell*" :stick t) popwin:special-display-config)
-    (push '("*GHC Info*") popwin:special-display-config)
-
-    ;; git-gutter
-    (push '("*git-gutter:diff*" :width 0.5 :stick t)
-          popwin:special-display-config)
-
-    (push '("*Occur*" :stick t) popwin:special-display-config)
-
-    ;; org-mode
-    (push '("*Org tags*" :stick t :height 30)
-          popwin:special-display-config)
-
-    ;; Completions
-    (push '("*Completions*" :stick t :noselect t) popwin:special-display-config)
-
-    ;; ggtags
-    (push '("*ggtags-global*" :stick t :noselect t :height 30) popwin:special-display-config)
-
-    ;; async shell commands
-    (push '("*Async Shell Command*" :stick t) popwin:special-display-config)
-
-    (push '(" *undo-tree*" :width 0.3 :position right) popwin:special-display-config)
-
-    (global-set-key (kbd "C-h e") 'popwin:messages)))
-#+END_SRC
-
-
-
-
-Usually =M-SPC= is bound to ~just-one-space~, but [[https://github.com/jcpetkovich/shrink-whitespace.el][shrink-whitespace]] is actually
-a better alternative because it can shrink space between lines.
+** Usually =M-SPC= is bound to ~just-one-space~, but [[https://github.com/jcpetkovich/shrink-whitespace.el][shrink-whitespace]] is actually a better alternative because it can shrink space between lines.
 
 Thanks to
 http://pragmaticemacs.com/emacs/delete-blank-lines-and-shrink-whitespace/ for
@@ -726,13 +586,14 @@ the link to this package.
   :bind ("M-SPC" . shrink-whitespace))
 #+END_SRC
 
-Extended bookmarks, which I've started used for dired buffers and so on. I
-always have a bookmark for my Downloads folder as well as some TRAMP bookmarks
+
+** Extended bookmarks, which I've started used for dired buffers and so on.
+I always have a bookmark for my Downloads folder as well as some TRAMP bookmarks
 for my webserver, in case I want to manually copy things around.
 
 #+BEGIN_SRC emacs-lisp
   (use-package bookmark+
-    :disabled t
+    :disabled f
     :ensure t
     :defer 10
     :init (setq bmkp-replace-EWW-keys-flag t)
@@ -742,7 +603,7 @@ for my webserver, in case I want to manually copy things around.
           bookmark-save-flag 1))
 #+END_SRC
 
-Anzu shows the number of search hits in the modeline, which is handy.
+** Anzu shows the number of search hits in the modeline, which is handy.
 
 It can also be used for a "refactor-like" thing similar to query-replace.
 
@@ -763,7 +624,7 @@ It can also be used for a "refactor-like" thing similar to query-replace.
 (add-hook 'org-mode-hook #'anzu-mode)
 #+END_SRC
 
-Also, add a thing for yanking the entire symbol into the query while searching:
+** Also, add a thing for yanking the entire symbol into the query while searching:
 
 #+BEGIN_SRC emacs-lisp
 (defun isearch-yank-symbol ()
@@ -771,6 +632,79 @@ Also, add a thing for yanking the entire symbol into the query while searching:
   (isearch-yank-internal (lambda () (forward-symbol 1) (point))))
 
 (define-key isearch-mode-map (kbd "C-M-w") #'isearch-yank-symbol)
+#+END_SRC
+
+** Desktops and sessions
+#+BEGIN_SRC emacs-lisp :tangle yes
+;; save a list of open files in ~/.emacs.d/.emacs.desktop
+(setq desktop-path (list user-emacs-directory)
+      desktop-auto-save-timeout 600)
+(desktop-save-mode 1)
+
+(defun sanityinc/desktop-time-restore (orig &rest args)
+  (let ((start-time (current-time)))
+    (prog1
+        (apply orig args)
+      (message "Desktop restored in %.2fms"
+               (sanityinc/time-subtract-millis (current-time)
+                                               start-time)))))
+(advice-add 'desktop-read :around 'sanityinc/desktop-time-restore)
+
+(defun sanityinc/desktop-time-buffer-create (orig ver filename &rest args)
+  (let ((start-time (current-time)))
+    (prog1
+        (apply orig ver filename args)
+      (message "Desktop: %.2fms to restore %s"
+               (sanityinc/time-subtract-millis (current-time)
+                                               start-time)
+               (when filename
+                 (abbreviate-file-name filename))))))
+(advice-add 'desktop-create-buffer :around 'sanityinc/desktop-time-buffer-create)
+#+END_SRC
+
+** Histories
+Restore histories and registers after saving
+#+BEGIN_SRC emacs-lisp :tangle yes
+
+(setq-default history-length 1000)
+(add-hook 'after-init-hook 'savehist-mode)
+
+(use-package session
+  :ensure t)
+
+(setq session-save-file (expand-file-name ".session" user-emacs-directory))
+(setq session-name-disable-regexp "\\(?:\\`'/tmp\\|\\.git/[A-Z_]+\\'\\)")
+(setq session-save-file-coding-system 'utf-8)
+
+(add-hook 'after-init-hook 'session-initialize)
+
+;; save a bunch of variables to the desktop file
+;; for lists specify the len of the maximal saved data also
+(setq desktop-globals-to-save
+      '((comint-input-ring        . 50)
+        (compile-history          . 30)
+        desktop-missing-file-warning
+        (dired-regexp-history     . 20)
+        (extended-command-history . 30)
+        (face-name-history        . 20)
+        (file-name-history        . 100)
+        (grep-find-history        . 30)
+        (grep-history             . 30)
+        (ivy-history              . 100)
+        (magit-revision-history   . 50)
+        (minibuffer-history       . 50)
+        (org-clock-history        . 50)
+        (org-refile-history       . 50)
+        (org-tags-history         . 50)
+        (query-replace-history    . 60)
+        (read-expression-history  . 60)
+        (regexp-history           . 60)
+        (regexp-search-ring       . 20)
+        register-alist
+        (search-ring              . 20)
+        (shell-command-history    . 50)
+        tags-file-name
+        tags-table-list))
 #+END_SRC
 
 ** Avy mode
@@ -1309,10 +1243,6 @@ When using Homebrew, install it using \"brew install trash\"."
                   nil 0 nil
                   file)))
 #+END_SRC
-
-Sometimes I use the OSX =emacs-mac= port:
-https://github.com/railwaycat/emacs-mac-port , which has a whole other set of
-issues, so this is special handling of it...
 
 #+BEGIN_SRC emacs-lisp
 (when *is-a-mac*
