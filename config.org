@@ -70,12 +70,6 @@ makefile to make installing convenient
     ;; Set to t to debug package loading or nil to disable
     (setq use-package-verbose nil)
 
-    (defvar after-deos-hook nil
-      "Hooks to run after all of the DEOS has been loaded")
-
-    (defvar emacs-start-time (current-time)
-      "Time Emacs was started.")
-
     (add-to-list 'load-path "~/.emacs.d/site-lisp/")
 #+END_SRC
 
@@ -162,7 +156,36 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
 (setq user-full-name "Daniel Newman"
       user-mail-address "dwnewman78@gmail.com")
 #+END_SRC
+** Some defaults
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package diminish
+  :ensure t
+  :init (diminish 'auto-fill-function ""))
 
+(setq-default
+ blink-cursor-interval 0.4
+ bookmark-default-file (expand-file-name ".bookmarks.el" user-emacs-directory)
+ buffers-menu-max-size 30
+ case-fold-search t
+ ediff-split-window-function 'split-window-horizontally
+ ediff-window-setup-function 'ediff-setup-windows-plain
+ indent-tabs-mode nil
+ create-lockfiles nil
+ auto-save-default nil
+ make-backup-files nil
+ mouse-yank-at-point t
+ scroll-preserve-screen-position 'always
+ set-mark-command-repeat-pop t
+ tooltip-delay 1.5
+ truncate-lines nil
+ truncate-partial-width-windows nil)
+
+(add-hook 'after-init-hook 'global-auto-revert-mode)
+(setq global-auto-revert-non-file-buffers t
+      auto-revert-verbose nil)
+(with-eval-after-load 'autorevert
+  (diminish 'auto-revert-mode))
+#+END_SRC
 ** UTF-8 all the way!
 #+begin_src emacs-lisp
 (defun sanityinc/locale-var-encoding (v)
@@ -265,12 +288,8 @@ Wait a bit longer than the default (0.5 seconds) before assuming Emacs is idle
   (menu-bar-mode -1))
 (when (functionp 'set-scroll-bar-mode)
   (set-scroll-bar-mode 'nil))
-(when (functionp 'tooltip-mode)
-  (tooltip-mode -1))
 (when (functionp 'tool-bar-mode)
   (tool-bar-mode -1))
-(when (functionp 'blink-cursor-mode)
-  (blink-cursor-mode -1))
 #+END_SRC
 
 ** Beep bop boop I am a robot no more. Don't show the startup message, I know Emacs is starting.
@@ -341,7 +360,6 @@ Wait a bit longer than the default (0.5 seconds) before assuming Emacs is idle
 #+BEGIN_SRC emacs-lisp
 (setq-default fill-column 80)
 (setq-default default-tab-width 2)
-(setq-default indent-tabs-mode nil)
 #+END_SRC
 
 ** Fix some weird color escape sequences
@@ -423,9 +441,6 @@ Wait a bit longer than the default (0.5 seconds) before assuming Emacs is idle
 #+BEGIN_SRC emacs-lisp
 (add-hook 'text-mode-hook 'turn-on-auto-fill)
 
-(use-package diminish
-  :ensure t
-  :init (diminish 'auto-fill-function ""))
 #+END_SRC
 
 ** Set the internal calculator not to go to scientific form quite so quickly:
@@ -1423,27 +1438,62 @@ but they also have a bit of downsides...
 #+END_SRC
 * Appearance
 ** Theme
-
-I vant to suck your blood
-#+BEGIN_SRC emacs-lisp
-(use-package dracula-theme
-  :ensure t
-  :config
-  (load-theme 'dracula t))
-#+END_SRC
-
-For kicks
-#+BEGIN_SRC emacs-lisp
-(use-package apropospriate-theme
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package color-theme-sanityinc-solarized
   :ensure t)
-#+END_SRC
+(use-package color-theme-sanityinc-tomorrow
+  :ensure t)
 
-This panda theme seems cool
-#+BEGIN_SRC emacs-lisp
-(use-package panda-theme
+;; Don't prompt to confirm theme safety. This avoids problems with
+;; first-time startup on Emacs > 26.3.
+(setq custom-safe-themes t)
+
+;; If you don't customize it, this is the theme you get.
+(setq-default custom-enabled-themes '(sanityinc-tomorrow-bright))
+
+;; Ensure that themes will be applied even if they have not been customized
+(defun reapply-themes ()
+  "Forcibly load the themes listed in `custom-enabled-themes'."
+  (dolist (theme custom-enabled-themes)
+    (unless (custom-theme-p theme)
+      (load-theme theme)))
+  (custom-set-variables `(custom-enabled-themes (quote ,custom-enabled-themes))))
+
+(add-hook 'after-init-hook 'reapply-themes)
+
+
+;;------------------------------------------------------------------------------
+;; Toggle between light and dark
+;;------------------------------------------------------------------------------
+(defun light ()
+  "Activate a light color theme."
+  (interactive)
+  (setq custom-enabled-themes '(sanityinc-tomorrow-day))
+  (reapply-themes))
+
+(defun dark ()
+  "Activate a dark color theme."
+  (interactive)
+  (setq custom-enabled-themes '(sanityinc-tomorrow-bright))
+  (reapply-themes))
+
+
+(use-package dimmer
   :ensure t
+  :init
+  (setq-default dimmer-fraction 0.15)
+  :hook (after-init-hook . dimmer-mode)
   :config
-  (load-theme 'panda t))
+  (with-eval-after-load 'dimmer
+    ;; TODO: file upstream as a PR
+    (advice-add 'frame-set-background-mode :after (lambda (&rest args) (dimmer-process-all))))
+  (with-eval-after-load 'dimmer
+    ;; Don't dim in terminal windows. Even with 256 colours it can
+    ;; lead to poor contrast.  Better would be to vary dimmer-fraction
+    ;; according to frame type.
+    (defun sanityinc/display-non-graphic-p ()
+      (not (display-graphic-p)))
+    (add-to-list 'dimmer-exclusion-predicates 'sanityinc/display-non-graphic-p)))
 #+END_SRC
 ** Fonts
 #+BEGIN_SRC emacs-lisp
@@ -1558,11 +1608,6 @@ to go back to a normal setup."
 Minimalist mode line
 #+BEGIN_SRC emacs-lisp
 (use-package feebleline
-  :ensure t)
-#+END_SRC
-*** Emoji
-#+BEGIN_SRC emacs-lisp
-(use-package emojify
   :ensure t)
 #+END_SRC
 *** Nyan Cat
@@ -6049,9 +6094,6 @@ Like opening one here, but for remote hosts
 
 ** Icons in a buffer
 #+BEGIN_SRC emacs-lisp
-(use-package all-the-icons
-  :ensure t)
-
 (use-package all-the-icons-dired
   :ensure t
   :diminish all-the-icons-dired-mode
@@ -6764,29 +6806,9 @@ Here are some utilities to facilitate text communications between carbon based l
 Run some things after everything loads
 #+BEGIN_SRC emacs-lisp :tangle yes
  ;; Hooks
-    (add-hook 'after-deos-hook
-              (lambda ()
-                (message "The Daniel Newman Emacs System has been loaded")))
+ (setq initial-scratch-message ";; ╔═╗┌─┐┬─┐┌─┐┌┬┐┌─┐┬ ┬\n;; ╚═╗│  ├┬┘├─┤ │ │  ├─┤\n;; ╚═╝└─┘┴└─┴ ┴ ┴ └─┘┴ ┴\n")
 
-    (defun deos/time-since-start ()
-      (float-time (time-subtract (current-time)
-                                 emacs-start-time)))
-
-    (add-hook 'after-deos-hook
-              `(lambda ()
-                 (let ((elapsed (deos/time-since-start)))
-                   (message "Loading %s...done (%.3fs)"
-                            ,load-file-name elapsed))) t)
-    (add-hook 'after-init-hook
-              `(lambda ()
-                 (let ((elapsed (deos/time-since-start)))
-                   (message "Loading %s...done (%.3fs) [after-init]"
-                            ,load-file-name elapsed))) t)
-    (run-hooks 'after-deos-hook)
-
-    (setq initial-scratch-message ";; ╔═╗┌─┐┬─┐┌─┐┌┬┐┌─┐┬ ┬\n;; ╚═╗│  ├┬┘├─┤ │ │  ├─┤\n;; ╚═╝└─┘┴└─┴ ┴ ┴ └─┘┴ ┴\n")
-
-    ;; turn off debugging after emacs starts
-    (setq debug-on-error nil)
-    (setq debug-on-quit nil)
+ ;; turn off debugging after emacs starts
+ (setq debug-on-error nil)
+ (setq debug-on-quit nil)
 #+END_SRC
