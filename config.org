@@ -402,8 +402,15 @@ Wait a bit longer than the default (0.5 seconds) before assuming Emacs is idle
 (column-number-mode 1)
 #+END_SRC
 
-** This allows a GUI emacs to inherit =$PATH= and other things from the shell when run. I use it for the path on OSX and JAVA_HOME everywhere else.
+** Page breaks
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package page-break-lines
+  :ensure t
+  :diminish t
+  :hook (after-init-hook . global-page-break-lines-mode))
+#+END_SRC
 
+** This allows a GUI emacs to inherit =$PATH= and other things from the shell when run. I use it for the path on OSX and JAVA_HOME everywhere else.
 #+BEGIN_SRC emacs-lisp
   (use-package exec-path-from-shell
     :ensure t
@@ -5237,30 +5244,49 @@ bindings I use more frequently:
 * Completion
 ** Company
 #+BEGIN_SRC emacs-lisp
-  (use-package company
-    :ensure t
-    :diminish
-    :bind ((:map company-mode-map ("M-/" . company-complete))
-           (:map company-active-map ("M-/" . company-other-backend)
-                                    ("C-n" . company-select-next)
-                                    ("C-p" . company-select-previous))
-           ("M-C-/" . companu-complete))
-    :config
-    (add-hook 'after-init-hook 'global-company-mode)
+(setq tab-always-indent 'complete)
+(add-to-list 'completion-styles 'initials t)
 
-    (setq company-idle-delay t)
+(use-package company
+  :ensure t
+  :diminish
+  :bind ((:map company-mode-map ("M-/" . company-complete))
+         (:map company-active-map ("M-/" . company-other-backend)
+                                  ("C-n" . company-select-next)
+                                  ("C-p" . company-select-previous)
+                                  ("C-d" . company-show-doc-buffer)
+                                  ("M-." . company-show-location))
+         ("M-C-/" . company-complete))
+  :hook (after-init-hook . global-company-mode)
+  :config
+  (setq-default company-dabbrev-other-buffers 'all
+                company-tooltip-align-annotations t)
 
     (use-package company-quickhelp
       :ensure t
-      :config
-      (add-hook 'after-init-hook 'company-quickhelp-mode))
+      :hook (after-init-hook . company-quickhelp-mode))
 
     (use-package company-anaconda
       :ensure t
       :config
       (add-to-list 'company-backends 'company-anaconda)))
+;; Suspend page-break-lines-mode while company menu is active
+;; (see https://github.com/company-mode/company-mode/issues/416)
+(with-eval-after-load 'company
+  (with-eval-after-load 'page-break-lines
+    (defvar-local sanityinc/page-break-lines-on-p nil)
 
-(setq company-dabbrev-downcase nil)
+    (defun sanityinc/page-break-lines-disable (&rest ignore)
+      (when (setq sanityinc/page-break-lines-on-p (bound-and-true-p page-break-lines-mode))
+        (page-break-lines-mode -1)))
+
+    (defun sanityinc/page-break-lines-maybe-reenable (&rest ignore)
+      (when sanityinc/page-break-lines-on-p
+        (page-break-lines-mode 1)))
+
+    (add-hook 'company-completion-started-hook 'sanityinc/page-break-lines-disable)
+    (add-hook 'company-after-completion-hook 'sanityinc/page-break-lines-maybe-reenable)))
+
 #+END_SRC
 ** Yasnippets
 #+BEGIN_SRC emacs-lisp
@@ -6739,6 +6765,9 @@ NOTE: You have to install it globally with "npm install -g js-beautify"
 (use-package ansible-vault :ensure t)
 #+END_SRC
 ** Lisp
+:PROPERTIES:
+:ID:       6b3a1c39-a853-45c7-9b77-c9a8a3851511
+:END:
 Fire up your proton packs it's time to get slimed
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package slime
