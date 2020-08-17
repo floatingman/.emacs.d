@@ -6179,78 +6179,118 @@ Like opening one here, but for remote hosts
 ** Magit
 The be all, end all mode for all things git
 #+BEGIN_SRC emacs-lisp
-    (use-package magit
-    :ensure t
-    :bind (("C-x g" . magit-status) ("C-x M-g" . magit-dispatch))
-    :config
-    (setq git-commit-summary-max-length 70)
-    (setenv "GIT_PAGER" "")
-    (defun sanityinc/magit-or-vc-log-file (&optional prompt)
-      (interactive "P")
-      (if (and (buffer-file-name)
-               (eq 'Git (vc-backend (buffer-file-name))))
-          (if prompt
-              (magit-log-buffer-file-popup)
-            (magit-log-buffer-file t))
-        (vc-print-log)))
-    (with-eval-after-load 'vc
-      (define-key vc-prefix-map (kbd "l") 'sanityinc/magit-or-vc-log-file))
-      (defun deos/magit-browse ()
-      "Browse to the project's github URL, if available"
-      (interactive)
-      (let ((url (with-temp-buffer
-                            (unless (zerop (call-process-shell-command
-                                            "git remote -v" nil t))
-                              (error "Failed: 'git remote -v'"))
-                            (goto-char (point-min))
-                            (when (re-search-forward
-                                   "github\\.com[:/]\\(.+?\\)\\.git" nil t)
-                              (format "https://github.com/%s" (match-string 1))))))
-        (unless url
-          (error "Can't find repository URL"))
-        (browse-url url)))
+(use-package magit
+  :ensure t
+  :bind (("C-x g" . magit-status)
+         ("C-x M-g" . magit-dispatch))
+  :config
+  (setq-default magit-diff-refine-hunk t)
+  (defun sanityinc/magit-or-vc-log-file (&optional prompt)
+    (interactive "P")
+    (if (and (buffer-file-name)
+             (eq 'Git (vc-backend (buffer-file-name))))
+        (if prompt
+            (magit-log-buffer-file-popup)
+          (magit-log-buffer-file t))
+      (vc-print-log)))
 
-  (define-key magit-mode-map (kbd "C-c C-b") #'deos/magit-browse)
-  ;; Magit has its own binding, so re-bind them
-  (bind-key "M-1" #'deos/create-or-switch-to-eshell-1 magit-mode-map)
-  (bind-key "M-2" #'deos/create-or-switch-to-eshell-2 magit-mode-map)
-  (bind-key "M-3" #'deos/create-or-switch-to-eshell-3 magit-mode-map)
-  (bind-key "M-4" #'deos/create-or-switch-to-eshell-4 magit-mode-map)
+  (with-eval-after-load 'vc
+    (define-key vc-prefix-map (kbd "l") 'sanityinc/magit-or-vc-log-file))
 
   (with-eval-after-load 'magit
     (define-key magit-status-mode-map (kbd "C-M-<up>") 'magit-section-up))
 
-  ;; Allow gpg signing merge commits
-  (magit-define-popup-option 'magit-merge-popup
-                             ?S "Sign using gpg" "--gpg-sign="
-                             #'magit-read-gpg-secret-key)
-
-  (use-package magit-popup
-    :ensure t))
-#+END_SRC
-** Various Git helpers
-#+BEGIN_SRC emacs-lisp
-  (use-package git-blamed
-    :ensure t)
-
-  (use-package gitignore-mode
-    :ensure t)
-
-  (use-package gitconfig-mode
-    :ensure t)
-
-  (use-package git-timemachine
-    :ensure t
-    :bind (("C-x v t" . git-timemachine-toggle))
-    )
-
   (use-package magit-todos
     :ensure t)
 
-  (use-package git-commit
+  (use-package fullframe
     :ensure t
     :config
-    (add-hook 'git-commit-mode-hook 'goto-address-mode))
+    (with-eval-after-load 'magit
+      (fullframe magit-status magit-mode-quit-window)))
+
+  (when *is-a-mac*
+    (with-eval-after-load 'magit
+      (add-hook 'magit-mode-hook (lambda () (local-unset-key [(meta h)])))))
+
+  (with-eval-after-load 'vc
+    (define-key vc-prefix-map (kbd "f") 'vc-git-grep))
+
+  (with-eval-after-load 'compile
+    (dolist (defn (list '(git-svn-updated "^\t[A-Z]\t\\(.*\\)$" 1 nil nil 0 1)
+                        '(git-svn-needs-update "^\\(.*\\): needs update$" 1 nil nil 2 1)))
+      (add-to-list 'compilation-error-regexp-alist-alist defn)
+      (add-to-list 'compilation-error-regexp-alist (car defn))))
+
+  (defvar git-svn--avialable-commands nil "Cached list of git svn subcommands")
+  (defun git-svn--available-commands ()
+    (or git-svn--available-commands
+        (setq git-svn--available-commands
+              (sanityinc/string-all-matches
+               "^  \\([a-z\\-]+\\) +"
+               (shell-command-to-string "git svn help") 1))))
+  (autoload 'vc-git-root "vc-git")
+
+  (defun git-svn (dir command)
+    "Run a git svn subcommand in DIR."
+    (interactive (list (read-directory-name "Directory: ")
+                       (completing-read "git-svn command: " (git-svn--available-commands) nil t nil nil (git-svn--available-commands))))
+    (let* ((default-directory (vc-git-root dir))
+           (compilation-buffer-name-function (lambda (major-mode-name) "*git-svn*")))
+      (compile (concat "git svn " command))))
+  )
+#+END_SRC
+** Various Git helpers
+#+BEGIN_SRC emacs-lisp
+(use-package git-blamed
+  :ensure t)
+
+(use-package gitignore-mode
+  :ensure t)
+
+(use-package gitconfig-mode
+  :ensure t)
+
+(use-package git-timemachine
+  :ensure t
+  :bind (("C-x v t" . git-timemachine-toggle))
+  )
+(use-package git-commit
+  :ensure t
+  :hook (git-commit-mode-hook . goto-address-mode))
+#+END_SRC
+** Github
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package yagist
+  :ensure t)
+(use-package bug-reference-github
+  :ensure t
+  :hook (prog-mode-hook . bug-reference-prog-mode))
+
+(use-package github-clone
+  :ensure t)
+
+(use-package forge
+  :ensure t)
+
+(use-package github-review
+  :ensure t)
+#+END_SRC
+* VC
+#+BEGIN_SRC emacs-lisp :tangle yes
+
+(use-package diff-hl
+  :ensure t
+  :hook ((magit-post-refresh-hook . diff-hl-magit-post-refresh)
+         (after-init-hook . global-diff-hl-mode))
+  :config
+  (with-eval-after-load 'diff-hl
+    (define-key diff-hl-mode-map
+      (kbd "<left-fringe> <mouse-1>")
+      'diff-hl-diff-goto-hunk)))
+
+(use-package browse-at-remote
+  :ensure t)
 #+END_SRC
 * Programming Modes
 ** Python
