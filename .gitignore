@@ -48,3 +48,4 @@ transient/
 .emacs.desktop
 /.emacs.desktop.lock
 /forge-database.sqlite
+/.bookmarks.el
