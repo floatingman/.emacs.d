@@ -17,60 +17,60 @@ I am going to attempt to arrange my code in modules and provide a
 makefile to make installing convenient
 
 #+BEGIN_SRC emacs-lisp
-    ;; turn on emacs debugging when starting, turn it off later
-    (setq debug-on-error t)
-    (setq debug-on-quit t)
+;; turn on emacs debugging when starting, turn it off later
+(setq debug-on-error t)
+(setq debug-on-quit t)
 
-    (require 'cl)
+(require 'cl)
 
-    (require 'package)
-    (package-initialize)
+(require 'package)
+(package-initialize)
 
-    ;; orgmode.org unfortunately does not support https
-    (add-to-list 'package-archives
-                 '("org" . "http://orgmode.org/elpa/") t)
-    (add-to-list 'package-archives
-                 '("gnu" . "https://elpa.gnu.org/packages/") t)
-    (add-to-list 'package-archives
-                 '("melpa-stable" . "https://stable.melpa.org/packages/") t)
-    (add-to-list 'package-archives
-                 '("melpa" . "https://melpa.org/packages/") t)
+;; orgmode.org unfortunately does not support https
+(add-to-list 'package-archives
+             '("org" . "http://orgmode.org/elpa/") t)
+(add-to-list 'package-archives
+             '("gnu" . "https://elpa.gnu.org/packages/") t)
+(add-to-list 'package-archives
+             '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+(add-to-list 'package-archives
+             '("melpa" . "https://melpa.org/packages/") t)
 
-    (setq custom-file "~/personal/custom.el")
-    (when (file-exists-p custom-file)
-      (load custom-file))
+(setq custom-file "~/personal/custom.el")
+(when (file-exists-p custom-file)
+  (load custom-file))
 
-    (defvar deos/did-refresh-packages nil
-      "Flag for whether packages have been refreshed yet")
+(defvar deos/did-refresh-packages nil
+  "Flag for whether packages have been refreshed yet")
 
-    (defun install-pkgs (list)
-      (dolist (pkg list)
-        (progn
-          (if (not (package-installed-p pkg))
-              (progn
-                (if (not deos/did-refresh-packages)
-                    (progn (package-refresh-contents)
-                           (setq deos/did-refresh-packages t)))
-                (package-install pkg))))))
+(defun install-pkgs (list)
+  (dolist (pkg list)
+    (progn
+      (if (not (package-installed-p pkg))
+          (progn
+            (if (not deos/did-refresh-packages)
+                (progn (package-refresh-contents)
+                       (setq deos/did-refresh-packages t)))
+            (package-install pkg))))))
 
-  ;;Pin some of the packages that go wonky if I use the bleeding edge.
+;;Pin some of the packages that go wonky if I use the bleeding edge.
 
-  (when (boundp 'package-pinned-packages)
-    (setq package-pinned-packages
-          '((org-plus-contrib                  . "org")
-            (cider                             . "melpa-stable")
-            (ac-cider                          . "melpa-stable")
-            (clojure-mode                      . "melpa-stable")
-            (clojure-mode-extra-font-locking   . "melpa-stable")
-            (company-cider                     . "melpa-stable"))))
+(when (boundp 'package-pinned-packages)
+  (setq package-pinned-packages
+        '((org-plus-contrib                  . "org")
+          (cider                             . "melpa-stable")
+          (ac-cider                          . "melpa-stable")
+          (clojure-mode                      . "melpa-stable")
+          (clojure-mode-extra-font-locking   . "melpa-stable")
+          (company-cider                     . "melpa-stable"))))
 
-    (install-pkgs '(use-package))
-    ;; Load use-package, used for loading packages everywhere else
-    (require 'use-package nil t)
-    ;; Set to t to debug package loading or nil to disable
-    (setq use-package-verbose nil)
+(install-pkgs '(use-package))
+;; Load use-package, used for loading packages everywhere else
+(require 'use-package nil t)
+;; Set to t to debug package loading or nil to disable
+(setq use-package-verbose nil)
 
-    (add-to-list 'load-path "~/.emacs.d/site-lisp/")
+(add-to-list 'load-path "~/.emacs.d/site-lisp/")
 
 (define-obsolete-function-alias 'after-load 'with-eval-after-load "")
 
@@ -944,9 +944,7 @@ install mupdf= on osx)
 (defun deos/turn-on-viewing-mode ()
   "Turn on the viewing mode, to make looking through logs easier"
   (interactive)
-  (view-mode 1)
-  (when (fboundp 'deos/turn-on-hl-line)
-    (deos/turn-on-hl-line)))
+  (view-mode 1))
 #+END_SRC
 
 I also use the 'pdf-tools' package, which is *really* nice for viewing PDF
@@ -997,7 +995,6 @@ kill them and all that, when I do, I want it to auto-update
 #+BEGIN_SRC emacs-lisp
 (setq-default proced-auto-update-flag t)
 (setq-default proced-auto-update-interval 5)
-(add-hook 'proced-mode-hook 'deos/turn-on-hl-line)
 #+END_SRC
 
 I don't really need bi-directional display, so let's speed up long lines
@@ -1069,7 +1066,6 @@ _D_: debug-on-quit              _-_: monitor jack out
 _f_: fixed/variable width mode  _0_: monitor reset
 _F_: auto-fill-mode             _R_: code reading mode
 _l_: toggle-truncate-lines
-_h_: hl-line-mode
 _r_: read-only-mode
 _v_: viewing-mode
 _n_: narrow-or-widen-dwim
@@ -1083,8 +1079,6 @@ _q_: quit
   ("F" auto-fill-mode :exit t)
   ("l" toggle-truncate-lines :exit t)
   ("r" read-only-mode :exit t)
-  ;; This gets turned on/off unconditionally (not the deos/turn-on-hl-line-mode)
-  ("h" hl-line-mode :exit t)
   ("v" deos/turn-on-viewing-mode :exit t)
   ("n" deos/narrow-or-widen-dwim :exit t)
   ("+" deos/monitor-jack-in :exit t)
@@ -1185,7 +1179,7 @@ And finally, the main EOS Hydra for entry:
   [_p_] Proced           [_W_] Weather   [(] Macros
   [_c_] Multi-compile    [_R_] RSS       [`] Errors
   [_d_] Downloads        [_D_] Debbugs   [_C_] ES-CC
-  [_b_] Project's Eshell [_S_] Smerge    [_B_] Bookmarks
+  [_b_] Project's Eshell                 [_B_] Bookmarks
   [_q_] quit
 "
 
@@ -1207,7 +1201,6 @@ And finally, the main EOS Hydra for entry:
   ("E" (when (y-or-n-p "Really start ERC?") (start-erc)) :exit t)
   ("R" elfeed :exit t)
   ("s" deos/hydra-skeleton/body :exit t)
-  ("S" deos/hydra-smerge/body :exit t)
   ("p" proced :exit t)
   ("W" wttrin :exit t)
   ("q" nil :exit t))
@@ -1499,7 +1492,6 @@ but they also have a bit of downsides...
   (add-to-list 'so-long-minor-modes 'electric-layout-mode)
   (add-to-list 'so-long-minor-modes 'idle-highlight-mode)
   (add-to-list 'so-long-minor-modes 'show-paren-mode)
-  (add-to-list 'so-long-minor-modes 'git-gutter-mode)
   (so-long-enable)
 
   (defun deos/so-long-hook () "Used in `so-long-hook'.")
@@ -1675,20 +1667,6 @@ to go back to a normal setup."
   (when (not minimap-mode)
     (minimap-mode 1)))
 #+END_SRC
-** Highlighting
-#+BEGIN_SRC emacs-lisp
-(setq deos/hl-line-enabled t)
-(defun deos/turn-on-hl-line ()
-  (interactive)
-  (when deos/hl-line-enabled
-    (hl-line-mode 1)))
-
-(defun deos/turn-off-hl-line ()
-  (interactive)
-  (hl-line-mode -1))
-
-(add-hook 'prog-mode-hook #'deos/turn-on-hl-line)
-#+END_SRC
 ** Mode line
 *** Powerline mode
 #+BEGIN_SRC emacs-lisp
@@ -1858,7 +1836,6 @@ For those who are a little less evil
 
 (defhydra deos/nav-mode (:foreign-keys run)
   "[NAV-MODE] q or i to exit"
-  ("C-h" hl-line-mode)
   ("t" toggle-truncate-lines)
   ("a" beginning-of-line)
   ("l" forward-char)
@@ -1930,38 +1907,35 @@ Turn on some defaults
 Global bindings
 
 #+BEGIN_SRC emacs-lisp
-        (global-set-key (kbd "C-c l") 'org-store-link)
-        (global-set-key (kbd "C-c a") 'org-agenda)
-        (when (fboundp 'org-iswitchb)
-          (global-set-key (kbd "C-c b") 'org-iswitchb))
-        (when (fboundp 'org-switchb)
-          (global-set-key (kbd "C-c b") 'org-switchb))
-        (global-set-key (kbd "C-c b") 'org-iswitchb)
-        (global-set-key (kbd "C-c c") 'org-capture)
+(global-set-key (kbd "C-c l") 'org-store-link)
+(global-set-key (kbd "C-c a") 'org-agenda)
+(when (fboundp 'org-iswitchb)
+  (global-set-key (kbd "C-c b") 'org-iswitchb))
+(when (fboundp 'org-switchb)
+  (global-set-key (kbd "C-c b") 'org-switchb))
+(global-set-key (kbd "C-c b") 'org-iswitchb)
+(global-set-key (kbd "C-c c") 'org-capture)
+(add-hook 'org-mode-hook #'deos/org-mode-hook)
+(when (boundp 'org-export-backends)
+  (custom-set-variables '(org-export-backends '(ascii beamer html latex md))))
+;; Allow's electric-pair-mode to surround things with = and ~ in org-mode
+(modify-syntax-entry ?~ "(~" org-mode-syntax-table)
+(modify-syntax-entry ?= "(=" org-mode-syntax-table)
 
-        (add-hook 'org-mode-hook #'hl-line-mode)
-        (add-hook 'org-agenda-mode-hook #'hl-line-mode)
-        (add-hook 'org-mode-hook #'deos/org-mode-hook)
-        (when (boundp 'org-export-backends)
-          (custom-set-variables '(org-export-backends '(ascii beamer html latex md))))
-        ;; Allow's electric-pair-mode to surround things with = and ~ in org-mode
-        (modify-syntax-entry ?~ "(~" org-mode-syntax-table)
-        (modify-syntax-entry ?= "(=" org-mode-syntax-table)
+(setq org-directory (file-truename "~/personal/org"))
 
-        (setq org-directory (file-truename "~/personal/org"))
-
-        (when (file-exists-p "~/personal/org")
-          (setq org-agenda-files `(,(file-truename "~/personal/org/refile.org")
-                                   ,(file-truename "~/personal/org/todo.org")
-                                   ,(file-truename "~/personal/org/digitalreasoning.org")
-                                   ,(file-truename "~/personal/org/learning.org")
-                                   ,(file-truename "~/personal/org/gratitude.org")
-                                   ,(file-truename "~/personal/org/notes.org")
-                                   ,(file-truename "~/personal/org/bibliography.org")
-                                   ,(file-truename "~/personal/org/journal.org")
-                                   ,(file-truename "~/personal/org/emacs.org")
-                                   ,(file-truename "~/personal/org/gcal.org")
-                                   ,(file-truename "~/personal/org/workgcal.org"))))
+(when (file-exists-p "~/personal/org")
+  (setq org-agenda-files `(,(file-truename "~/personal/org/refile.org")
+                           ,(file-truename "~/personal/org/todo.org")
+                           ,(file-truename "~/personal/org/digitalreasoning.org")
+                           ,(file-truename "~/personal/org/learning.org")
+                           ,(file-truename "~/personal/org/gratitude.org")
+                           ,(file-truename "~/personal/org/notes.org")
+                           ,(file-truename "~/personal/org/bibliography.org")
+                           ,(file-truename "~/personal/org/journal.org")
+                           ,(file-truename "~/personal/org/emacs.org")
+                           ,(file-truename "~/personal/org/gcal.org")
+                           ,(file-truename "~/personal/org/workgcal.org"))))
 
 #+END_SRC
 
@@ -4722,6 +4696,45 @@ Follow these steps https://github.com/myuhe/org-gcal.el/blob/master/README.org
   :config
   (require 'calfw-gcal))
 #+END_SRC
+** Better writing modes
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package writeroom-mode
+  :ensure t)
+(define-minor-mode prose-mode
+  "Set up a buffer for prose editing.
+This enables or modifies a number of settings so that the
+experience of editing prose is a little more like that of a
+typical word proecessor."
+  nil " Prose" nil
+  (if prose-mode
+      (progn
+        (when (fboundp 'writeroom-mode)
+          (writeroom-mode 1))
+        (setq truncate-lines nil)
+        (setq word-wrap t)
+        (setq cursor-type 'bar)
+        (when (eq major-mode 'org)
+          (kill-local-variable 'buffer-face-mode-face))
+        (buffer-face-mode 1)
+        (setq-local blink-cursor-interval 0.6)
+        (setq-local show-trailing-whitespace nil)
+        (setq-local line-spacing 0.2)
+        (setq-local electric-pair-mode nil)
+        (ignore-errors (flyspell-mode 1))
+        (visual-line-mode 1))
+    (kill-local-variable 'truncate-lines)
+    (kill-local-variable 'word-wrap)
+    (kill-local-variable 'cursor-type)
+    (kill-local-variable 'blink-cursor-interval)
+    (kill-local-variable 'show-trailing-whitespace)
+    (kill-local-variable 'line-spacing)
+    (kill-local-variable 'electric-pair-mode)
+    (buffer-face-mode -1)
+    (flyspell-mode -1)
+    (visual-line-mode -1)
+    (when (fboundp 'writeroom-mode)
+      (writeroom-mode 0))))
+#+END_SRC
 * Command completion
 ** Ivy
 #+BEGIN_SRC emacs-lisp :tangle no
@@ -4771,7 +4784,7 @@ Follow these steps https://github.com/myuhe/org-gcal.el/blob/master/README.org
     (global-set-key (kbd "M-x") 'smex)
     (global-set-key (kbd "M-X") 'smex-major-mode-commands)
     (global-set-key (kbd "C-c C-c M-x") 'execute-extended-command)))
-  #+END_SRC
+#+END_SRC
 ** HELM
 There are many helm things. I use it a lot.
 
@@ -4933,8 +4946,7 @@ bindings I use more frequently:
     :config (setq helm-ff-file-compressed-list '("gz" "bz2" "zip" "tgz" "xz" "txz")))
   (use-package helm-buffers
     :config
-    (add-to-list 'helm-boring-buffer-regexp-list "^TAGS$")
-    (add-to-list 'helm-boring-buffer-regexp-list "git-gutter:diff"))
+    (add-to-list 'helm-boring-buffer-regexp-list "^TAGS$"))
   (use-package helm-mode
     :diminish helm-mode
     :init
@@ -5240,7 +5252,7 @@ bindings I use more frequently:
     (helm-projectile-define-key helm-projectile-projects-map
       (kbd "M-m")  #'helm-projectile-multi-compile-project)))
 
-              #+END_SRC
+#+END_SRC
 * Completion
 ** Company
 #+BEGIN_SRC emacs-lisp
@@ -5503,55 +5515,24 @@ Turn off whitespace mode when exporting org documents
 #+BEGIN_SRC emacs-lisp
     (use-package flycheck
       :ensure t
-      :config
-      (add-hook 'after-init-hook 'global-flycheck-mode)
+      :hook ((after-init-hook . global-flycheck-mode))
+      :init
       (defun my/use-eslint-from-node-modules ()
-    (let* ((root (locate-dominating-file
-                  (or (buffer-file-name) default-directory)
-                  "node_modules"))
-           (eslint (and root
-                        (expand-file-name "node_modules/eslint/bin/eslint.js"
-                                          root))))
-      (when (and eslint (file-executable-p eslint))
+        (let* ((root (locate-dominating-file
+          (or (buffer-file-name) default-directory)
+            "node_modules"))
+            (eslint (and root
+              (expand-file-name "node_modules/eslint/bin/eslint.js"
+                root))))
+            (when (and eslint (file-executable-p eslint))
         (setq-local flycheck-javascript-eslint-executable eslint))))
-  (add-hook 'flycheck-mode-hook #'my/use-eslint-from-node-modules)
-(add-hook 'flycheck-mode-hook #'my/use-eslint-from-node-modules)
-      (add-to-list 'flycheck-checkers 'proselint)
-      (setq-default flycheck-highlighting-mode 'lines)
-      ;; Define fringe indicator / warning levels
-      (define-fringe-bitmap 'flycheck-fringe-bitmap-ball
-        (vector #b00000000
-                #b00000000
-                #b00000000
-                #b00000000
-                #b00000000
-                #b00000000
-                #b00000000
-                #b00011100
-                #b00111110
-                #b00111110
-                #b00111110
-                #b00011100
-                #b00000000
-                #b00000000
-                #b00000000
-                #b00000000
-                #b00000000))
-      (flycheck-define-error-level 'error
-        :severity 2
-        :overlay-category 'flycheck-error-overlay
-        :fringe-bitmap 'flycheck-fringe-bitmap-ball
-        :fringe-face 'flycheck-fringe-error)
-      (flycheck-define-error-level 'warning
-        :severity 1
-        :overlay-category 'flycheck-warning-overlay
-        :fringe-bitmap 'flycheck-fringe-bitmap-ball
-        :fringe-face 'flycheck-fringe-warning)
-      (flycheck-define-error-level 'info
-        :severity 0
-        :overlay-category 'flycheck-info-overlay
-        :fringe-bitmap 'flycheck-fringe-bitmap-ball
-        :fringe-face 'flycheck-fringe-info))
+       :config
+       (add-hook 'flycheck-mode-hook #'my/use-eslint-from-node-modules)
+       (add-to-list 'flycheck-checkers 'proselint)
+       (setq flycheck-display-errors-function #'flycheck-display-error-messages-unless-error-list)
+       (use-package flycheck-color-mode-line
+         :ensure t)
+         :hook (flycheck-mode-hook . flycheck-color-mode-line-mode))
 #+END_SRC
 ** Proselint
 Proselint is a cool flycheck checker for the English language, which helps me
@@ -5687,6 +5668,12 @@ For jumping dumbly
   :config
   (editorconfig-mode 1))
 #+END_SRC
+** Highlight escape sequences
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package highlight-escape-sequences
+  :ensure t
+  :hook (after-init-hook . hes-mode))
+#+END_SRC
 * Shell
 Things for running shells inside of emacs
 
@@ -5777,9 +5764,6 @@ First, a function to be called when eshell-mode is entered
   (interactive)
   ;; turn off semantic-mode in eshell buffers
   (semantic-mode -1)
-  ;; turn off hl-line-mode
-  (when (fboundp 'deos/turn-off-hl-line)
-    (deos/turn-off-hl-line))
   (local-set-key (kbd "M-P") 'eshell-previous-prompt)
   (local-set-key (kbd "M-N") 'eshell-next-prompt)
   (local-set-key (kbd "M-R") 'eshell-previous-matching-input))
@@ -6144,7 +6128,6 @@ Like opening one here, but for remote hosts
       (define-key dired-mode-map (kbd "C-x C-q") #'wdired-change-to-wdired-mode)
       (bind-key "l" #'dired-up-directory dired-mode-map)
       (bind-key "M-!" #'async-shell-command dired-mode-map)
-      (add-hook 'dired-mode-hook 'deos/turn-on-hl-line)
       (add-hook 'dired-mode-hook #'deos/dired-mode-hook))
 #+END_SRC
 
@@ -6199,7 +6182,6 @@ The be all, end all mode for all things git
     (use-package magit
     :ensure t
     :bind (("C-x g" . magit-status) ("C-x M-g" . magit-dispatch))
-    :init (add-hook 'magit-mode-hook 'deos/turn-on-hl-line)
     :config
     (setq git-commit-summary-max-length 70)
     (setenv "GIT_PAGER" "")
@@ -6246,39 +6228,6 @@ The be all, end all mode for all things git
   (use-package magit-popup
     :ensure t))
 #+END_SRC
-** Git Fringe
-This helps visualize version changes in a file
-#+BEGIN_SRC emacs-lisp
-(use-package git-gutter
-  :ensure t
-  :when window-system
-  :defer t
-  :bind (("C-x P" . git-gutter:popup-hunk)
-         ("C-x p" . git-gutter:previous-hunk)
-         ("C-x n" . git-gutter:next-hunk)
-         ("C-c G" . git-gutter:popup-hunk))
-  :diminish ""
-  :init
-  (add-hook 'prog-mode-hook #'git-gutter-mode)
-  (add-hook 'text-mode-hook #'git-gutter-mode)
-  :config
-  (use-package git-gutter-fringe
-    :ensure t
-    :init
-    (require 'git-gutter-fringe)
-    (when (fboundp 'define-fringe-bitmap)
-      (define-fringe-bitmap 'git-gutter-fr:added
-        [224 224 224 224 224 224 224 224 224 224 224 224 224
-             224 224 224 224 224 224 224 224 224 224 224 224]
-        nil nil 'center)
-      (define-fringe-bitmap 'git-gutter-fr:modified
-        [224 224 224 224 224 224 224 224 224 224 224 224 224
-             224 224 224 224 224 224 224 224 224 224 224 224]
-        nil nil 'center)
-      (define-fringe-bitmap 'git-gutter-fr:deleted
-        [0 0 0 0 0 0 0 0 0 0 0 0 0 128 192 224 240 248]
-        nil nil 'center))))
-#+END_SRC
 ** Various Git helpers
 #+BEGIN_SRC emacs-lisp
   (use-package git-blamed
@@ -6302,52 +6251,6 @@ This helps visualize version changes in a file
     :ensure t
     :config
     (add-hook 'git-commit-mode-hook 'goto-address-mode))
-
-  (use-package ediff
-  :init
-  (setq
-   ;; Always split nicely for wide screens
-   ediff-split-window-function 'split-window-horizontally)
-  (defun ediff-copy-both-to-C ()
-    (interactive)
-    (ediff-copy-diff
-     ediff-current-difference nil 'C nil
-     (concat
-      (ediff-get-region-contents
-       ediff-current-difference 'A ediff-control-buffer)
-      (ediff-get-region-contents
-       ediff-current-difference 'B ediff-control-buffer))))
-  (defun add-d-to-ediff-mode-map ()
-    (define-key ediff-mode-map "d" 'ediff-copy-both-to-C))
-  (add-hook 'ediff-keymap-setup-hook 'add-d-to-ediff-mode-map))
-
-  (defhydra deos/hydra-smerge
-  (:color red :hint nil
-          :pre (smerge-mode 1))
-  "
-^Move^ ^Keep^ ^Diff^ ^Pair^
-------------------------------------------------------
-_n_ext _b_ase _R_efine _<_: base-mine
-_p_rev _m_ine _E_diff _=_: mine-other
-^ ^ _o_ther _C_ombine _>_: base-other
-^ ^ _a_ll _r_esolve
-_q_uit _RET_: current
-"
-  ("RET" smerge-keep-current)
-  ("C" smerge-combine-with-next)
-  ("E" smerge-ediff)
-  ("R" smerge-refine)
-  ("a" smerge-keep-all)
-  ("b" smerge-keep-base)
-  ("m" smerge-keep-mine)
-  ("n" smerge-next)
-  ("o" smerge-keep-other)
-  ("p" smerge-prev)
-  ("r" smerge-resolve)
-  ("<" smerge-diff-base-mine)
-  ("=" smerge-diff-mine-other)
-  (">" smerge-diff-base-other)
-  ("q" nil :color blue))
 #+END_SRC
 * Programming Modes
 ** Python
