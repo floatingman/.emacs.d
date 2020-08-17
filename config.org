@@ -1857,6 +1857,7 @@ For those who are a little less evil
   (define-key sanityinc/org-global-prefix-map (kbd "o") 'org-clock-out)
   (define-key global-map (kbd "C-c o") sanityinc/org-global-prefix-map)
 
+
   ;; Various preferences
   (setq org-log-done t
         org-edit-timestamp-down-means-later t
@@ -1868,6 +1869,7 @@ For those who are a little less evil
         org-export-kill-product-buffer-when-displayed t
         org-tags-column 80)
 
+
   ;; Lots of stuff from http://doc.norang.ca/org-mode.html
 
   ;; Re-align tags when window shape changes
@@ -1875,8 +1877,53 @@ For those who are a little less evil
     (add-hook 'org-agenda-mode-hook
               (lambda () (add-hook 'window-configuration-change-hook 'org-agenda-align-tags nil t))))
 
-  (setq org-support-shift-select t)
 
+  
+
+  (use-package writeroom-mode)
+
+  (define-minor-mode prose-mode
+    "Set up a buffer for prose editing.
+  This enables or modifies a number of settings so that the
+  experience of editing prose is a little more like that of a
+  typical word processor."
+    nil " Prose" nil
+    (if prose-mode
+        (progn
+          (when (fboundp 'writeroom-mode)
+            (writeroom-mode 1))
+          (setq truncate-lines nil)
+          (setq word-wrap t)
+          (setq cursor-type 'bar)
+          (when (eq major-mode 'org)
+            (kill-local-variable 'buffer-face-mode-face))
+          (buffer-face-mode 1)
+          ;;(delete-selection-mode 1)
+          (setq-local blink-cursor-interval 0.6)
+          (setq-local show-trailing-whitespace nil)
+          (setq-local line-spacing 0.2)
+          (setq-local electric-pair-mode nil)
+          (ignore-errors (flyspell-mode 1))
+          (visual-line-mode 1))
+      (kill-local-variable 'truncate-lines)
+      (kill-local-variable 'word-wrap)
+      (kill-local-variable 'cursor-type)
+      (kill-local-variable 'blink-cursor-interval)
+      (kill-local-variable 'show-trailing-whitespace)
+      (kill-local-variable 'line-spacing)
+      (kill-local-variable 'electric-pair-mode)
+      (buffer-face-mode -1)
+      ;; (delete-selection-mode -1)
+      (flyspell-mode -1)
+      (visual-line-mode -1)
+      (when (fboundp 'writeroom-mode)
+        (writeroom-mode 0))))
+
+  ;;(add-hook 'org-mode-hook 'buffer-face-mode)
+
+
+  (setq org-support-shift-select t)
+  
   ;;; Capturing
 
   (global-set-key (kbd "C-c c") 'org-capture)
@@ -1888,6 +1935,8 @@ For those who are a little less evil
            "* %? :NOTE:\n%U\n%a\n" :clock-resume t)
           ))
 
+
+  
   ;;; Refiling
 
   (setq org-refile-use-cache nil)
@@ -1907,10 +1956,10 @@ For those who are a little less evil
   (setq org-refile-target-verify-function 'sanityinc/verify-refile-target)
 
   (defun sanityinc/org-refile-anywhere (&optional goto default-buffer rfloc msg)
-  "A version of `org-refile' which allows refiling to any subtree."
-  (interactive "P")
-  (let ((org-refile-target-verify-function))
-    (org-refile goto default-buffer rfloc msg)))
+    "A version of `org-refile' which allows refiling to any subtree."
+    (interactive "P")
+    (let ((org-refile-target-verify-function))
+      (org-refile goto default-buffer rfloc msg)))
 
   (defun sanityinc/org-agenda-refile-anywhere (&optional goto rfloc no-update)
     "A version of `org-agenda-refile' which allows refiling to any subtree."
@@ -1926,6 +1975,7 @@ For those who are a little less evil
   ;; Allow refile to create parent tasks with confirmation
   (setq org-refile-allow-creating-parent-nodes 'confirm)
 
+  
   ;;; To-do settings
 
   (setq org-todo-keywords
@@ -1938,6 +1988,8 @@ For those who are a little less evil
         (quote (("NEXT" :inherit warning)
                 ("PROJECT" :inherit font-lock-string-face))))
 
+
+  
   ;;; Agenda views
 
   (setq-default org-agenda-clockreport-parameter-plist '(:link t :maxlevel 3))
@@ -2029,6 +2081,7 @@ For those who are a little less evil
 
   (add-hook 'org-agenda-mode-hook 'hl-line-mode)
 
+  
   ;;; Org clock
 
   ;; Save the running clock and all clock history when exiting Emacs, load it on startup
@@ -2048,6 +2101,8 @@ For those who are a little less evil
   (setq org-time-clocksum-format
         '(:hours "%d" :require-hours t :minutes ":%02d" :require-minutes t))
 
+
+  
   ;;; Show the clocked-in task - if any - in the header line
   (defun sanityinc/show-org-clock-in-header-line ()
     (setq-default header-line-format '((" " org-mode-line-string " "))))
@@ -2063,25 +2118,33 @@ For those who are a little less evil
     (define-key org-clock-mode-line-map [header-line mouse-2] 'org-clock-goto)
     (define-key org-clock-mode-line-map [header-line mouse-1] 'org-clock-menu))
 
+
+  
   (when (and *is-a-mac* (file-directory-p "/Applications/org-clock-statusbar.app"))
     (add-hook 'org-clock-in-hook
               (lambda () (call-process "/usr/bin/osascript" nil 0 nil "-e"
-                                  (concat "tell application \"org-clock-statusbar\" to clock in \"" org-clock-current-task "\""))))
+                                       (concat "tell application \"org-clock-statusbar\" to clock in \"" org-clock-current-task "\""))))
     (add-hook 'org-clock-out-hook
               (lambda () (call-process "/usr/bin/osascript" nil 0 nil "-e"
-                                  "tell application \"org-clock-statusbar\" to clock out"))))
+                                       "tell application \"org-clock-statusbar\" to clock out"))))
 
+
+  
   ;; TODO: warn about inconsistent items, e.g. TODO inside non-PROJECT
   ;; TODO: nested projects!
 
+
+  
   ;;; Archiving
 
   (setq org-archive-mark-done nil)
   (setq org-archive-location "%s_archive::* Archive")
 
 
-  (use-package org-pomodoro
-    :ensure t)
+
+  
+
+  (use-package org-pomodoro)
   (setq org-pomodoro-keep-killed-pomodoro-time t)
   (with-eval-after-load 'org-agenda
     (define-key org-agenda-mode-map (kbd "P") 'org-pomodoro))
@@ -2136,6 +2199,9 @@ For those who are a little less evil
        (sqlite . t))))
 #+END_SRC
 ** Deft
+:LOGBOOK:
+CLOCK: [2020-08-17 Mon 17:17]--[2020-08-17 Mon 17:18] =>  0:01
+:END:
 I use deft to take quick notes and search through those notes
 
 #+BEGIN_SRC emacs-lisp
@@ -2148,45 +2214,6 @@ I use deft to take quick notes and search through those notes
         deft-recursive t
         deft-use-filter-string-for-filename t
         deft-text-mode 'org-mode))
-#+END_SRC
-** Better writing modes
-#+BEGIN_SRC emacs-lisp :tangle yes
-(use-package writeroom-mode
-  :ensure t)
-(define-minor-mode prose-mode
-  "Set up a buffer for prose editing.
-This enables or modifies a number of settings so that the
-experience of editing prose is a little more like that of a
-typical word proecessor."
-  nil " Prose" nil
-  (if prose-mode
-      (progn
-        (when (fboundp 'writeroom-mode)
-          (writeroom-mode 1))
-        (setq truncate-lines nil)
-        (setq word-wrap t)
-        (setq cursor-type 'bar)
-        (when (eq major-mode 'org)
-          (kill-local-variable 'buffer-face-mode-face))
-        (buffer-face-mode 1)
-        (setq-local blink-cursor-interval 0.6)
-        (setq-local show-trailing-whitespace nil)
-        (setq-local line-spacing 0.2)
-        (setq-local electric-pair-mode nil)
-        (ignore-errors (flyspell-mode 1))
-        (visual-line-mode 1))
-    (kill-local-variable 'truncate-lines)
-    (kill-local-variable 'word-wrap)
-    (kill-local-variable 'cursor-type)
-    (kill-local-variable 'blink-cursor-interval)
-    (kill-local-variable 'show-trailing-whitespace)
-    (kill-local-variable 'line-spacing)
-    (kill-local-variable 'electric-pair-mode)
-    (buffer-face-mode -1)
-    (flyspell-mode -1)
-    (visual-line-mode -1)
-    (when (fboundp 'writeroom-mode)
-      (writeroom-mode 0))))
 #+END_SRC
 * Command completion
 ** Ivy
