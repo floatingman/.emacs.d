@@ -407,7 +407,7 @@ Wait a bit longer than the default (0.5 seconds) before assuming Emacs is idle
 (use-package page-break-lines
   :ensure t
   :diminish t
-  :hook (after-init-hook . global-page-break-lines-mode))
+  :hook (after-init . global-page-break-lines-mode))
 #+END_SRC
 
 ** This allows a GUI emacs to inherit =$PATH= and other things from the shell when run. I use it for the path on OSX and JAVA_HOME everywhere else.
@@ -578,7 +578,7 @@ Wait a bit longer than the default (0.5 seconds) before assuming Emacs is idle
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package immortal-scratch
   :ensure t
-  :hook (after-init-hook . immortal-scratch-mode))
+  :hook (after-init . immortal-scratch-mode))
 #+END_SRC
 ** Start a server if not running, but a only for gui-only:
 
@@ -1362,69 +1362,12 @@ to get up and running with.
 ;; Standard location of personal dictionary
 (setq ispell-personal-dictionary "~/.flydict")
 
-;; Mostly taken from
-;; http://blog.binchen.org/posts/what-s-the-best-spell-check-set-up-in-emacs.html
-(when (executable-find "aspell")
-  (setq ispell-program-name (executable-find "aspell"))
-  (setq ispell-extra-args
-        (list "--sug-mode=fast" ;; ultra|fast|normal|bad-spellers
-              "--lang=en_US"
-              "--ignore=4")))
-
-;; hunspell
-(when (executable-find "hunspell")
-  (setq ispell-program-name (executable-find "hunspell"))
-  (setq ispell-extra-args '("-d en_US"
-                            "-p ~/.flydict")))
-
-(add-to-list 'ispell-skip-region-alist '("[^\000-\377]+"))
-(add-to-list 'ispell-skip-region-alist '(":\\(PROPERTIES\\|LOGBOOK\\):" . ":END:"))
-(add-to-list 'ispell-skip-region-alist '("#\\+BEGIN_SRC" . "#\\+END_SRC"))
-(add-to-list 'ispell-skip-region-alist '("#\\+BEGIN_EXAMPLE" . "#\\+END_EXAMPLE"))
-#+END_SRC
-
-In most non-programming modes, =M-.= can be used to spellcheck the word
-(otherwise it would jump to the definition)
-
-#+BEGIN_SRC emacs-lisp
-(use-package flyspell
-  :ensure t
-  :defer t
-  :diminish ""
-  :init
-  ;; So previously, I used to do this:
-  ;;(add-hook 'prog-mode-hook #'flyspell-prog-mode)
-
-  ;; start with it turned off
-  (setq deos/programming-spellcheck nil)
-
-  (use-package shut-up :ensure t)
-  (defun deos/flyspell-buffer-quietly ()
-    (interactive)
-    (when deos/programming-spellcheck
-      (save-excursion (shut-up (flyspell-buffer)))))
-
-  ;; But, the problem then is that you get spell checking as you go, instead,
-  ;; I think I'd rather have the buffer spellchecked when it's saved, and still
-  ;; be able to go through the errors
-  (defun deos/turn-on-programming-spellcheck ()
-    (interactive)
-    (flyspell-mode -1)
-    (when (not (and (boundp 'org-src-mode)
-                    org-src-mode))
-      ;; Tell the local buffer it's safe to flyspell this after save
-      (setq-local deos/programming-spellcheck t)
-      ;; Automatically becomes local
-      (setq flyspell-generic-check-word-predicate
-            #'flyspell-generic-progmode-verify)
-      ;; C-, is normally set in flyspell mode, but since we're not turning it on,
-      ;; we still need to be able to hit it, so bind it locally
-      (local-set-key (kbd "C-,") 'flyspell-goto-next-error)))
-  ;; Turned off right now, as I'm still tweaking this
-  ;;(add-hook 'after-save-hook #'deos/flyspell-buffer-quietly)
-  (add-hook 'prog-mode-hook #'deos/turn-on-programming-spellcheck)
-  :config
-  (define-key flyspell-mode-map (kbd "C-.") 'company-complete))
+(require 'ispell)
+(when (executable-find ispell-program-name)
+  (add-hook 'prog-mode-hook 'flyspell-prog-mode)
+  (with-eval-after-load 'flyspell
+    (define-key flyspell-mode-map (kbd "C-;") nil)
+    (add-to-list 'flyspell-prog-text-faces 'nxml-text-face)))
 #+END_SRC
 
 ** Multiple Emacs Perspectives with Eyebrowse
@@ -1567,7 +1510,7 @@ but they also have a bit of downsides...
   :ensure t
   :init
   (setq-default dimmer-fraction 0.15)
-  :hook (after-init-hook . dimmer-mode)
+  :hook (after-init . dimmer-mode)
   :config
   (with-eval-after-load 'dimmer
     ;; TODO: file upstream as a PR
@@ -1865,6 +1808,14 @@ For those who are a little less evil
   ("q" nil :exit t))
 
 (global-set-key (kbd "M-V") 'deos/nav-mode/body)
+#+END_SRC
+** Folding
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package origami
+  :ensure t
+  :bind (:map origami-mode-map
+              ("C-c f" . origami-recursively-toggle-node)
+              ("C-c F" . origami-toggle-all-nodes)))
 #+END_SRC
 * Org-mode
 ** Initial configuration
@@ -5269,14 +5220,14 @@ bindings I use more frequently:
                                   ("C-d" . company-show-doc-buffer)
                                   ("M-." . company-show-location))
          ("M-C-/" . company-complete))
-  :hook (after-init-hook . global-company-mode)
+  :hook (after-init . global-company-mode)
   :config
   (setq-default company-dabbrev-other-buffers 'all
                 company-tooltip-align-annotations t)
 
     (use-package company-quickhelp
       :ensure t
-      :hook (after-init-hook . company-quickhelp-mode))
+      :hook (after-init . company-quickhelp-mode))
 
     (use-package company-anaconda
       :ensure t
@@ -5311,7 +5262,7 @@ bindings I use more frequently:
     (global-set-key (kbd "M-/") 'company-yasnippet))
 #+END_SRC
 
-* Writing
+* Editing
 ** Skeleton Code
 :PROPERTIES:
 :CUSTOM_ID: skeletons
@@ -5510,12 +5461,11 @@ Turn off whitespace mode when exporting org documents
   (setq highlight-indent-guides-method 'character)
   (add-hook 'prog-mode-hook #'highlight-indent-guides-mode))
 #+END_SRC
-* Coding
 ** Flycheck
 #+BEGIN_SRC emacs-lisp
     (use-package flycheck
       :ensure t
-      :hook ((after-init-hook . global-flycheck-mode))
+      :hook (after-init . global-flycheck-mode)
       :init
       (defun my/use-eslint-from-node-modules ()
         (let* ((root (locate-dominating-file
@@ -5532,7 +5482,7 @@ Turn off whitespace mode when exporting org documents
        (setq flycheck-display-errors-function #'flycheck-display-error-messages-unless-error-list)
        (use-package flycheck-color-mode-line
          :ensure t)
-         :hook (flycheck-mode-hook . flycheck-color-mode-line-mode))
+         :hook (flycheck-mode . flycheck-color-mode-line-mode))
 #+END_SRC
 ** Proselint
 Proselint is a cool flycheck checker for the English language, which helps me
@@ -5672,7 +5622,75 @@ For jumping dumbly
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package highlight-escape-sequences
   :ensure t
-  :hook (after-init-hook . hes-mode))
+  :hook (after-init . hes-mode))
+#+END_SRC
+** Highlight symbols
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package symbol-overlay
+  :ensure t
+  :diminish t
+  :config
+  :bind (:map symbol-overlay-mode-map
+              ("M-i" . symbol-overlay-put)
+              ("M-I" . symbol-overlay-remove-all)
+              ("M-n" . symbol-overlay-jump-next)
+              ("M-p" . symbol-overlay-jump-prev)))
+#+END_SRC
+** Browse the kill ring
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package browse-kill-ring
+  :ensure t
+  :bind (("M-Y" . browse-kill-ring)
+         (:map browse-kill-ring-mode-map
+               ("C-g" . browse-kill-ring-quit)
+               ("M-n" . browse-kill-ring-forward)
+               ("M-p" . browse-kill-ring-previous)))
+  :init
+  (setq browse-kill-ring-separator "\f")
+  :config
+  (add-to-list 'page-break-lines-modes 'browse-kill-ring-mode))
+#+END_SRC
+** Show matching parenthesis
+#+BEGIN_SRC emacs-lisp :tangle yes
+(add-hook 'after-init-hook 'show-paren-mode)
+#+END_SRC
+** Cut/copy the line if no region is selected
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package whole-line-or-region
+  :ensure t
+  :diminish t
+  :hook (after-init . whole-line-or-region-global-mode))
+#+END_SRC
+** Miscellaneous
+#+BEGIN_SRC emacs-lisp :tangle yes
+(add-hook 'prog-mode-hook 'goto-address-prog-mode)
+(setq goto-address-mail-face 'link)
+
+(add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
+(add-hook 'after-save-hook 'sanityinc/set-mode-for-new-scripts)
+
+(defun sanityinc/set-mode-for-new-scripts ()
+  "Invoke `normal-mode' if this file is a script and in `fundamental-mode'."
+  (and
+   (eq major-mode 'fundamental-mode)
+   (>= (buffer-size) 2)
+   (save-restriction
+     (widen)
+     (string= "#!" (buffer-substring (point-min) (+ 2 (point-min)))))
+   (normal-mode)))
+
+(use-package info-colors
+  :ensure t
+  :hook (Info-selection . info-colors-fontify-node))
+
+(use-package regex-tool
+  :ensure t
+  :config
+  (setq-default regex-tool-backend 'perl))
+
+(with-eval-after-load 're-builder
+  ;; Support a slightly more idiomatic quit binding in re-builder
+  (define-key reb-mode-map (kbd "C-c C-k") 'reb-quit))
 #+END_SRC
 * Shell
 Things for running shells inside of emacs
@@ -6257,7 +6275,7 @@ The be all, end all mode for all things git
   )
 (use-package git-commit
   :ensure t
-  :hook (git-commit-mode-hook . goto-address-mode))
+  :hook (git-commit-mode . goto-address-mode))
 #+END_SRC
 ** Github
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -6265,7 +6283,7 @@ The be all, end all mode for all things git
   :ensure t)
 (use-package bug-reference-github
   :ensure t
-  :hook (prog-mode-hook . bug-reference-prog-mode))
+  :hook (prog-mode . bug-reference-prog-mode))
 
 (use-package github-clone
   :ensure t)
@@ -6281,8 +6299,8 @@ The be all, end all mode for all things git
 
 (use-package diff-hl
   :ensure t
-  :hook ((magit-post-refresh-hook . diff-hl-magit-post-refresh)
-         (after-init-hook . global-diff-hl-mode))
+  :hook ((magit-post-refresh . diff-hl-magit-post-refresh)
+         (after-init . global-diff-hl-mode))
   :config
   (with-eval-after-load 'diff-hl
     (define-key diff-hl-mode-map
@@ -6884,7 +6902,7 @@ Pretty print evals
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package ipretty
   :ensure t
-  :hook (after-init-hook . ipretty-mode))
+  :hook (after-init . ipretty-mode))
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -6965,8 +6983,8 @@ there is no current file, eval the current buffer."
 ;; ----------------------------------------------------------------------------
 (use-package auto-compile
   :ensure t
-  :hook ((after-init-hook . auto-compile-on-save-mode)
-         (after-init-hook . auto-compile-on-load-mode)))
+  :hook ((after-init . auto-compile-on-save-mode)
+         (after-init . auto-compile-on-load-mode)))
 
 ;; ----------------------------------------------------------------------------
 ;; Load .el if newer than corresponding .elc
@@ -7087,7 +7105,7 @@ there is no current file, eval the current buffer."
 
 (use-package highlight-quoted
   :ensure t
-  :hook (emacs-lisp-mode-hook . highlight-quoted-mode))
+  :hook (emacs-lisp-mode . highlight-quoted-mode))
 
  (use-package flycheck
    :ensure t
