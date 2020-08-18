@@ -1359,12 +1359,14 @@ and running very quickly. My personal word dictionary is at =~/.flydict=.
 While I used to use Hunspell, I've gone back to aspell because it's a bit easier
 to get up and running with.
 
-#+BEGIN_SRC emacs-lisp :tangle true
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (require 'ispell)
   ;; Standard location of personal dictionary
   (setq ispell-personal-dictionary "~/.flydict")
-  (require 'ispell)
   (when (executable-find ispell-program-name)
+    ;; Add spell-checking in comments for all programming language modes
     (add-hook 'prog-mode-hook 'flyspell-prog-mode)
+
     (with-eval-after-load 'flyspell
       (define-key flyspell-mode-map (kbd "C-;") nil)
       (add-to-list 'flyspell-prog-text-faces 'nxml-text-face)))
