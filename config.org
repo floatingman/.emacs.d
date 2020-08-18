@@ -1349,7 +1349,6 @@ I use =gpg2= everywhere, including in Emacs.
 (setq epg-gpg-program "gpg2")
 #+END_SRC
 
-
 ** Spell check and flyspell settings
 :PROPERTIES:
 :CUSTOM_ID: spellcheck
@@ -1457,6 +1456,13 @@ to get up and running with.
 
 
 (require-package 'disable-mouse)
+#+END_SRC
+** Recentf
+#+BEGIN_SRC emacs-lisp :tangle yes
+(add-hook 'after-init-hook 'recentf-mode)
+(setq-default
+ recentf-max-saved-items 1000
+ recentf-exclude `("/tmp/" "/ssh:" ,(concat package-user-dir "/.*-autoloads\\.el\\'")))
 #+END_SRC
 * Appearance
 ** Theme
