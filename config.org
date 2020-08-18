@@ -16,62 +16,107 @@ did things the way I did
 I am going to attempt to arrange my code in modules and provide a
 makefile to make installing convenient
 
-#+BEGIN_SRC emacs-lisp
-;; turn on emacs debugging when starting, turn it off later
-(setq debug-on-error t)
-(setq debug-on-quit t)
+** Check for minimum emacs version
+Don't let old fools use this
+#+BEGIN_SRC emacs-lisp :tangle yes
+;; turn on emacs debugging to diagnose errors
+;;(setq debug-on-error t)
 
-(require 'cl)
+(let ((minver "24.5"))
+  (when (version< emacs-version minver)
+    (error "Your Emacs is too old -- this config requires v%s or higher" minver)))
+(when (version< emacs-version "25.1")
+  (message "Your Emacs is old, and some functionality in this config will be disabled. Please upgrade if possible."))
+#+END_SRC
+** Benchmarking
+#+BEGIN_SRC emacs-lisp :tangle yes
+(defun sanityinc/time-subtract-millis (b a)
+  (* 1000.0 (float-time (time-subtract b a))))
 
-(require 'package)
-(package-initialize)
 
-;; orgmode.org unfortunately does not support https
-(add-to-list 'package-archives
-             '("org" . "http://orgmode.org/elpa/") t)
-(add-to-list 'package-archives
-             '("gnu" . "https://elpa.gnu.org/packages/") t)
-(add-to-list 'package-archives
-             '("melpa-stable" . "https://stable.melpa.org/packages/") t)
-(add-to-list 'package-archives
-             '("melpa" . "https://melpa.org/packages/") t)
+(defvar sanityinc/require-times nil
+  "A list of (FEATURE LOAD-START-TIME LOAD-DURATION).
+LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
 
-(setq custom-file "~/personal/custom.el")
-(when (file-exists-p custom-file)
-  (load custom-file))
+(defun sanityinc/require-times-wrapper (orig feature &rest args)
+  "Note in `sanityinc/require-times' the time taken to require each feature."
+  (let* ((already-loaded (memq feature features))
+         (require-start-time (and (not already-loaded) (current-time))))
+    (prog1
+        (apply orig feature args)
+      (when (and (not already-loaded) (memq feature features))
+        (let ((time (sanityinc/time-subtract-millis (current-time) require-start-time)))
+          (add-to-list 'sanityinc/require-times
+                       (list feature require-start-time time)
+                       t))))))
 
-(defvar deos/did-refresh-packages nil
-  "Flag for whether packages have been refreshed yet")
+(advice-add 'require :around 'sanityinc/require-times-wrapper)
 
-(defun install-pkgs (list)
-  (dolist (pkg list)
-    (progn
-      (if (not (package-installed-p pkg))
-          (progn
-            (if (not deos/did-refresh-packages)
-                (progn (package-refresh-contents)
-                       (setq deos/did-refresh-packages t)))
-            (package-install pkg))))))
+(define-derived-mode sanityinc/require-times-mode tabulated-list-mode "Require-Times"
+  "Show times taken to `require' packages."
+  (setq tabulated-list-format
+        [("Start time (ms)" 20 sanityinc/require-times-sort-by-start-time-pred)
+         ("Feature" 30 t)
+         ("Time (ms)" 12 sanityinc/require-times-sort-by-load-time-pred)])
+  (setq tabulated-list-sort-key (cons "Start time (ms)" nil))
+  ;; (setq tabulated-list-padding 2)
+  (setq tabulated-list-entries #'sanityinc/require-times-tabulated-list-entries)
+  (tabulated-list-init-header)
+  (when (fboundp 'tablist-minor-mode)
+    (tablist-minor-mode)))
 
-;;Pin some of the packages that go wonky if I use the bleeding edge.
+(defun sanityinc/require-times-sort-by-start-time-pred (entry1 entry2)
+  (< (string-to-number (elt (nth 1 entry1) 0))
+     (string-to-number (elt (nth 1 entry2) 0))))
 
-(when (boundp 'package-pinned-packages)
-  (setq package-pinned-packages
-        '((org-plus-contrib                  . "org")
-          (cider                             . "melpa-stable")
-          (ac-cider                          . "melpa-stable")
-          (clojure-mode                      . "melpa-stable")
-          (clojure-mode-extra-font-locking   . "melpa-stable")
-          (company-cider                     . "melpa-stable"))))
+(defun sanityinc/require-times-sort-by-load-time-pred (entry1 entry2)
+  (> (string-to-number (elt (nth 1 entry1) 2))
+     (string-to-number (elt (nth 1 entry2) 2))))
 
-(install-pkgs '(use-package))
-;; Load use-package, used for loading packages everywhere else
-(require 'use-package nil t)
-;; Set to t to debug package loading or nil to disable
-(setq use-package-verbose nil)
+(defun sanityinc/require-times-tabulated-list-entries ()
+  (cl-loop for (feature start-time millis) in sanityinc/require-times
+           with order = 0
+           do (incf order)
+           collect (list order
+                         (vector
+                          (format "%.3f" (sanityinc/time-subtract-millis start-time before-init-time))
+                          (symbol-name feature)
+                          (format "%.3f" millis)))))
 
-(add-to-list 'load-path "~/.emacs.d/site-lisp/")
+(defun sanityinc/require-times ()
+  "Show a tabular view of how long various libraries took to load."
+  (interactive)
+  (with-current-buffer (get-buffer-create "*Require Times*")
+    (sanityinc/require-times-mode)
+    (tabulated-list-revert)
+    (display-buffer (current-buffer))))
 
+
+
+(defun sanityinc/show-init-time ()
+  (message "init completed in %.2fms"
+           (sanityinc/time-subtract-millis after-init-time before-init-time)))
+
+(add-hook 'after-init-hook 'sanityinc/show-init-time)
+
+#+END_SRC
+** Adjust garbage collection
+#+BEGIN_SRC emacs-lisp :tangle yes
+;;----------------------------------------------------------------------------
+;; Adjust garbage collection thresholds during startup, and thereafter
+;;----------------------------------------------------------------------------
+(let ((normal-gc-cons-threshold (* 20 1024 1024))
+      (init-gc-cons-threshold (* 128 1024 1024)))
+  (setq gc-cons-threshold init-gc-cons-threshold)
+  (add-hook 'emacs-startup-hook
+            (lambda () (setq gc-cons-threshold normal-gc-cons-threshold))))
+#+END_SRC
+** Load custom file
+#+BEGIN_SRC emacs-lisp :tangle yes
+(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+#+END_SRC
+** Utils
+#+BEGIN_SRC emacs-lisp :tangle yes
 (define-obsolete-function-alias 'after-load 'with-eval-after-load "")
 
 ;;----------------------------------------------------------------------------
@@ -147,6 +192,186 @@ makefile to make installing convenient
         (error "Cannot open tramp file")
       (browse-url (concat "file://" file-name)))))
 #+END_SRC
+** Load site-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
+(eval-when-compile (require 'cl))
+(defun sanityinc/add-subdirs-to-load-path (parent-dir)
+  "Adds every non-hidden subdir of PARENT-DIR to `load-path'."
+  (let* ((default-directory parent-dir))
+    (progn
+      (setq load-path
+            (append
+             (remove-if-not
+              (lambda (dir) (file-directory-p dir))
+              (directory-files (expand-file-name parent-dir) t "^[^\\.]"))
+             load-path)))))
+
+(sanityinc/add-subdirs-to-load-path
+ (expand-file-name "site-lisp/" user-emacs-directory))
+
+;;; Utilities for grabbing upstream libs
+
+(defun site-lisp-dir-for (name)
+  (expand-file-name (format "site-lisp/%s" name) user-emacs-directory))
+
+(defun site-lisp-library-el-path (name)
+  (expand-file-name (format "%s.el" name) (site-lisp-dir-for name)))
+
+(defun download-site-lisp-module (name url)
+  (let ((dir (site-lisp-dir-for name)))
+    (message "Downloading %s from %s" name url)
+    (unless (file-directory-p dir)
+      (make-directory dir t))
+    (add-to-list 'load-path dir)
+    (let ((el-file (site-lisp-library-el-path name)))
+      (url-copy-file url el-file t nil)
+      el-file)))
+
+(defun ensure-lib-from-url (name url)
+  (unless (site-lisp-library-loadable-p name)
+    (byte-compile-file (download-site-lisp-module name url))))
+
+(defun site-lisp-library-loadable-p (name)
+  "Return whether or not the library `name' can be loaded from a
+source file under ~/.emacs.d/site-lisp/name/"
+  (let ((f (locate-library (symbol-name name))))
+    (and f (string-prefix-p (file-name-as-directory (site-lisp-dir-for name)) f))))
+#+END_SRC
+
+** Setup package manager
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (require 'package)
+  ;;; Install into separate package dirs for each Emacs version, to prevent bytecode incompatibility
+  (let ((versioned-package-dir
+         (expand-file-name (format "elpa-%s.%s" emacs-major-version emacs-minor-version)
+                           user-emacs-directory)))
+    (setq package-user-dir versioned-package-dir))
+
+
+  (add-to-list 'package-archives '( "melpa" . "https://melpa.org/packages/") t)
+  ;; Official MELPA Mirror, in case necessary.
+  ;;(add-to-list 'package-archives (cons "melpa-mirror" (concat proto "://www.mirrorservice.org/sites/melpa.org/packages/")) t)
+
+  ;; Work-around for https://debbugs.gnu.org/cgi/bugreport.cgi?bug=34341
+  (when (and (version< emacs-version "26.3") (boundp 'libgnutls-version) (>= libgnutls-version 30604))
+    (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
+
+  (require 'cl-lib)
+
+  (defun require-package (package &optional min-version no-refresh)
+    "Install given PACKAGE, optionally requiring MIN-VERSION.
+  If NO-REFRESH is non-nil, the available package lists will not be
+  re-downloaded in order to locate PACKAGE."
+    (or (package-installed-p package min-version)
+        (let* ((known (cdr (assoc package package-archive-contents)))
+               (versions (mapcar #'package-desc-version known)))
+          (if (cl-find-if (lambda (v) (version-list-<= min-version v)) versions)
+              (package-install package)
+            (if no-refresh
+                (error "No version of %s >= %S is available" package min-version)
+              (package-refresh-contents)
+              (require-package package min-version t))))))
+
+  (defun maybe-require-package (package &optional min-version no-refresh)
+    "Try to install PACKAGE, and return non-nil if successful.
+  In the event of failure, return nil and print a warning message.
+  Optionally require MIN-VERSION.  If NO-REFRESH is non-nil, the
+  available package lists will not be re-downloaded in order to
+  locate PACKAGE."
+    (condition-case err
+        (require-package package min-version no-refresh)
+      (error
+       (message "Couldn't install optional package `%s': %S" package err)
+       nil)))
+
+  
+  ;;; Fire up package.el
+
+  (setq package-enable-at-startup nil)
+  (package-initialize)
+
+  (defvar deos/did-refresh-packages nil
+    "Flag for whether packages have been refreshed yet")
+
+  (defun install-pkgs (list)
+    (dolist (pkg list)
+      (progn
+        (if (not (package-installed-p pkg))
+            (progn
+              (if (not deos/did-refresh-packages)
+                  (progn (package-refresh-contents)
+                         (setq deos/did-refresh-packages t)))
+              (package-install pkg))))))
+
+  (install-pkgs '(use-package))
+  ;; Load use-package, used for loading packages everywhere else
+  (require 'use-package nil t)
+  ;; Set to t to debug package loading or nil to disable
+  (setq use-package-verbose nil)
+
+  ;; package.el updates the saved version of package-selected-packages correctly only
+  ;; after custom-file has been loaded, which is a bug. We work around this by adding
+  ;; the required packages to package-selected-packages after startup is complete.
+
+  (defvar sanityinc/required-packages nil)
+
+  (defun sanityinc/note-selected-package (oldfun package &rest args)
+    "If OLDFUN reports PACKAGE was successfully installed, note it in `sanityinc/required-packages'."
+    (let ((available (apply oldfun package args)))
+      (prog1 available
+        (when (and available (boundp 'package-selected-packages))
+          (add-to-list 'sanityinc/required-packages package)))))
+
+  (advice-add 'require-package :around 'sanityinc/note-selected-package)
+
+  (when (fboundp 'package--save-selected-packages)
+    (require-package 'seq)
+    (add-hook 'after-init-hook
+              (lambda () (package--save-selected-packages
+                     (seq-uniq (append sanityinc/required-packages package-selected-packages))))))
+
+  
+  (require-package 'fullframe)
+  (fullframe list-packages quit-window)
+
+  
+  (let ((package-check-signature nil))
+    (require-package 'gnu-elpa-keyring-update))
+
+  
+  (defun sanityinc/set-tabulated-list-column-width (col-name width)
+    "Set any column with name COL-NAME to the given WIDTH."
+    (when (> width (length col-name))
+      (cl-loop for column across tabulated-list-format
+               when (string= col-name (car column))
+               do (setf (elt column 1) width))))
+
+  (defun sanityinc/maybe-widen-package-menu-columns ()
+    "Widen some columns of the package menu table to avoid truncation."
+    (when (boundp 'tabulated-list-format)
+      (sanityinc/set-tabulated-list-column-width "Version" 13)
+      (let ((longest-archive-name (apply 'max (mapcar 'length (mapcar 'car package-archives)))))
+        (sanityinc/set-tabulated-list-column-width "Archive" longest-archive-name))))
+
+  (add-hook 'package-menu-mode-hook 'sanityinc/maybe-widen-package-menu-columns)
+#+END_SRC
+
+** Setup environment variables from shell
+#+BEGIN_SRC emacs-lisp
+  (use-package exec-path-from-shell
+    :ensure t
+    :defer t
+    :init
+    (with-eval-after-load 'exec-path-from-shell
+      (dolist (var '("SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO" "LANG" "LC_CTYPE" "NIX_SSL_CERT_FILE" "NIX_PATH"))
+        (add-to-list 'exec-path-from-shell-variables var)))
+
+
+    (when (or (memq window-system '(mac ns x))
+              (unless (memq system-type '(ms-dos windows-nt))
+                (daemonp)))
+      (exec-path-from-shell-initialize)))
+#+END_SRC
 
 * The Core
 :PROPERTIES:
@@ -154,78 +379,7 @@ makefile to make installing convenient
 :END:
 This is the place where a lot of default config is set. Most variables
 and functions should be in this file
-** Benchmarking
-#+BEGIN_SRC emacs-lisp :tangle yes
-(defun sanityinc/time-subtract-millis (b a)
-  (* 1000.0 (float-time (time-subtract b a))))
 
-
-(defvar sanityinc/require-times nil
-  "A list of (FEATURE LOAD-START-TIME LOAD-DURATION).
-LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
-
-(defun sanityinc/require-times-wrapper (orig feature &rest args)
-  "Note in `sanityinc/require-times' the time taken to require each feature."
-  (let* ((already-loaded (memq feature features))
-         (require-start-time (and (not already-loaded) (current-time))))
-    (prog1
-        (apply orig feature args)
-      (when (and (not already-loaded) (memq feature features))
-        (let ((time (sanityinc/time-subtract-millis (current-time) require-start-time)))
-          (add-to-list 'sanityinc/require-times
-                       (list feature require-start-time time)
-                       t))))))
-
-(advice-add 'require :around 'sanityinc/require-times-wrapper)
-
-(define-derived-mode sanityinc/require-times-mode tabulated-list-mode "Require-Times"
-  "Show times taken to `require' packages."
-  (setq tabulated-list-format
-        [("Start time (ms)" 20 sanityinc/require-times-sort-by-start-time-pred)
-         ("Feature" 30 t)
-         ("Time (ms)" 12 sanityinc/require-times-sort-by-load-time-pred)])
-  (setq tabulated-list-sort-key (cons "Start time (ms)" nil))
-  ;; (setq tabulated-list-padding 2)
-  (setq tabulated-list-entries #'sanityinc/require-times-tabulated-list-entries)
-  (tabulated-list-init-header)
-  (when (fboundp 'tablist-minor-mode)
-    (tablist-minor-mode)))
-
-(defun sanityinc/require-times-sort-by-start-time-pred (entry1 entry2)
-  (< (string-to-number (elt (nth 1 entry1) 0))
-     (string-to-number (elt (nth 1 entry2) 0))))
-
-(defun sanityinc/require-times-sort-by-load-time-pred (entry1 entry2)
-  (> (string-to-number (elt (nth 1 entry1) 2))
-     (string-to-number (elt (nth 1 entry2) 2))))
-
-(defun sanityinc/require-times-tabulated-list-entries ()
-  (cl-loop for (feature start-time millis) in sanityinc/require-times
-           with order = 0
-           do (incf order)
-           collect (list order
-                         (vector
-                          (format "%.3f" (sanityinc/time-subtract-millis start-time before-init-time))
-                          (symbol-name feature)
-                          (format "%.3f" millis)))))
-
-(defun sanityinc/require-times ()
-  "Show a tabular view of how long various libraries took to load."
-  (interactive)
-  (with-current-buffer (get-buffer-create "*Require Times*")
-    (sanityinc/require-times-mode)
-    (tabulated-list-revert)
-    (display-buffer (current-buffer))))
-
-
-
-(defun sanityinc/show-init-time ()
-  (message "init completed in %.2fms"
-           (sanityinc/time-subtract-millis after-init-time before-init-time)))
-
-(add-hook 'after-init-hook 'sanityinc/show-init-time)
-
-#+END_SRC
 ** It's about to get personal
 #+BEGIN_SRC emacs-lisp
 (setq user-full-name "Daniel Newman"
@@ -408,23 +562,6 @@ Wait a bit longer than the default (0.5 seconds) before assuming Emacs is idle
   :ensure t
   :diminish t
   :hook (after-init . global-page-break-lines-mode))
-#+END_SRC
-
-** This allows a GUI emacs to inherit =$PATH= and other things from the shell when run. I use it for the path on OSX and JAVA_HOME everywhere else.
-#+BEGIN_SRC emacs-lisp
-  (use-package exec-path-from-shell
-    :ensure t
-    :defer t
-    :init
-(with-eval-after-load 'exec-path-from-shell
-  (dolist (var '("SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO" "LANG" "LC_CTYPE" "NIX_SSL_CERT_FILE" "NIX_PATH"))
-    (add-to-list 'exec-path-from-shell-variables var)))
-
-
-(when (or (memq window-system '(mac ns x))
-          (unless (memq system-type '(ms-dos windows-nt))
-            (daemonp)))
-  (exec-path-from-shell-initialize)))
 #+END_SRC
 
 ** Ignore case when using completion for file names:
@@ -1878,7 +2015,8 @@ For those who are a little less evil
 
   
 
-  (use-package writeroom-mode)
+  (use-package writeroom-mode
+    :ensure t)
 
   (define-minor-mode prose-mode
     "Set up a buffer for prose editing.
@@ -2142,7 +2280,8 @@ For those who are a little less evil
 
   
 
-  (use-package org-pomodoro)
+  (use-package org-pomodoro
+    :ensure t)
   (setq org-pomodoro-keep-killed-pomodoro-time t)
   (with-eval-after-load 'org-agenda
     (define-key org-agenda-mode-map (kbd "P") 'org-pomodoro))
@@ -3747,7 +3886,4 @@ Run some things after everything loads
  ;; Hooks
  (setq initial-scratch-message ";; ╔═╗┌─┐┬─┐┌─┐┌┬┐┌─┐┬ ┬\n;; ╚═╗│  ├┬┘├─┤ │ │  ├─┤\n;; ╚═╝└─┘┴└─┴ ┴ ┴ └─┘┴ ┴\n")
 
- ;; turn off debugging after emacs starts
- (setq debug-on-error nil)
- (setq debug-on-quit nil)
 #+END_SRC

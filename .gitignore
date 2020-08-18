@@ -49,3 +49,5 @@ transient/
 /.emacs.desktop.lock
 /forge-database.sqlite
 /.bookmarks.el
+/elpa-27.1/
+/custom.el
