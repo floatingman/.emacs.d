@@ -100,6 +100,12 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
 (add-hook 'after-init-hook 'sanityinc/show-init-time)
 
 #+END_SRC
+** Setup some variables for use in other config files
+#+BEGIN_SRC emacs-lisp :tangle yes
+(defconst *is-a-mac* (eq system-type 'darwin))
+(defconst *is-linux* (eq system-type 'gnu/linux))
+(defconst *is-gui* (not (eq window-system nil)))
+#+END_SRC
 ** Adjust garbage collection
 #+BEGIN_SRC emacs-lisp :tangle yes
 ;;----------------------------------------------------------------------------
@@ -379,7 +385,12 @@ source file under ~/.emacs.d/site-lisp/name/"
 :END:
 This is the place where a lot of default config is set. Most variables
 and functions should be in this file
-
+** Load some packages
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (require-package 'diminish)
+  (maybe-require-package 'scratch)
+  (require-package 'command-log-mode)
+#+END_SRC
 ** It's about to get personal
 #+BEGIN_SRC emacs-lisp
 (setq user-full-name "Daniel Newman"
@@ -440,53 +451,6 @@ and functions should be in this file
   (set-selection-coding-system 'utf-8))
 #+end_src
 
-** Turn on syntax highlighting for all buffers:
-
-#+BEGIN_SRC emacs-lisp
-(global-font-lock-mode t)
-#+END_SRC
-
-** Raise the maximum number of logs in the =*Messages*= buffer:
-
-#+BEGIN_SRC emacs-lisp
-(setq message-log-max 16384)
-#+END_SRC
-
-** We don't really need to garbage collect as frequently as Emacs would like to by
-default, so set the threshold up higher:
-
-#+BEGIN_SRC emacs-lisp
-(setq gc-cons-threshold (* 50 1024 1024)) ;; 50 mb
-;; Allow font-lock-mode to do background parsing
-(setq jit-lock-defer-time nil
-      ;; jit-lock-stealth-nice 0.1
-      jit-lock-stealth-time 1
-      jit-lock-stealth-verbose nil)
-#+END_SRC
-
-Wait a bit longer than the default (0.5 seconds) before assuming Emacs is idle
-
-#+BEGIN_SRC emacs-lisp
-(setq idle-update-delay 2)
-#+END_SRC
-
-** Setup some variables for use in other config files
-
-#+begin_src emacs-lisp
-(defconst *spell-check-support-enabled* t) ;; Enable with t if you prefer
-(defconst *is-a-mac* (eq system-type 'darwin))
-(defconst *is-windows* (eq system-type 'windows-nt))
-(defconst *is-linux* (eq system-type 'gnu/linux))
-(defconst *is-gui* (not (eq window-system nil)))
-(defvar running-alternate-emacs nil)
-#+end_src
-
-** Make gnutls a bit safer, the default is an absurdly low 256
-
-#+BEGIN_SRC emacs-lisp
-(setq gnutls-min-prime-bits 4096)
-#+END_SRC
-
 ** When I select a region and start typing, just delete the region automatically. This ends up working great with =expand-region=
 
 #+BEGIN_SRC emacs-lisp
@@ -513,21 +477,20 @@ Wait a bit longer than the default (0.5 seconds) before assuming Emacs is idle
 #+END_SRC
 
 ** Turn off all kinds of modes, I don't need the menu bar, or the tool bar:
-
 #+BEGIN_SRC emacs-lisp
-(when (functionp 'menu-bar-mode)
-  (menu-bar-mode -1))
-(when (functionp 'set-scroll-bar-mode)
-  (set-scroll-bar-mode 'nil))
-(when (functionp 'tool-bar-mode)
+(when (fboundp 'tool-bar-mode)
   (tool-bar-mode -1))
+(when (fboundp 'set-scroll-bar-mode)
+  (set-scroll-bar-mode nil))
+
+(menu-bar-mode -1)
 #+END_SRC
 
-** Beep bop boop I am a robot no more. Don't show the startup message, I know Emacs is starting.
-
-#+BEGIN_SRC emacs-lisp
-(setq ring-bell-function (lambda ()))
-(setq inhibit-startup-screen t)
+** No borders
+#+BEGIN_SRC emacs-lisp :tangle yes
+(let ((no-border '(internal-border-width . 0)))
+  (add-to-list 'default-frame-alist no-border)
+  (add-to-list 'initial-frame-alist no-border))
 #+END_SRC
 
 ** Display line numbers
@@ -762,27 +725,14 @@ Here I set it back to a *sane* value:
 (global-set-key (kbd "C-x C-l") #'toggle-truncate-lines)
 #+end_src
 
-** Change the clipboard settings to better integrate into Linux:
-
-#+BEGIN_SRC emacs-lisp
-(setq x-select-enable-clipboard t)
-;; Treat clipboard input as UTF-8 string first; compound text next, etc.
-(setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
-#+END_SRC
-
 ** All restoring window placement with Emacs' built-in =winner-mode=
-
 #+BEGIN_SRC emacs-lisp
 (add-hook 'after-init-hook #'winner-mode)
 #+END_SRC
-
 ** Save whatever's in the current (system) clipboard before replacing it with the Emacs' text.
-
 #+BEGIN_SRC emacs-lisp
 (setq save-interprogram-paste-before-kill t)
 #+END_SRC
-
-
 ** Clean up whitespace
 
 #+BEGIN_SRC emacs-lisp
@@ -813,7 +763,6 @@ the link to this package.
   :ensure t
   :bind ("M-SPC" . shrink-whitespace))
 #+END_SRC
-
 
 ** Extended bookmarks, which I've started used for dired buffers and so on.
 I always have a bookmark for my Downloads folder as well as some TRAMP bookmarks
@@ -1400,88 +1349,6 @@ I use =gpg2= everywhere, including in Emacs.
 (setq epg-gpg-program "gpg2")
 #+END_SRC
 
-** OS-specific settings
-:PROPERTIES:
-:CUSTOM_ID: os-specific-settings
-:END:
-
-*** Linux
-:PROPERTIES:
-:CUSTOM_ID: linux
-:END:
-
-#+BEGIN_SRC emacs-lisp
-(when *is-linux*
-
-  ;; Whether to use GTK tooltips or emacs ones
-  ;; (setq x-gtk-use-system-tooltips nil)
-  (setq x-gtk-use-system-tooltips t)
-
-  (setq dired-listing-switches "-lFaGh1v --group-directories-first")
-
-  ;; suspend-frame isn't working on Linux?
-  (global-unset-key (kbd "C-z"))
-  (global-unset-key (kbd "C-x C-z")))
-#+END_SRC
-
-*** Mac OSX
-:PROPERTIES:
-:CUSTOM_ID: mac-osx
-:END:
-
-#+BEGIN_SRC emacs-lisp
-(when *is-a-mac*
-  (setq ns-use-native-fullscreen nil)
-  ;; brew install coreutils
-  (if (executable-find "gls")
-      (progn
-        (setq insert-directory-program "gls")
-        (setq dired-listing-switches "-lFaGh1v --group-directories-first"))
-    (setq dired-listing-switches "-ahlF"))
-  (defun copy-from-osx ()
-    "Handle copy/paste intelligently on osx."
-    (let ((pbpaste (purecopy "/usr/bin/pbpaste")))
-      (if (and *is-a-mac*
-               (file-exists-p pbpaste))
-          (let ((tramp-mode nil)
-                (default-directory "~"))
-            (shell-command-to-string pbpaste)))))
-
-  (defun paste-to-osx (text &optional push)
-    (let ((process-connection-type nil))
-      (let ((proc (start-process "pbcopy" "*Messages*" "/usr/bin/pbcopy")))
-        (process-send-string proc text)
-        (process-send-eof proc))))
-  (setq interprogram-cut-function 'paste-to-osx
-        interprogram-paste-function 'copy-from-osx)
-
-  (defun move-file-to-trash (file)
-    "Use `trash' to move FILE to the system trash.
-When using Homebrew, install it using \"brew install trash\"."
-    (call-process (executable-find "trash")
-                  nil 0 nil
-                  file)))
-#+END_SRC
-
-#+BEGIN_SRC emacs-lisp
-(when *is-a-mac*
-  (setq mac-command-modifier 'meta)
-  (setq mac-option-modifier 'none)
-  ;; Make mouse wheel / trackpad scrolling less jerky
-  (setq mouse-wheel-scroll-amount '(1
-                                    ((shift) . 5)
-                                    ((control))))
-  (dolist (multiple '("" "double-" "triple-"))
-    (dolist (direction '("right" "left"))
-      (global-set-key (read-kbd-macro (concat "<" multiple "wheel-" direction ">")) 'ignore)))
-  (global-set-key (kbd "M-`") 'ns-next-frame)
-  (global-set-key (kbd "M-h") 'ns-do-hide-emacs)
-  (global-set-key (kbd "M-.") 'ns-do-hide-others)
-  (with-eval-after-load 'nxml-mode
-    (define-key nxml-mode-map (kbd "M-h") nil))
-  (global-set-key (kbd "M-?") 'ns-do-hide-others) ;; what describe-key reports for cmd-option-h
-  )
-#+END_SRC
 
 ** Spell check and flyspell settings
 :PROPERTIES:
@@ -1493,90 +1360,16 @@ and running very quickly. My personal word dictionary is at =~/.flydict=.
 While I used to use Hunspell, I've gone back to aspell because it's a bit easier
 to get up and running with.
 
-#+BEGIN_SRC emacs-lisp
-;; Standard location of personal dictionary
-(setq ispell-personal-dictionary "~/.flydict")
-
-(require 'ispell)
-(when (executable-find ispell-program-name)
-  (add-hook 'prog-mode-hook 'flyspell-prog-mode)
-  (with-eval-after-load 'flyspell
-    (define-key flyspell-mode-map (kbd "C-;") nil)
-    (add-to-list 'flyspell-prog-text-faces 'nxml-text-face)))
+#+BEGIN_SRC emacs-lisp :tangle true
+  ;; Standard location of personal dictionary
+  (setq ispell-personal-dictionary "~/.flydict")
+  (require 'ispell)
+  (when (executable-find ispell-program-name)
+    (add-hook 'prog-mode-hook 'flyspell-prog-mode)
+    (with-eval-after-load 'flyspell
+      (define-key flyspell-mode-map (kbd "C-;") nil)
+      (add-to-list 'flyspell-prog-text-faces 'nxml-text-face)))
 #+END_SRC
-
-** Multiple Emacs Perspectives with Eyebrowse
-:PROPERTIES:
-:CUSTOM_ID: eyebrowse
-:END:
-Eyebrowse is a great package for workspaces in Emacs.
-
-#+BEGIN_SRC emacs-lisp
-(use-package eyebrowse
-  :ensure t
-  :init
-  (defun deos/create-eyebrowse-setup ()
-     (interactive)
-     "Create a default window config, if none is present"
-     (when (not (eyebrowse--window-config-present-p 4))
-       ;; there's probably a better way to do this, creating four workspaces
-       (eyebrowse-switch-to-window-config-2)
-       (eyebrowse-switch-to-window-config-3)
-       (eyebrowse-switch-to-window-config-4)
-       (eyebrowse-switch-to-window-config-1)))
-     (setq eyebrowse-wrap-around t
-           eyebrowse-new-workspace t
-           eyebrowse-mode-line-separator " ")
-     (eyebrowse-mode 1)
-     (global-set-key (kbd "C-'") 'eyebrowse-next-window-config)
-     (add-hook 'after-init-hook #'deos/create-eyebrowse-setup))
-#+END_SRC
-
-** Automatically saving files
-:PROPERTIES:
-:CUSTOM_ID: h:1feb51db-6ea9-49bb-86b3-295f03c0d3fe
-:END:
-
-I've experimented a bit with the different auto-save features that Emacs has,
-=super-save=, =auto-save-mode=, and =auto-save-mode-enhanced=. They can be nice,
-but they also have a bit of downsides...
-
-#+BEGIN_SRC emacs-lisp
-(use-package auto-save-buffers-enhanced
-  :ensure t
-  :disabled t
-  :init (auto-save-buffers-enhanced t)
-  :config
-  (setq auto-save-buffers-enhanced-interval 3.0
-        ;; Don't auto-save org source popups
-        auto-save-buffers-enhanced-exclude-regexps '("Org Src")
-        ;; Save things quietly
-        auto-save-buffers-enhanced-quiet-save-p t))
-#+END_SRC
-
-** Handling excessively long lines
-:PROPERTIES:
-:CUSTOM_ID: h:d610191c-44ba-40b4-9d07-9e26d1c50395
-:END:
-
-#+BEGIN_SRC emacs-lisp
-(when (require 'so-long nil :noerror)
-  ;; 750 columns means it's too long! (default is 250)
-  (setq so-long-threshold 750)
-  (add-to-list 'so-long-minor-modes 'rainbow-delimiters-mode)
-  (add-to-list 'so-long-minor-modes 'paren-face-mode)
-  (add-to-list 'so-long-minor-modes 'electric-indent-mode)
-  (add-to-list 'so-long-minor-modes 'electric-pair-mode)
-  (add-to-list 'so-long-minor-modes 'electric-layout-mode)
-  (add-to-list 'so-long-minor-modes 'idle-highlight-mode)
-  (add-to-list 'so-long-minor-modes 'show-paren-mode)
-  (so-long-enable)
-
-  (defun deos/so-long-hook () "Used in `so-long-hook'.")
-
-  (add-hook 'so-long-hook #'deos/so-long-hook))
-#+END_SRC
-
 ** Which Key
 #+BEGIN_SRC emacs-lisp
 (use-package which-key
@@ -1598,6 +1391,72 @@ but they also have a bit of downsides...
   (interactive)
   (find-file "~/.emacs.d/config.org"))
 (global-set-key (kbd "C-c I") 'find-config)
+#+END_SRC
+** Stop C-z from minimizing windows under OSX
+#+BEGIN_SRC emacs-lisp :tangle yes
+(defun sanityinc/maybe-suspend-frame ()
+  (interactive)
+  (unless (and *is-a-mac* window-system)
+    (suspend-frame)))
+
+(global-set-key (kbd "C-z") 'sanityinc/maybe-suspend-frame)
+#+END_SRC
+** Suppress GUI features
+#+BEGIN_SRC emacs-lisp :tangle yes
+(setq use-file-dialog nil)
+(setq use-dialog-box nil)
+(setq inhibit-startup-screen t)
+#+END_SRC
+** Basic gui functions
+#+BEGIN_SRC emacs-lisp :tangle yes
+(defun sanityinc/adjust-opacity (frame incr)
+  "Adjust the background opacity of FRAME by increment INCR."
+  (unless (display-graphic-p frame)
+    (error "Cannot adjust opacity of this frame"))
+  (let* ((oldalpha (or (frame-parameter frame 'alpha) 100))
+         ;; The 'alpha frame param became a pair at some point in
+         ;; emacs 24.x, e.g. (100 100)
+         (oldalpha (if (listp oldalpha) (car oldalpha) oldalpha))
+         (newalpha (+ incr oldalpha)))
+    (when (and (<= frame-alpha-lower-limit newalpha) (>= 100 newalpha))
+      (modify-frame-parameters frame (list (cons 'alpha newalpha))))))
+
+(when (and *is-a-mac* (fboundp 'toggle-frame-fullscreen))
+  ;; Command-Option-f to toggle fullscreen mode
+  ;; Hint: Customize `ns-use-native-fullscreen'
+  (global-set-key (kbd "M-ƒ") 'toggle-frame-fullscreen))
+
+;; TODO: use seethru package instead?
+(global-set-key (kbd "M-C-8") (lambda () (interactive) (sanityinc/adjust-opacity nil -2)))
+(global-set-key (kbd "M-C-9") (lambda () (interactive) (sanityinc/adjust-opacity nil 2)))
+(global-set-key (kbd "M-C-7") (lambda () (interactive) (modify-frame-parameters nil `((alpha . 100)))))
+
+
+(when *is-a-mac*
+  (when (maybe-require-package 'ns-auto-titlebar)
+    (ns-auto-titlebar-mode)))
+
+
+(setq frame-title-format
+      '((:eval (if (buffer-file-name)
+                   (abbreviate-file-name (buffer-file-name))
+                 "%b"))))
+
+;; Non-zero values for `line-spacing' can mess up ansi-term and co,
+;; so we zero it explicitly in those cases.
+(add-hook 'term-mode-hook
+          (lambda ()
+            (setq line-spacing 0)))
+
+
+;; Change global font size easily
+
+(require-package 'default-text-scale)
+(add-hook 'after-init-hook 'default-text-scale-mode)
+
+
+
+(require-package 'disable-mouse)
 #+END_SRC
 * Appearance
 ** Theme
@@ -3618,15 +3477,6 @@ let's try all of the major ones
 (setq deos/use-eclim nil)
 (setq deos/use-lsp nil)
 #+END_SRC
-
-*** What style?
-#+BEGIN_SRC emacs-lisp
-(customize-set-variable 'c-default-style
-                        '((java-mode . "google-c-style")
-                          (awk-mode . "awk")
-                          (other . "google-c-style")))
-#+END_SRC
-
 *** Setup java mode
 #+BEGIN_SRC emacs-lisp
 (use-package shut-up :ensure t)
@@ -3883,7 +3733,38 @@ Here are some utilities to facilitate text communications between carbon based l
 * Hooks
 Run some things after everything loads
 #+BEGIN_SRC emacs-lisp :tangle yes
- ;; Hooks
- (setq initial-scratch-message ";; ╔═╗┌─┐┬─┐┌─┐┌┬┐┌─┐┬ ┬\n;; ╚═╗│  ├┬┘├─┤ │ │  ├─┤\n;; ╚═╝└─┘┴└─┴ ┴ ┴ └─┘┴ ┴\n")
+   ;; Hooks
+   (setq initial-scratch-message ";; ╔═╗┌─┐┬─┐┌─┐┌┬┐┌─┐┬ ┬\n;; ╚═╗│  ├┬┘├─┤ │ │  ├─┤\n;; ╚═╝└─┘┴└─┴ ┴ ┴ └─┘┴ ┴\n")
+  (require-package 'sudo-edit)
+  (require-package 'gnuplot)
+  (require-package 'lua-mode)
+  (require-package 'htmlize)
+  (when *is-a-mac*
+    (require-package 'osx-location))
+  (unless (eq system-type 'windows-nt)
+    (maybe-require-package 'daemons))
+  (maybe-require-package 'dotenv-mode)
+  (maybe-require-package 'shfmt)
 
+  (when (maybe-require-package 'uptimes)
+    (setq-default uptimes-keep-count 200)
+    (add-hook 'after-init-hook (lambda () (require 'uptimes))))
+
+  (when (fboundp 'global-eldoc-mode)
+    (add-hook 'after-init-hook 'global-eldoc-mode))
+
+;;----------------------------------------------------------------------------
+;; Allow access from emacsclient
+;;----------------------------------------------------------------------------
+(add-hook 'after-init-hook
+          (lambda ()
+            (require 'server)
+            (unless (server-running-p)
+              (server-start))))
+
+;;----------------------------------------------------------------------------
+;; Variables configured via the interactive 'customize' interface
+;;----------------------------------------------------------------------------
+(when (file-exists-p custom-file)
+  (load custom-file))
 #+END_SRC
