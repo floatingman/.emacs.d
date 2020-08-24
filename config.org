@@ -1015,7 +1015,7 @@ Restore histories and registers after saving
 Automagically resizes the windows to be the golden ratio (1.618), nice when
 using a big font size and I need more eshell space
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle no
 (use-package golden-ratio
   :straight t
   :diminish golden-ratio-mode
@@ -1556,17 +1556,26 @@ to get up and running with.
 * Appearance
 ** Theme
 #+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package color-theme-sanityinc-solarized
+    :straight t
+    :defer t)
+
+  (use-package color-theme-sanityinc-tomorrow
+    :straight t
+    :defer t)
+
   (use-package zenburn-theme
     :straight t
     :defer t)
+
   ;; Don't prompt to confirm theme safety. This avoids problems with
   ;; first-time startup on Emacs > 26.3.
   (setq custom-safe-themes t)
 
   ;; If you don't customize it, this is the theme you get.
-  (setq-default custom-enabled-themes '(zenburn))
+  (setq-default custom-enabled-themes '(sanityinc-tomorrow-eighties))
 
-  ;; Straight that themes will be applied even if they have not been customized
+  ;; Make certain that themes will be applied even if they have not been customized
   (defun reapply-themes ()
     "Forcibly load the themes listed in `custom-enabled-themes'."
     (dolist (theme custom-enabled-themes)
