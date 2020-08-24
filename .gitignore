@@ -52,3 +52,5 @@ transient/
 /elpa-27.1/
 /custom.el
 /.uptimes.el
+/straight/
+/.local/

@@ -102,101 +102,265 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
 #+END_SRC
 ** Setup some variables for use in other config files
 #+BEGIN_SRC emacs-lisp :tangle yes
-(defconst *is-a-mac* (eq system-type 'darwin))
-(defconst *is-linux* (eq system-type 'gnu/linux))
-(defconst *is-gui* (not (eq window-system nil)))
+  (defconst *is-a-mac* (eq system-type 'darwin))
+  (defconst *is-linux* (eq system-type 'gnu/linux))
+  (defconst *is-gui* (display-graphic-p))
+  (defvar bootstrap-version nil
+    "Used by the straight package manager.")
+  (defconst my/emacs-dir
+    (eval-when-compile (file-truename user-emacs-directory))
+    "The path to the currently loaded .emacs.d directory. Must end with a slash.")
+  (defconst my/local-dir
+    (concat my/emacs-dir ".local/")
+    "Root directory for local storage. Must end with a slash.")
+  (defconst my/cache-dir (concat my/local-dir "cache/")
+    "Directory for volatile local storage. Must end with a slash.")
+  (defconst my/leader "SPC"
+    "Global prefix used in `general' keybindings.")
+
+  (defconst my/color-cyan "#93E0E3")
+  (defconst my/color-gray "#5F5F5F")
 #+END_SRC
-** Adjust garbage collection
+** Setup package manager
 #+BEGIN_SRC emacs-lisp :tangle yes
-;;----------------------------------------------------------------------------
-;; Adjust garbage collection thresholds during startup, and thereafter
-;;----------------------------------------------------------------------------
-(let ((normal-gc-cons-threshold (* 20 1024 1024))
-      (init-gc-cons-threshold (* 128 1024 1024)))
-  (setq gc-cons-threshold init-gc-cons-threshold)
-  (add-hook 'emacs-startup-hook
-            (lambda () (setq gc-cons-threshold normal-gc-cons-threshold))))
+  (defun my/install-package-manager ()
+    (let ((bootstrap-file
+           (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+          (bootstrap-version 5))
+      (unless (file-exists-p bootstrap-file)
+        (with-current-buffer
+            (url-retrieve-synchronously
+             "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+             'silent 'inhibit-cookies)
+          (goto-char (point-max))
+          (eval-print-last-sexp)))
+      (load bootstrap-file nil 'nomessage))
+
+    ;; Auto-install `use-package'.
+    (straight-use-package 'use-package))
+
+  ;; Install straight
+  (my/install-package-manager)
+
+
+
+  (use-package fullframe
+    :straight t)
+  (fullframe list-packages quit-window)
+
+
+  (let ((package-check-signature nil))
+    (use-package gnu-elpa-keyring-update
+      :straight t))
+
+
+  (defun sanityinc/set-tabulated-list-column-width (col-name width)
+    "Set any column with name COL-NAME to the given WIDTH."
+    (when (> width (length col-name))
+      (cl-loop for column across tabulated-list-format
+               when (string= col-name (car column))
+               do (setf (elt column 1) width))))
+
+  (defun sanityinc/maybe-widen-package-menu-columns ()
+    "Widen some columns of the package menu table to avoid truncation."
+    (when (boundp 'tabulated-list-format)
+      (sanityinc/set-tabulated-list-column-width "Version" 13)
+      (let ((longest-archive-name (apply 'max (mapcar 'length (mapcar 'car package-archives)))))
+        (sanityinc/set-tabulated-list-column-width "Archive" longest-archive-name))))
+
+  (add-hook 'package-menu-mode-hook 'sanityinc/maybe-widen-package-menu-columns)
 #+END_SRC
-** Load custom file
+
+** Basic emacs options
 #+BEGIN_SRC emacs-lisp :tangle yes
-(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+  ;; Remove top menubar
+  (menu-bar-mode -1)
+
+  ;; Remove top tool bar (only respected in GUI Emacs).
+  (tool-bar-mode -1)
+
+  ;; Remove scroll bar (only respected in GUI Emacs).
+  (toggle-scroll-bar -1)
+
+  ;; Never save backup files
+  (setq make-backup-files nil)
+
+  ;; UTF-8 as the default coding system.
+  (set-charset-priority 'unicode)
+  (prefer-coding-system 'utf-8)
+  (setq locale-coding-system 'utf-8
+        selection-coding-system 'utf-8)
+
+  ;; Smooth scrolling
+  (setq scroll-margin 2
+        scroll-conservatively 9999
+        scroll-step 1)
+
+  ;; Do not use lockfiles to avoid editing collisions.
+  (setq create-lockfiles nil)
+
+  ;; When you visit a file, point goes to the last place where it
+  ;; was when you previously visited the same file.
+  ;; Keep track of saved places in ~/.emacs.d/places
+  (save-place-mode 1)
+
+  ;; Do not automatically save changes.
+  (setq auto-save-default nil
+        auto-save-list-file-name (concat my/cache-dir "autosave"))
+
+  ;; Enable folding by indentation, just like Vim when using Evil
+  (add-hook 'prog-mode-hook #'hs-minor-mode)
+
+  ;; No cursor blinking
+  (blink-cursor-mode 0)
+
+  ;; No word-wrap
+  (set-default 'truncate-lines t)
+
+  ;; Enable winner mode so that I can undo/redo window changes.
+  (winner-mode 1)
+
+  ;; Don't stretch the cursor to fit wide charactires, it is disorienting
+  ;; especially for tabs
+  (setq x-stretch-cursor nil)
+
+  ;; Full path in title bar.
+  ;; %b -- print buffer name.
+  ;; %f -- print visited file name.
+  (setq-default frame-title-format "%b (%f)")
+
+  ;; No bell.
+  (setq ring-bell-function 'ignore)
+
+  ;; Changes all yes/no questions to y/n type.
+  (fset 'yes-or-no-p 'y-or-n-p)
+
+  ;; Highlight matching parenthesis.
+  (add-hook 'prog-mode-hook #'show-paren-mode)
+
+  ;; Don't highlight trailing whitespace
+  (setq-default show-trailing-whitespace nil)
+
+  ;; Remove trailing whitespace before saving.
+  (add-hook 'before-save-hook #'whitespace-cleanup)
+
+  ;; Enable mouse in terminal Emacs
+  (add-hook 'tty-setup-hook #'xterm-mouse-mode)
+
+  ;; Remove hscroll-margin in shells, otherwise it causes jumpiness
+  (dolist (mode '(eshell-mode-hook term-mode-hook vterm-mode-hook))
+    (add-hook mode #'my/remove-horizontal-scroll-margin-in-shells))
+
+  ;; Always avoid GUI.
+  (setq use-dialog-box nil)
+
+  ;; Split ediff windows side-by-side (similar to vimdiff)
+  (setq ediff-split-window-function #'split-window-horizontally)
+
+  ;; Follow symlinks without asking.
+  (setq vc-follow-symlinks t
+        find-file-visit-truename t)
+
+  ;; Save custom settings in the cache directory.
+  (setq custom-file (concat my/cache-dir "custom.el"))
+
+  ;; Indentation
+  (setq-default tab-width 4
+                tab-always-indent t
+                indent-tabs-mode nil
+                fill-column 80)
 #+END_SRC
 ** Utils
 #+BEGIN_SRC emacs-lisp :tangle yes
-(define-obsolete-function-alias 'after-load 'with-eval-after-load "")
+  (define-obsolete-function-alias 'after-load 'with-eval-after-load "")
 
-;;----------------------------------------------------------------------------
-;; Handier way to add modes to auto-mode-alist
-;;----------------------------------------------------------------------------
-(defun add-auto-mode (mode &rest patterns)
-  "Add entries to `auto-mode-alist' to use `MODE' for all given file `PATTERNS'."
-  (dolist (pattern patterns)
-    (add-to-list 'auto-mode-alist (cons pattern mode))))
+  ;;----------------------------------------------------------------------------
+  ;; Handier way to add modes to auto-mode-alist
+  ;;----------------------------------------------------------------------------
+  (defun add-auto-mode (mode &rest patterns)
+    "Add entries to `auto-mode-alist' to use `MODE' for all given file `PATTERNS'."
+    (dolist (pattern patterns)
+      (add-to-list 'auto-mode-alist (cons pattern mode))))
 
-;; Like diminish, but for major modes
-(defun sanityinc/set-major-mode-name (name)
-  "Override the major mode NAME in this buffer."
-  (setq-local mode-name name))
+  ;; Like diminish, but for major modes
+  (defun sanityinc/set-major-mode-name (name)
+    "Override the major mode NAME in this buffer."
+    (setq-local mode-name name))
 
-(defun sanityinc/major-mode-lighter (mode name)
-  (add-hook (derived-mode-hook-name mode)
-            (apply-partially 'sanityinc/set-major-mode-name name)))
+  (defun sanityinc/major-mode-lighter (mode name)
+    (add-hook (derived-mode-hook-name mode)
+              (apply-partially 'sanityinc/set-major-mode-name name)))
 
-;;----------------------------------------------------------------------------
-;; String utilities missing from core emacs
-;;----------------------------------------------------------------------------
-(defun sanityinc/string-all-matches (regex str &optional group)
-  "Find all matches for `REGEX' within `STR', returning the full match string or group `GROUP'."
-  (let ((result nil)
-        (pos 0)
-        (group (or group 0)))
-    (while (string-match regex str pos)
-      (push (match-string group str) result)
-      (setq pos (match-end group)))
-    result))
-
-
-;;----------------------------------------------------------------------------
-;; Delete the current file
-;;----------------------------------------------------------------------------
-(defun delete-this-file ()
-  "Delete the current file, and kill the buffer."
-  (interactive)
-  (unless (buffer-file-name)
-    (error "No file is currently being edited"))
-  (when (yes-or-no-p (format "Really delete '%s'?"
-                             (file-name-nondirectory buffer-file-name)))
-    (delete-file (buffer-file-name))
-    (kill-this-buffer)))
+  ;;----------------------------------------------------------------------------
+  ;; String utilities missing from core emacs
+  ;;----------------------------------------------------------------------------
+  (defun sanityinc/string-all-matches (regex str &optional group)
+    "Find all matches for `REGEX' within `STR', returning the full match string or group `GROUP'."
+    (let ((result nil)
+          (pos 0)
+          (group (or group 0)))
+      (while (string-match regex str pos)
+        (push (match-string group str) result)
+        (setq pos (match-end group)))
+      result))
 
 
-;;----------------------------------------------------------------------------
-;; Rename the current file
-;;----------------------------------------------------------------------------
-(defun rename-this-file-and-buffer (new-name)
-  "Renames both current buffer and file it's visiting to NEW-NAME."
-  (interactive "sNew name: ")
-  (let ((name (buffer-name))
-        (filename (buffer-file-name)))
-    (unless filename
-      (error "Buffer '%s' is not visiting a file!" name))
-    (progn
-      (when (file-exists-p filename)
-        (rename-file filename new-name 1))
-      (set-visited-file-name new-name)
-      (rename-buffer new-name))))
+  ;;----------------------------------------------------------------------------
+  ;; Delete the current file
+  ;;----------------------------------------------------------------------------
+  (defun delete-this-file ()
+    "Delete the current file, and kill the buffer."
+    (interactive)
+    (unless (buffer-file-name)
+      (error "No file is currently being edited"))
+    (when (yes-or-no-p (format "Really delete '%s'?"
+                               (file-name-nondirectory buffer-file-name)))
+      (delete-file (buffer-file-name))
+      (kill-this-buffer)))
 
-;;----------------------------------------------------------------------------
-;; Browse current HTML file
-;;----------------------------------------------------------------------------
-(defun browse-current-file ()
-  "Open the current file as a URL using `browse-url'."
-  (interactive)
-  (let ((file-name (buffer-file-name)))
-    (if (and (fboundp 'tramp-tramp-file-p)
-             (tramp-tramp-file-p file-name))
-        (error "Cannot open tramp file")
-      (browse-url (concat "file://" file-name)))))
+
+  ;;----------------------------------------------------------------------------
+  ;; Rename the current file
+  ;;----------------------------------------------------------------------------
+  (defun rename-this-file-and-buffer (new-name)
+    "Renames both current buffer and file it's visiting to NEW-NAME."
+    (interactive "sNew name: ")
+    (let ((name (buffer-name))
+          (filename (buffer-file-name)))
+      (unless filename
+        (error "Buffer '%s' is not visiting a file!" name))
+      (progn
+        (when (file-exists-p filename)
+          (rename-file filename new-name 1))
+        (set-visited-file-name new-name)
+        (rename-buffer new-name))))
+
+  ;;----------------------------------------------------------------------------
+  ;; Browse current HTML file
+  ;;----------------------------------------------------------------------------
+  (defun browse-current-file ()
+    "Open the current file as a URL using `browse-url'."
+    (interactive)
+    (let ((file-name (buffer-file-name)))
+      (if (and (fboundp 'tramp-tramp-file-p)
+               (tramp-tramp-file-p file-name))
+          (error "Cannot open tramp file")
+        (browse-url (concat "file://" file-name)))))
+  (defun my/remove-horizontal-scroll-margin-in-shells ()
+    "Remove scroll margin to prevent jumpiness in shell(s) mode."
+    (setq-local hscroll-margin 0))
+
+  (defun my/buffer-file-name ()
+    "Return the current buffer file name taking into account dired-mode."
+    (if (equal major-mode 'dired-mode)
+        default-directory
+      (buffer-file-name)))
+
+  (defun my/copy-file-absolute-name-to-clipboard ()
+    "Copy the current buffer absolute file name to the clipboard."
+    (interactive)
+    (kill-new (my/buffer-file-name)))
+
 #+END_SRC
 ** Load site-lisp
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -233,7 +397,7 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
       (url-copy-file url el-file t nil)
       el-file)))
 
-(defun ensure-lib-from-url (name url)
+(defun straight-lib-from-url (name url)
   (unless (site-lisp-library-loadable-p name)
     (byte-compile-file (download-site-lisp-module name url))))
 
@@ -244,128 +408,10 @@ source file under ~/.emacs.d/site-lisp/name/"
     (and f (string-prefix-p (file-name-as-directory (site-lisp-dir-for name)) f))))
 #+END_SRC
 
-** Setup package manager
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (require 'package)
-  ;;; Install into separate package dirs for each Emacs version, to prevent bytecode incompatibility
-  (let ((versioned-package-dir
-         (expand-file-name (format "elpa-%s.%s" emacs-major-version emacs-minor-version)
-                           user-emacs-directory)))
-    (setq package-user-dir versioned-package-dir))
-
-
-  (add-to-list 'package-archives '( "melpa" . "https://melpa.org/packages/") t)
-  ;; Official MELPA Mirror, in case necessary.
-  ;;(add-to-list 'package-archives (cons "melpa-mirror" (concat proto "://www.mirrorservice.org/sites/melpa.org/packages/")) t)
-
-  ;; Work-around for https://debbugs.gnu.org/cgi/bugreport.cgi?bug=34341
-  (when (and (version< emacs-version "26.3") (boundp 'libgnutls-version) (>= libgnutls-version 30604))
-    (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"))
-
-  (require 'cl-lib)
-
-  (defun require-package (package &optional min-version no-refresh)
-    "Install given PACKAGE, optionally requiring MIN-VERSION.
-  If NO-REFRESH is non-nil, the available package lists will not be
-  re-downloaded in order to locate PACKAGE."
-    (or (package-installed-p package min-version)
-        (let* ((known (cdr (assoc package package-archive-contents)))
-               (versions (mapcar #'package-desc-version known)))
-          (if (cl-find-if (lambda (v) (version-list-<= min-version v)) versions)
-              (package-install package)
-            (if no-refresh
-                (error "No version of %s >= %S is available" package min-version)
-              (package-refresh-contents)
-              (require-package package min-version t))))))
-
-  (defun maybe-require-package (package &optional min-version no-refresh)
-    "Try to install PACKAGE, and return non-nil if successful.
-  In the event of failure, return nil and print a warning message.
-  Optionally require MIN-VERSION.  If NO-REFRESH is non-nil, the
-  available package lists will not be re-downloaded in order to
-  locate PACKAGE."
-    (condition-case err
-        (require-package package min-version no-refresh)
-      (error
-       (message "Couldn't install optional package `%s': %S" package err)
-       nil)))
-
-  
-  ;;; Fire up package.el
-
-  (setq package-enable-at-startup nil)
-  (package-initialize)
-
-  (defvar deos/did-refresh-packages nil
-    "Flag for whether packages have been refreshed yet")
-
-  (defun install-pkgs (list)
-    (dolist (pkg list)
-      (progn
-        (if (not (package-installed-p pkg))
-            (progn
-              (if (not deos/did-refresh-packages)
-                  (progn (package-refresh-contents)
-                         (setq deos/did-refresh-packages t)))
-              (package-install pkg))))))
-
-  (install-pkgs '(use-package))
-  ;; Load use-package, used for loading packages everywhere else
-  (require 'use-package nil t)
-  ;; Set to t to debug package loading or nil to disable
-  (setq use-package-verbose nil)
-
-  ;; package.el updates the saved version of package-selected-packages correctly only
-  ;; after custom-file has been loaded, which is a bug. We work around this by adding
-  ;; the required packages to package-selected-packages after startup is complete.
-
-  (defvar sanityinc/required-packages nil)
-
-  (defun sanityinc/note-selected-package (oldfun package &rest args)
-    "If OLDFUN reports PACKAGE was successfully installed, note it in `sanityinc/required-packages'."
-    (let ((available (apply oldfun package args)))
-      (prog1 available
-        (when (and available (boundp 'package-selected-packages))
-          (add-to-list 'sanityinc/required-packages package)))))
-
-  (advice-add 'require-package :around 'sanityinc/note-selected-package)
-
-  (when (fboundp 'package--save-selected-packages)
-    (require-package 'seq)
-    (add-hook 'after-init-hook
-              (lambda () (package--save-selected-packages
-                     (seq-uniq (append sanityinc/required-packages package-selected-packages))))))
-
-  
-  (require-package 'fullframe)
-  (fullframe list-packages quit-window)
-
-  
-  (let ((package-check-signature nil))
-    (require-package 'gnu-elpa-keyring-update))
-
-  
-  (defun sanityinc/set-tabulated-list-column-width (col-name width)
-    "Set any column with name COL-NAME to the given WIDTH."
-    (when (> width (length col-name))
-      (cl-loop for column across tabulated-list-format
-               when (string= col-name (car column))
-               do (setf (elt column 1) width))))
-
-  (defun sanityinc/maybe-widen-package-menu-columns ()
-    "Widen some columns of the package menu table to avoid truncation."
-    (when (boundp 'tabulated-list-format)
-      (sanityinc/set-tabulated-list-column-width "Version" 13)
-      (let ((longest-archive-name (apply 'max (mapcar 'length (mapcar 'car package-archives)))))
-        (sanityinc/set-tabulated-list-column-width "Archive" longest-archive-name))))
-
-  (add-hook 'package-menu-mode-hook 'sanityinc/maybe-widen-package-menu-columns)
-#+END_SRC
-
 ** Setup environment variables from shell
 #+BEGIN_SRC emacs-lisp
   (use-package exec-path-from-shell
-    :ensure t
+    :straight t
     :defer t
     :init
     (with-eval-after-load 'exec-path-from-shell
@@ -387,9 +433,101 @@ This is the place where a lot of default config is set. Most variables
 and functions should be in this file
 ** Load some packages
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (require-package 'diminish)
-  (maybe-require-package 'scratch)
-  (require-package 'command-log-mode)
+  (use-package diminish
+:straight t)
+  (use-package scratch
+:straight t)
+  (use-package command-log-mode
+:straight t)
+#+END_SRC
+** General for better key definitions
+#+BEGIN_SRC emacs-lisp :tangle yes
+;; More convenient key definitions.
+(use-package general
+  :straight t
+  :demand t
+
+  :config
+  (general-define-key
+   ;; Kill the current buffer by default.
+   "C-x k" #'kill-this-buffer))
+#+END_SRC
+** Evil mode
+#+BEGIN_SRC emacs-lisp :tangle yes
+;; Let's be honest here, there's nothing more productive than vi
+;; key bindings in the right hands.
+(use-package evil
+  :straight t
+
+  :preface
+  ;; Do not load evil keybindings, because we'll use
+  ;; from the evil-collection package.
+  (setq evil-want-keybinding nil)
+
+  :init
+  (defun my/evil-vim-split ()
+    "Splits the current window horizontally and switch to the new window."
+    (interactive)
+    (evil-window-split)
+    (evil-window-down 1))
+
+  (defun my/evil-vim-vsplit ()
+    "Splits the current window vertically and switch to the new window."
+    (interactive)
+    (evil-window-vsplit)
+    (evil-window-right 1))
+
+  (defun my/evil-enable-visual-line-navigation ()
+    "Simulate evil navigation in `visual-line-mode'."
+    (define-key evil-motion-state-map "0" #'evil-beginning-of-visual-line)
+    (define-key evil-motion-state-map "$" #'evil-end-of-visual-line)
+    (define-key evil-motion-state-map "j" #'evil-next-visual-line)
+    (define-key evil-motion-state-map "k" #'evil-previous-visual-line))
+
+  ;; Allows jumping back and forth between special buffers too.
+  (setq evil--jumps-buffer-targets "\\*")
+
+  ;; Always start in the normal mode. This is required, for example, to not enter
+  ;; the git commit mode in insert mode. More often than not I have to navigate
+  ;; across the diff before knowing what to write in the commit message.
+  (add-hook 'with-editor-mode-hook #'evil-normal-state)
+
+  ;; With visual-line-mode enabled it's better to navigate by visual line.
+  (add-hook 'visual-line-mode-hook #'my/evil-enable-visual-line-navigation)
+
+  ;; Always center current line while searching.
+  (defadvice evil-search-next
+      (after advice-for-evil-search-next activate)
+    (evil-scroll-line-to-center (line-number-at-pos)))
+  (defadvice evil-search-previous
+      (after advice-for-evil-search-previous activate)
+    (evil-scroll-line-to-center (line-number-at-pos)))
+
+  :config
+  ;; Split like Vim, i.e. moves to the newly created window.
+  (evil-ex-define-cmd "split"  #'my/evil-vim-split)
+  (evil-ex-define-cmd "vsplit" #'my/evil-vim-vsplit)
+
+  (general-define-key
+   :keymaps 'evil-normal-state-map
+   "C-]" #'evil-goto-definition
+   ;; Remove bindings conflicting with default Emacs behavior.
+   "M-." nil
+   "C-p" nil
+   "C-n" nil)
+
+  (evil-mode 1))
+
+
+;; Add evil bindings beyond the default like calendar and help-mode.
+(use-package evil-collection
+  :straight t
+
+  :after
+  (evil)
+
+  :config
+  (evil-collection-init))
 #+END_SRC
 ** It's about to get personal
 #+BEGIN_SRC emacs-lisp
@@ -399,26 +537,8 @@ and functions should be in this file
 ** Some defaults
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package diminish
-  :ensure t
+  :straight t
   :init (diminish 'auto-fill-function ""))
-
-(setq-default
- blink-cursor-interval 0.4
- bookmark-default-file (expand-file-name ".bookmarks.el" user-emacs-directory)
- buffers-menu-max-size 30
- case-fold-search t
- ediff-split-window-function 'split-window-horizontally
- ediff-window-setup-function 'ediff-setup-windows-plain
- indent-tabs-mode nil
- create-lockfiles nil
- auto-save-default nil
- make-backup-files nil
- mouse-yank-at-point t
- scroll-preserve-screen-position 'always
- set-mark-command-repeat-pop t
- tooltip-delay 1.5
- truncate-lines nil
- truncate-partial-width-windows nil)
 
 (add-hook 'after-init-hook 'global-auto-revert-mode)
 (setq global-auto-revert-non-file-buffers t
@@ -429,7 +549,7 @@ and functions should be in this file
 ** UTF-8 all the way!
 #+begin_src emacs-lisp
 (use-package list-unicode-display
-  :ensure t)
+  :straight t)
 (defun sanityinc/locale-var-encoding (v)
   "Return the encoding portion of the locale string V, or nil if missing."
   (when v
@@ -442,13 +562,6 @@ and functions should be in this file
   (let ((encoding (sanityinc/locale-var-encoding (getenv varname))))
     (unless (memq encoding '(nil utf8 utf-8))
       (message "Warning: non-UTF8 encoding in environment variable %s may cause interop problems with this Emacs configuration." varname))))
-
-(when (fboundp 'set-charset-priority)
-  (set-charset-priority 'unicode))
-(prefer-coding-system 'utf-8)
-(setq locale-coding-system 'utf-8)
-(unless (eq system-type 'windows-nt)
-  (set-selection-coding-system 'utf-8))
 #+end_src
 
 ** When I select a region and start typing, just delete the region automatically. This ends up working great with =expand-region=
@@ -476,16 +589,6 @@ and functions should be in this file
 (setq-default indicate-buffer-boundaries nil)
 #+END_SRC
 
-** Turn off all kinds of modes, I don't need the menu bar, or the tool bar:
-#+BEGIN_SRC emacs-lisp
-(when (fboundp 'tool-bar-mode)
-  (tool-bar-mode -1))
-(when (fboundp 'set-scroll-bar-mode)
-  (set-scroll-bar-mode nil))
-
-(menu-bar-mode -1)
-#+END_SRC
-
 ** No borders
 #+BEGIN_SRC emacs-lisp :tangle yes
 (let ((no-border '(internal-border-width . 0)))
@@ -503,7 +606,7 @@ and functions should be in this file
 ** Preview goto
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package goto-line-preview
-  :ensure t
+  :straight t
   :config
   (global-set-key [remap goto-line] 'goto-line-preview))
 (when (fboundp 'display-line-numbers-mode)
@@ -522,7 +625,7 @@ and functions should be in this file
 ** Page breaks
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package page-break-lines
-  :ensure t
+  :straight t
   :diminish t
   :hook (after-init . global-page-break-lines-mode))
 #+END_SRC
@@ -531,12 +634,6 @@ and functions should be in this file
 
 #+BEGIN_SRC emacs-lisp
 (setq read-file-name-completion-ignore-case t)
-#+END_SRC
-
-** Nobody likes to have to type "yes" to questions, so change it to just hitting the =y= key to confirm:
-
-#+BEGIN_SRC emacs-lisp
-(defalias 'yes-or-no-p 'y-or-n-p)
 #+END_SRC
 
 ** Confirm before killing emacs, but only on graphical sessions
@@ -602,7 +699,7 @@ and functions should be in this file
 (global-set-key (kbd "M-L") 'reposition-window)
 #+END_SRC
 
-** Just kill this buffer, don't prompt me. I'll use helm if I want to kill a different buffer
+** Just kill this buffer, don't prompt me.
 
 #+BEGIN_SRC emacs-lisp
 (global-set-key (kbd "C-x k") #'kill-this-buffer)
@@ -677,7 +774,7 @@ and functions should be in this file
 ** Never kill the scratch
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package immortal-scratch
-  :ensure t
+  :straight t
   :hook (after-init . immortal-scratch-mode))
 #+END_SRC
 ** Start a server if not running, but a only for gui-only:
@@ -725,10 +822,6 @@ Here I set it back to a *sane* value:
 (global-set-key (kbd "C-x C-l") #'toggle-truncate-lines)
 #+end_src
 
-** All restoring window placement with Emacs' built-in =winner-mode=
-#+BEGIN_SRC emacs-lisp
-(add-hook 'after-init-hook #'winner-mode)
-#+END_SRC
 ** Save whatever's in the current (system) clipboard before replacing it with the Emacs' text.
 #+BEGIN_SRC emacs-lisp
 (setq save-interprogram-paste-before-kill t)
@@ -737,7 +830,7 @@ Here I set it back to a *sane* value:
 
 #+BEGIN_SRC emacs-lisp
 (use-package ws-butler
-  :ensure t
+  :straight t
   :diminish ws-butler-mode
   :init
   (add-hook 'prog-mode-hook #'ws-butler-mode)
@@ -749,7 +842,7 @@ Here I set it back to a *sane* value:
 
 #+BEGIN_SRC emacs-lisp
 (use-package auto-indent-mode
-  :ensure t)
+  :straight t)
 #+END_SRC
 
 ** Usually =M-SPC= is bound to ~just-one-space~, but [[https://github.com/jcpetkovich/shrink-whitespace.el][shrink-whitespace]] is actually a better alternative because it can shrink space between lines.
@@ -760,7 +853,7 @@ the link to this package.
 
 #+BEGIN_SRC emacs-lisp
 (use-package shrink-whitespace
-  :ensure t
+  :straight t
   :bind ("M-SPC" . shrink-whitespace))
 #+END_SRC
 
@@ -771,7 +864,7 @@ for my webserver, in case I want to manually copy things around.
 #+BEGIN_SRC emacs-lisp
   (use-package bookmark+
     :disabled f
-    :ensure t
+    :straight t
     :defer 10
     :init (setq bmkp-replace-EWW-keys-flag t)
     :config
@@ -786,7 +879,7 @@ It can also be used for a "refactor-like" thing similar to query-replace.
 
 #+BEGIN_SRC emacs-lisp
 (use-package anzu
-  :ensure t
+  :straight t
   :defer t
   :bind ("M-%" . anzu-query-replace-regexp)
   :config
@@ -812,7 +905,7 @@ It can also be used for a "refactor-like" thing similar to query-replace.
 #+END_SRC
 
 ** Desktops and sessions
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp :tangle no
 ;; save a list of open files in ~/.emacs.d/.emacs.desktop
 (setq desktop-path (list user-emacs-directory)
       desktop-auto-save-timeout 600)
@@ -847,7 +940,7 @@ Restore histories and registers after saving
 (add-hook 'after-init-hook 'savehist-mode)
 
 (use-package session
-  :ensure t)
+  :straight t)
 
 (setq session-save-file (expand-file-name ".session" user-emacs-directory))
 (setq session-name-disable-regexp "\\(?:\\`'/tmp\\|\\.git/[A-Z_]+\\'\\)")
@@ -924,7 +1017,7 @@ using a big font size and I need more eshell space
 
 #+BEGIN_SRC emacs-lisp
 (use-package golden-ratio
-  :ensure t
+  :straight t
   :diminish golden-ratio-mode
   :defer t
   :init
@@ -1041,7 +1134,7 @@ tool that it uses.
 #+BEGIN_SRC emacs-lisp :tangle no
 
 (use-package pdf-tools
-  :ensure t
+  :straight t
   :when window-system
   :init (pdf-tools-install))
 #+END_SRC
@@ -1050,7 +1143,7 @@ Expand region is useful it's insane.
 
 #+BEGIN_SRC emacs-lisp
 (use-package expand-region
-  :ensure t
+  :straight t
   :defer t
   :bind (("C-c e" . er/expand-region)
          ("C-M-@" . er/contract-region)))
@@ -1060,7 +1153,7 @@ Mulitple cursors is like rectangular selection/insertion but on steroids
 
 #+BEGIN_SRC emacs-lisp
 (use-package multiple-cursors
-  :ensure t
+  :straight t
   :bind (("C-S-c C-S-c" . mc/edit-lines)
          ("C->" . mc/mark-next-like-this)
          ("C-<" . mc/mark-previous-like-this)
@@ -1072,7 +1165,7 @@ sometimes I need to look at someone's 5gb log file.
 
 #+BEGIN_SRC emacs-lisp
 (use-package vlf-setup
-  :ensure vlf)
+  :straight vlf)
 #+END_SRC
 
 I use M-x =proced= a lot to get a top-like (or htop-like) display of processes,
@@ -1121,7 +1214,7 @@ buffer writable, that's what wgrep does.
 
 #+BEGIN_SRC emacs-lisp
 (use-package wgrep
-  :ensure t
+  :straight t
   :init (require 'wgrep))
 #+END_SRC
 
@@ -1141,7 +1234,7 @@ little thing under the sun. However, I lately decided I wanted a unified
 interface to the parts of EOS.
 
 #+BEGIN_SRC emacs-lisp
-(use-package hydra :ensure t)
+(use-package hydra :straight t)
 
 (defhydra deos/hydra-toggle-map nil
   "
@@ -1298,7 +1391,7 @@ visualize it in ascii art if needed.
 
 #+BEGIN_SRC emacs-lisp
 (use-package undo-tree
-  :ensure t
+  :straight t
   :init (global-undo-tree-mode t)
   :defer t
   :diminish ""
@@ -1374,14 +1467,14 @@ to get up and running with.
 ** Which Key
 #+BEGIN_SRC emacs-lisp
 (use-package which-key
-  :ensure t
+  :straight t
   :config
   (which-key-mode))
 #+END_SRC
 ** Key-chords
 #+BEGIN_SRC emacs-lisp
   (use-package use-package-chords
-    :ensure t
+    :straight t
     :config
     (key-chord-mode 1))
 #+END_SRC
@@ -1405,7 +1498,6 @@ to get up and running with.
 ** Suppress GUI features
 #+BEGIN_SRC emacs-lisp :tangle yes
 (setq use-file-dialog nil)
-(setq use-dialog-box nil)
 (setq inhibit-startup-screen t)
 #+END_SRC
 ** Basic gui functions
@@ -1434,14 +1526,9 @@ to get up and running with.
 
 
 (when *is-a-mac*
-  (when (maybe-require-package 'ns-auto-titlebar)
+  (when (use-package ns-auto-titlebar
+:straight t)
     (ns-auto-titlebar-mode)))
-
-
-(setq frame-title-format
-      '((:eval (if (buffer-file-name)
-                   (abbreviate-file-name (buffer-file-name))
-                 "%b"))))
 
 ;; Non-zero values for `line-spacing' can mess up ansi-term and co,
 ;; so we zero it explicitly in those cases.
@@ -1449,81 +1536,148 @@ to get up and running with.
           (lambda ()
             (setq line-spacing 0)))
 
-
+
 ;; Change global font size easily
 
-(require-package 'default-text-scale)
+(use-package default-text-scale
+:straight t)
 (add-hook 'after-init-hook 'default-text-scale-mode)
 
-
-
-(require-package 'disable-mouse)
+(use-package disable-mouse
+:straight t)
 #+END_SRC
 ** Recentf
 #+BEGIN_SRC emacs-lisp :tangle yes
 (add-hook 'after-init-hook 'recentf-mode)
 (setq-default
  recentf-max-saved-items 1000
- recentf-exclude `("/tmp/" "/ssh:" ,(concat package-user-dir "/.*-autoloads\\.el\\'")))
+ recentf-exclude `("/tmp/" "/ssh:" ))
 #+END_SRC
 * Appearance
 ** Theme
 #+BEGIN_SRC emacs-lisp :tangle yes
-(use-package color-theme-sanityinc-solarized
-  :ensure t)
-(use-package color-theme-sanityinc-tomorrow
-  :ensure t)
+  (use-package zenburn-theme
+    :straight t
+    :defer t)
+  ;; Don't prompt to confirm theme safety. This avoids problems with
+  ;; first-time startup on Emacs > 26.3.
+  (setq custom-safe-themes t)
 
-;; Don't prompt to confirm theme safety. This avoids problems with
-;; first-time startup on Emacs > 26.3.
-(setq custom-safe-themes t)
+  ;; If you don't customize it, this is the theme you get.
+  (setq-default custom-enabled-themes '(zenburn))
 
-;; If you don't customize it, this is the theme you get.
-(setq-default custom-enabled-themes '(sanityinc-tomorrow-bright))
+  ;; Straight that themes will be applied even if they have not been customized
+  (defun reapply-themes ()
+    "Forcibly load the themes listed in `custom-enabled-themes'."
+    (dolist (theme custom-enabled-themes)
+      (unless (custom-theme-p theme)
+        (load-theme theme)))
+    (custom-set-variables `(custom-enabled-themes (quote ,custom-enabled-themes))))
 
-;; Ensure that themes will be applied even if they have not been customized
-(defun reapply-themes ()
-  "Forcibly load the themes listed in `custom-enabled-themes'."
-  (dolist (theme custom-enabled-themes)
-    (unless (custom-theme-p theme)
-      (load-theme theme)))
-  (custom-set-variables `(custom-enabled-themes (quote ,custom-enabled-themes))))
-
-(add-hook 'after-init-hook 'reapply-themes)
+  (add-hook 'after-init-hook 'reapply-themes)
 
 
-;;------------------------------------------------------------------------------
-;; Toggle between light and dark
-;;------------------------------------------------------------------------------
-(defun light ()
-  "Activate a light color theme."
-  (interactive)
-  (setq custom-enabled-themes '(sanityinc-tomorrow-day))
-  (reapply-themes))
+  ;;------------------------------------------------------------------------------
+  ;; Toggle between light and dark
+  ;;------------------------------------------------------------------------------
+  (defun light ()
+    "Activate a light color theme."
+    (interactive)
+    (setq custom-enabled-themes '(sanityinc-tomorrow-day))
+    (reapply-themes))
 
-(defun dark ()
-  "Activate a dark color theme."
-  (interactive)
-  (setq custom-enabled-themes '(sanityinc-tomorrow-bright))
-  (reapply-themes))
+  (defun dark ()
+    "Activate a dark color theme."
+    (interactive)
+    (setq custom-enabled-themes '(sanityinc-tomorrow-bright))
+    (reapply-themes))
 
 
-(use-package dimmer
-  :ensure t
-  :init
-  (setq-default dimmer-fraction 0.15)
-  :hook (after-init . dimmer-mode)
+  (use-package dimmer
+    :straight t
+    :init
+    (setq-default dimmer-fraction 0.15)
+    :hook (after-init . dimmer-mode)
+    :config
+    (with-eval-after-load 'dimmer
+      ;; TODO: file upstream as a PR
+      (advice-add 'frame-set-background-mode :after (lambda (&rest args) (dimmer-process-all))))
+    (with-eval-after-load 'dimmer
+      ;; Don't dim in terminal windows. Even with 256 colours it can
+      ;; lead to poor contrast.  Better would be to vary dimmer-fraction
+      ;; according to frame type.
+      (defun sanityinc/display-non-graphic-p ()
+        (not (display-graphic-p)))
+      (add-to-list 'dimmer-exclusion-predicates 'sanityinc/display-non-graphic-p)))
+#+END_SRC
+** Mode line
+#+BEGIN_SRC emacs-lisp :tangle yes
+;; A minimal and modern mode-line.
+(use-package doom-modeline
+  :straight t
+  :defer t
+  :hook (after-init . my/init-load-theme)
+  :preface
+  ;; I'm not happy on where custom-set-faces are being set inside of
+  ;; doom-modeline.
+  (defun my/init-load-theme ()
+    (doom-modeline-mode +1)
+    (load-theme 'zenburn t nil)
+
+    (custom-set-faces
+     `(ivy-current-match              ((t :background ,my/color-gray :foreground nil :underline unspecified :weight unspecified)))
+     `(ivy-highlight-face             ((t :background nil :foreground nil :underline unspecified :weight unspecified)))
+     `(ivy-minibuffer-match-face-1    ((t :background nil :inherit bold)))
+     `(ivy-minibuffer-match-face-2    ((t :background nil :foreground ,my/color-cyan :underline t)))
+     `(ivy-minibuffer-match-face-3    ((t :background nil :foreground ,my/color-cyan :underline t)))
+     `(ivy-minibuffer-match-face-4    ((t :background nil :foreground ,my/color-cyan :underline t)))
+     `(ivy-minibuffer-match-highlight ((t :background ,my/color-gray :foreground nil :underline unspecified :weight unspecified)))
+     `(ivy-subdir                     ((t :background nil :underline unspecified :weight unspecified))))
+
+    (custom-theme-set-faces
+     'zenburn
+     ;; Removes the annoying secondary color in the buffer divider --
+     ;; called fringe.
+     `(fringe ((t (:background "#3F3F3F"))))))
+:init
+  ;; Determines the style used by `doom-modeline-buffer-file-name'.
+  ;;
+  ;; Given ~/Projects/FOSS/emacs/lisp/comint.el
+  ;;   truncate-upto-project => ~/P/F/emacs/lisp/comint.el
+  ;;   truncate-from-project => ~/Projects/FOSS/emacs/l/comint.el
+  ;;   truncate-with-project => emacs/l/comint.el
+  ;;   truncate-except-project => ~/P/F/emacs/l/comint.el
+  ;;   truncate-upto-root => ~/P/F/e/lisp/comint.el
+  ;;   truncate-all => ~/P/F/e/l/comint.el
+  ;;   relative-from-project => emacs/lisp/comint.el
+  ;;   relative-to-project => lisp/comint.el
+  ;;   file-name => comint.el
+  ;;   buffer-name => comint.el<2> (uniquify buffer name)
+  ;;
+  (setq doom-modeline-buffer-file-name-style 'relative-from-project)
+
+  ;; Whether show `all-the-icons' or not (when nil nothing will be
+  ;; showed).
+  (setq doom-modeline-icon nil)
+
+  ;; How tall the mode-line should be (only respected in GUI Emacs).
+  (setq doom-modeline-height 25)
+
+  ;; How wide the mode-line bar should be (only respected in GUI
+  ;; Emacs).
+  (setq doom-modeline-bar-width 1)
+
+  ;; Whether display minor modes or not. Non-nil to display in
+  ;; mode-line.
+  (setq doom-modeline-minor-modes nil)
+
+  ;; If non-nil, the mode-line is displayed with the `variable-pitch'
+  ;; face.
+  (setq doom-modeline-enable-variable-pitch nil)
+
   :config
-  (with-eval-after-load 'dimmer
-    ;; TODO: file upstream as a PR
-    (advice-add 'frame-set-background-mode :after (lambda (&rest args) (dimmer-process-all))))
-  (with-eval-after-load 'dimmer
-    ;; Don't dim in terminal windows. Even with 256 colours it can
-    ;; lead to poor contrast.  Better would be to vary dimmer-fraction
-    ;; according to frame type.
-    (defun sanityinc/display-non-graphic-p ()
-      (not (display-graphic-p)))
-    (add-to-list 'dimmer-exclusion-predicates 'sanityinc/display-non-graphic-p)))
+  (doom-modeline-mode 1))
+
 #+END_SRC
 ** Fonts
 #+BEGIN_SRC emacs-lisp
@@ -1608,7 +1762,7 @@ to go back to a normal setup."
   (delete-other-windows)
   (text-scale-increase 1)
   (setq line-spacing 5)
-  (use-package minimap :ensure t)
+  (use-package minimap :straight t)
   (when (not minimap-mode)
     (minimap-mode 1)))
 #+END_SRC
@@ -1616,7 +1770,7 @@ to go back to a normal setup."
 *** Powerline mode
 #+BEGIN_SRC emacs-lisp
 (use-package powerline
-  :ensure t
+  :straight t
   :config
   (setq powerline-default-separator 'utf-8))
 #+END_SRC
@@ -1624,13 +1778,13 @@ to go back to a normal setup."
 Minimalist mode line
 #+BEGIN_SRC emacs-lisp
 (use-package feebleline
-  :ensure t)
+  :straight t)
 #+END_SRC
 *** Nyan Cat
 Just for fun
 #+BEGIN_SRC emacs-lisp
 (use-package nyan-mode
-  :ensure t)
+  :straight t)
 #+END_SRC
 ** Codenotes
 #+BEGIN_SRC emacs-lisp
@@ -1710,7 +1864,7 @@ Some random navigation keybindings
 Highlight helpers
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package hl-anything
-  :ensure t
+  :straight t
   :diminish hl-highlight-mode
   :commands hl-highlight-mode
   :init
@@ -1769,14 +1923,14 @@ permanently."
 ** Move text
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package move-text
-  :ensure t
+  :straight t
   :init (move-text-default-bindings))
 #+END_SRC
 
 ** Navigating without control
 For those who are a little less evil
 #+BEGIN_SRC emacs-lisp :tangle yes
-(use-package hydra :ensure t)
+(use-package hydra :straight t)
 (require 'view)
 
 (defhydra deos/nav-mode (:foreign-keys run)
@@ -1814,7 +1968,7 @@ For those who are a little less evil
 ** Folding
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package origami
-  :ensure t
+  :straight t
   :bind (:map origami-mode-map
               ("C-c f" . origami-recursively-toggle-node)
               ("C-c F" . origami-toggle-all-nodes)))
@@ -1842,10 +1996,10 @@ For those who are a little less evil
 #+BEGIN_SRC emacs-lisp :tangle yes
   (when *is-a-mac*
     (use-package grab-mac-link
-      :ensure t))
+      :straight t))
 
   (use-package org-cliplink
-    :ensure t)
+    :straight t)
 
   (define-key global-map (kbd "C-c l") 'org-store-link)
   (define-key global-map (kbd "C-c a") 'org-agenda)
@@ -1883,7 +2037,7 @@ For those who are a little less evil
   
 
   (use-package writeroom-mode
-    :ensure t)
+    :straight t)
 
   (define-minor-mode prose-mode
     "Set up a buffer for prose editing.
@@ -2148,7 +2302,7 @@ For those who are a little less evil
   
 
   (use-package org-pomodoro
-    :ensure t)
+    :straight t)
   (setq org-pomodoro-keep-killed-pomodoro-time t)
   (with-eval-after-load 'org-agenda
     (define-key org-agenda-mode-map (kbd "P") 'org-pomodoro))
@@ -2210,7 +2364,7 @@ I use deft to take quick notes and search through those notes
 
 #+BEGIN_SRC emacs-lisp
 (use-package deft
-  :ensure t
+  :straight t
   :bind ("C-x t" . deft)
   :config
   (setq deft-extension '("org" "txt" "tex" "text" "md")
@@ -2220,32 +2374,160 @@ I use deft to take quick notes and search through those notes
         deft-text-mode 'org-mode))
 #+END_SRC
 * Command completion
-** Ivy
-#+BEGIN_SRC emacs-lisp :tangle no
-(use-package ivy
-  :ensure t
-  :demand t
-  :diminish ivy-mode
-  :bind
-  (("C-M-z" . ivy-resume)
-   ("C-x C-r" . ivy-switch-buffer)
-   ("C-x o" . swiper))
-   :init
-   (ivy-mode 1)
-   :config
-   (bind-key "C-s" 'swiper)
-   ;; add ‘recentf-mode’ and bookmarks to ‘ivy-switch-buffer’.
-   (setq ivy-use-virtual-buffers t)
-   ;; number of result lines to display
-   ;; (setq ivy-height 10)
-   ;; does not count candidates
-   (setq ivy-count-format "%d/%d ")
-   ;; no regexp by default
-   ;; (setq ivy-initial-inputs-alist nil)
-   ;; configure regexp engine.
-   ;; (setq ivy-re-builders-alist
-   ;;       ;; allow input not in order
-   ;;       '((t   . ivy--regex-ignore-order)))
+** Projectile, the project interaction library for Emacs
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+
+  ;; NOTE: It require https://github.com/sharkdp/fd
+  (use-package projectile
+    :straight t
+
+    ;; Defer because it'll be loaded by counsel-projectile.
+    :defer t
+
+    :init
+    (defun my/copy-file-relative-name-to-clipboard ()
+      "Copy current buffer relative file name to the clipboard."
+      (interactive)
+      (kill-new (file-relative-name buffer-file-name (projectile-project-root))))
+
+    (setq projectile-cache-file (concat my/cache-dir "projectile.cache")
+          projectile-enable-caching nil
+          projectile-ignored-projects '("~/" "/tmp")
+          projectile-known-projects-file (concat my/cache-dir "projectile-bookmarks.eld")
+          ;; Enable Projectile in every directory (even without the presence
+          ;; of project file). This works well with fd, given how much faster
+          ;; it is compared to find.
+          projectile-require-project-root t
+          projectile-completion-system 'ivy)
+
+    (global-set-key [remap evil-jump-to-tag] #'projectile-find-tag)
+    (global-set-key [remap find-tag]         #'projectile-find-tag)
+
+    ;; It's recommended to use fd as a replacement for both git ls-files
+    ;; and find.
+    (setq projectile-generic-command "fdfind . --color=never --type f -0 -H -E .git"
+          projectile-git-command projectile-generic-command)
+
+    ;; Skip warnings about unsafe variables in .dir-locals.el
+    (put 'projectile-project-type 'safe-local-variable #'symbolp)
+
+    ;; Always open the top-level project directory after switching projects.
+    (setq projectile-switch-project-action #'projectile-dired)
+
+    :config
+    (general-define-key
+     :prefix my/leader
+     :states 'normal
+     :keymaps 'prog-mode-map
+     "jA" #'projectile-find-implementation-or-test-other-window
+     "ja" #'projectile-toggle-between-implementation-and-test))
+#+END_SRC
+** Ivy and related things
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package counsel
+    :straight t
+    :defer t
+
+    :init
+    (setq counsel-describe-function-function #'helpful-callable
+          counsel-describe-variable-function #'helpful-variable)
+
+    ;; Use custom configurations, but most importantly, pipe the filtering
+    ;; from the "fdfind" output. See the `dotfiles/shell/vars' file for
+    ;; more details
+    (setq counsel-fzf-cmd
+          (concat (getenv "FZF_CTRL_T_COMMAND") " | " "fzf -f \"%s\""))
+
+    (general-define-key
+     [remap bookmark-jump] #'counsel-bookmark
+     [remap describe-variable] #'counsel-describe-variable
+     [remap find-file] #'counsel-find-file
+     [remap org-set-tags-command] #'counsel-org-tag
+     [remap execute-extended-command] #'counsel-M-x)
+
+    (general-define-key
+     :prefix my/leader
+     :states 'normal
+     :keymaps 'override
+     "f" #'counsel-projectile-find-file))
+
+  ;; Ivy for searching and matching
+  (use-package ivy
+    :straight t
+    :defer t
+    :hook (emacs-startup . ivy-mode)
+    :init
+    ;; Avoid using fuzzy searches everywhere. For example, cousel-rg
+    ;; with fuzzy enabled brings a lot of useless results.
+    ;; Remember you can switch modes in the ivy minibuffer with <C-o S-m>
+    (setq ivy-re-builders-alist '((counsel-M-x . ivy--regex-fuzzy)
+                                  (t . ivy--regex-plus)))
+
+    ;; Do not display the total number of candidates.
+    (setq ivy-count-format "")
+
+    ;; Only show the current directory.
+    (setq ivy-extra-directories '("./"))
+
+    ;; Do not close the minibuffer when there's no text left to delete.
+    (setq ivy-on-del-error-function #'ignore)
+
+    ;; Enable bookmarks and recentf
+    (setq ivy-use-virtual-buffers t)
+
+    (setq ivy-initial-inputs-alist nil)
+
+    (general-define-key
+     [remap switch-to-buffer] #'ivy-switch-buffer
+     [remap list-buffers] #'ivy-switch-buffer
+     [remap switch-to-buffer-other-window] #'ivy-switch-buffer-other-window))
+
+  (use-package amx
+    :straight t
+    :init
+    (setq amx-save-file (concat my/cache-dir "amx")
+          amx-history-length 10))
+
+  ;; Gives an overview of the current regex search candidates.
+  (use-package swiper
+    :straight t
+    :defer t
+    :init
+    (setq swiper-action-recenter t)
+    (general-define-key
+     [remap switch-to-buffer] #'ivy-switch-buffer
+     [remap list-buffers] #'ivy-switch-buffer
+     [remap switch-to-buffer-other-window] #'ivy-switch-buffer-other-window
+     [remap bookmark-jump] #'counsel-bookmark
+     [remap describe-variable] #'counsel-describe-variable
+     [remap describe-function] #'counsel-describe-function
+     [remap find-file] #'counsel-find-file
+     [remap execute-extended-command] #'counsel-M-x)
+
+    (general-define-key
+     :prefix my/leader
+     :states 'normal
+     :keymaps 'override
+     "/" #'swiper))
+
+;; Ivy UI for Projectile.
+(use-package counsel-projectile
+  :straight t
+
+  :defer 0
+
+  :config
+  ;; Counsel-Projectile mode turns on Projectile mode, thus enabling all
+  ;; projectile key bindings, and adds the counsel-projectile key bindings on
+  ;; top of them.
+  (counsel-projectile-mode +1)
+
+  ;; Always open the top-level project directory after switching projects.
+  (counsel-projectile-modify-action
+   'counsel-projectile-switch-project-action
+   '((default counsel-projectile-switch-project-action-dired))))
+
 #+END_SRC
 ** IDO
 #+BEGIN_SRC emacs-lisp
@@ -2253,16 +2535,16 @@ I use deft to take quick notes and search through those notes
   :init
   (ido-mode 1)
   (use-package ido-completing-read+
-    :ensure t
+    :straight t
     :init (ido-ubiquitous-mode 1))
   (use-package ido-vertical-mode
-    :ensure t
+    :straight t
     :init (ido-vertical-mode 1))
   (use-package flx-ido
-    :ensure t
+    :straight t
     :init (flx-ido-mode 1))
   (use-package smex
-    :ensure t
+    :straight t
     :init
     (smex-initialize)
     (global-set-key (kbd "M-x") 'smex)
@@ -2299,442 +2581,423 @@ bindings I use more frequently:
 | C-x C-i | helm semantic or imenu (depending on the mode)  |
 
 
-#+BEGIN_SRC emacs-lisp
-(use-package helm-flx
-  :ensure t
-  :init
-  (setq helm-flx-for-helm-find-files nil)
-  (helm-flx-mode 1))
-
-(use-package helm-config
-  :ensure helm
-  :demand t ;; demand it be loaded!
-  :diminish helm-mode
-  :bind
-  (("C-M-z" . helm-resume)
-   ("C-x C-f" . helm-find-files)
-   ("C-x C-r" . helm-mini)
-   ("C-x o" . helm-occur)
-   ("M-y" . helm-show-kill-ring)
-   ("C-h a" . helm-apropos)
-   ("C-h m" . helm-man-woman)
-   ("C-h SPC" . helm-all-mark-rings)
-   ("C-x C-i" . helm-semantic-or-imenu)
-   ("M-x" . helm-M-x)
-   ("C-x C-b" . helm-buffers-list)
-   ("C-x C-r" . helm-mini)
-   ("C-x b" . helm-mini)
-   ("C-x R" . helm-register)
-   ("C-h t" . helm-world-time)
-   ("M-g a" . helm-do-grep-ag)
-   ("M-g p" . helm-do-ag-project-root)
-   ("M-g G" . helm-grep-do-git-grep))
-  :init
-  (defvar deos/helm-display-help-buffer-regexp '("*.*Helm.*Help.**"))
-  (defvar deos/helm-display-buffer-regexp
-    `("*.*helm.**"
-      (display-buffer-in-side-window)
-      (inhibit-same-window . t)
-      (side . bottom)
-      (window-width . 0.6)
-      (window-height . 0.4)))
-
-  (defun deos/display-helm-window (buffer &optional resume)
-    "Display the Helm window."
-    (let ((display-buffer-alist
-           (list deos/helm-display-help-buffer-regexp
-                 ;; this or any specialized case of Helm buffer must be
-                 ;; added AFTER `deos/helm-display-buffer-regexp'.
-                 ;; Otherwise, `deos/helm-display-buffer-regexp' will
-                 ;; be used before
-                 ;; `deos/helm-display-help-buffer-regexp' and display
-                 ;; configuration for normal Helm buffer is applied for helm
-                 ;; help buffer, making the help buffer unable to be
-                 ;; displayed.
-                 deos/helm-display-buffer-regexp)))
-      (helm-default-display-buffer buffer)))
-
-  (setq helm-grep-default-command
-        "grep -a -d skip %e -n%cH -e %p %f"
-        ;; may be overridden if 'ggrep' is in path (see below)
-        helm-grep-default-recurse-command
-        "grep -a -d recurse %e -n%cH -e %p %f"
-        ;; use CURL, not url-retrieve-synchronously
-        helm-net-prefer-curl t
-        ;; be idle for this many seconds, before updating in delayed sources.
-        helm-input-idle-delay 0
-        ;; wider buffer name in helm-buffers-list
-        helm-buffer-max-length 28 ;; default is 20
-        ;; instead of "..." use a smaller unicode ellipsis
-        helm-buffers-end-truncated-string "…"
-        ;; open helm buffer in another window
-        ;;helm-split-window-default-side 'other
-        ;; set to nil and use <C-backspace> to toggle it in helm-find-files
-        helm-ff-auto-update-initial-value nil
-        ;; if I change the resplit state, re-use my settings
-        helm-reuse-last-window-split-state t
-        ;; don't delete windows to always have 2
-        helm-always-two-windows nil
-        ;; open helm buffer inside current window, don't occupy whole other window
-        helm-split-window-inside-p t
-        ;; display using my function, not helm's (helm is too slow here)
-        helm-display-function #'deos/display-helm-window
-        ;; display helm in a separate frame
-        ;; helm-display-function 'helm-display-buffer-in-own-frame
-        ;; reuse frame so display is faster on Emacs 26+
-        ;; helm-display-buffer-reuse-frame t
-        ;; helm-display-buffer-width 144
-        ;; helm-display-buffer-height 24
-        ;; use undecorated frame on Emacs 26+
-        helm-use-undecorated-frame-option t
-        ;; don't check if the file exists on remote files
-        helm-buffer-skip-remote-checking t
-        ;; limit the number of displayed canidates
-        helm-candidate-number-limit 100
-        ;; don't use recentf stuff in helm-ff, I use C-x C-r for this
-        helm-ff-file-name-history-use-recentf nil
-        ;; move to end or beginning of source when reaching top or bottom
-        ;; of source
-        helm-move-to-line-cycle-in-source t
-        ;; don't display the header line
-        helm-display-header-line nil
-        ;; verbosity for helm tramp messages
-        helm-tramp-verbose 0
-        ;; fuzzy matching
-        helm-recentf-fuzzy-match t
-        helm-locate-fuzzy-match nil ;; locate fuzzy is worthless
-        helm-M-x-fuzzy-match t
-        helm-buffers-fuzzy-matching t
-        helm-semantic-fuzzy-match nil
-        helm-gtags-fuzzy-match nil
-        helm-imenu-fuzzy-match nil
-        helm-apropos-fuzzy-match nil
-        helm-lisp-fuzzy-completion nil
-        helm-completion-in-region-fuzzy-match nil
-        ;; autoresize to 25 rows
-        helm-autoresize-min-height 25
-        helm-autoresize-max-height 25
-        ;; Here are the things helm-mini shows, I add `helm-source-bookmarks'
-        ;; here to the regular default list
-        helm-mini-default-sources '(helm-source-buffers-list
-                                    helm-source-recentf
-                                    helm-source-bookmarks
-                                    helm-source-buffer-not-found)
-        ;; Reduce the list of things for helm-apropos
-        helm-apropos-function-list '(helm-def-source--emacs-commands
-                                     helm-def-source--emacs-functions
-                                     helm-def-source--emacs-variables
-                                     helm-def-source--emacs-faces))
-  :config
-  (use-package helm-files
-    :config (setq helm-ff-file-compressed-list '("gz" "bz2" "zip" "tgz" "xz" "txz")))
-  (use-package helm-buffers
-    :config
-    (add-to-list 'helm-boring-buffer-regexp-list "^TAGS$"))
-  (use-package helm-mode
-    :diminish helm-mode
+#+BEGIN_SRC emacs-lisp :tangle no
+  (use-package helm-flx
+    :straight t
     :init
-    (add-hook 'after-init-hook #'helm-mode)
-    (add-hook 'after-init-hook #'helm-autoresize-mode)
-    (add-hook 'after-init-hook #'helm-adaptive-mode)
-    (add-hook 'after-init-hook #'helm-popup-tip-mode))
-  (use-package helm-sys
-    :init (add-hook 'after-init-hook #'helm-top-poll-mode))
-  (use-package helm-grep
-    :config
-    (setq helm-grep-truncate-lines nil)
-    (define-key helm-grep-mode-map (kbd "<return>")  'helm-grep-mode-jump-other-window)
-    (define-key helm-grep-mode-map (kbd "n")  'helm-grep-mode-jump-other-window-forward)
-    (define-key helm-grep-mode-map (kbd "p")  'helm-grep-mode-jump-other-window-backward)
-    (when (executable-find "rg")
-      (setq helm-grep-ag-command "rg --color=always --colors 'match:fg:black' --colors 'match:bg:yellow' --smart-case --no-heading --line-number %s %s %s"
-            helm-grep-ag-pipe-cmd-switches '("--colors 'match:fg:black'" "--colors 'match:bg:yellow'"))))
-  (use-package helm-man)
-  (use-package helm-misc)
-  (use-package helm-elisp)
-  (use-package helm-imenu)
-  (use-package helm-semantic)
-  (use-package helm-ring)
-  (use-package smex :ensure t)
-  (use-package helm-smex :ensure t)
-  (use-package helm-bookmark
-    :bind ("C-x M-b" . helm-bookmarks))
-  (use-package projectile-ripgrep :ensure t)
-  (use-package helm-projectile
-    :ensure t
+    (setq helm-flx-for-helm-find-files nil)
+    (helm-flx-mode 1))
+
+  (use-package helm-config
+    :straight helm
     :demand t ;; demand it be loaded!
-    :bind (:map projectile-command-map
-                ("b" . helm-projectile-switch-to-buffer)
-                ("d" . helm-projectile-find-dir)
-                ("f" . helm-projectile-find-file)
-                ("p" . helm-projectile-switch-project)
-                ("s s" . helm-projectile-ag)
-                ("s r" . projectile-ripgrep))
+    :diminish helm-mode
+    :bind
+    (("C-M-z" . helm-resume)
+     ("C-x C-f" . helm-find-files)
+     ("C-x C-r" . helm-mini)
+     ("C-x o" . helm-occur)
+     ("M-y" . helm-show-kill-ring)
+     ("C-h a" . helm-apropos)
+     ("C-h m" . helm-man-woman)
+     ("C-h SPC" . helm-all-mark-rings)
+     ("C-x C-i" . helm-semantic-or-imenu)
+     ("M-x" . helm-M-x)
+     ("C-x C-b" . helm-buffers-list)
+     ("C-x C-r" . helm-mini)
+     ("C-x b" . helm-mini)
+     ("C-x R" . helm-register)
+     ("C-h t" . helm-world-time)
+     ("M-g a" . helm-do-grep-ag)
+     ("M-g p" . helm-do-ag-project-root)
+     ("M-g G" . helm-grep-do-git-grep))
     :init
-    (setq projectile-switch-project-action 'helm-projectile)
-    (helm-projectile-on)
-    (helm-delete-action-from-source
-     "Grep in projects `C-s'"
-     helm-source-projectile-projects)
-    (helm-add-action-to-source
-     "Ag in project C-s'"
-     'helm-do-ag helm-source-projectile-projects)
-    (bind-key "C-s" (defun helm-projectile-do-ag ()
-                      (interactive)
-                      (helm-exit-and-execute-action #'helm-do-ag))
-              helm-projectile-projects-map)
-    (global-set-key (kbd "C-x f") #'helm-projectile-find-file)
-    :config
-    (setq-default helm-truncate-lines t
-                  helm-projectile-truncate-lines t))
+    (defvar deos/helm-display-help-buffer-regexp '("*.*Helm.*Help.**"))
+    (defvar deos/helm-display-buffer-regexp
+      `("*.*helm.**"
+        (display-buffer-in-side-window)
+        (inhibit-same-window . t)
+        (side . bottom)
+        (window-width . 0.6)
+        (window-height . 0.4)))
 
-  (global-set-key (kbd "C-c h") 'helm-command-prefix)
-  (global-unset-key (kbd "C-x c"))
+    (defun deos/display-helm-window (buffer &optional resume)
+      "Display the Helm window."
+      (let ((display-buffer-alist
+             (list deos/helm-display-help-buffer-regexp
+                   ;; this or any specialized case of Helm buffer must be
+                   ;; added AFTER `deos/helm-display-buffer-regexp'.
+                   ;; Otherwise, `deos/helm-display-buffer-regexp' will
+                   ;; be used before
+                   ;; `deos/helm-display-help-buffer-regexp' and display
+                   ;; configuration for normal Helm buffer is applied for helm
+                   ;; help buffer, making the help buffer unable to be
+                   ;; displayed.
+                   deos/helm-display-buffer-regexp)))
+        (helm-default-display-buffer buffer)))
 
-  ;; Use popwin for helm buffers, otherwise I can't get helm to display the way
-  ;; I want (at the bottom, without deleting windows)
-  ;; (when (fboundp 'popwin:special-display-config)
-  ;;   (push '("^\*helm.+\*$" :regexp t :height 20) popwin:special-display-config)
-  ;;   (setq helm-display-function 'popwin:pop-to-buffer))
-
-  ;; Shows helm input in the header instead of the footer
-  (setq helm-echo-input-in-header-line t)
-  (defun helm-hide-minibuffer-maybe ()
-    "Hide minibuffer in Helm session if we use the header line as input field."
-    (when (with-helm-buffer helm-echo-input-in-header-line)
-      (let ((ov (make-overlay (point-min) (point-max) nil nil t)))
-        (overlay-put ov 'window (selected-window))
-        (overlay-put ov 'face
-                     (let ((bg-color (face-background 'default nil)))
-                       `(:background ,bg-color :foreground ,bg-color)))
-        (setq-local cursor-type nil))))
-  (add-hook 'helm-minibuffer-set-up-hook #'helm-hide-minibuffer-maybe)
-
-  ;; Files that helm should know how to open
-  (setq helm-external-programs-associations
-        '(("avi"  . "mpv")
-          ("part" . "mpv")
-          ("mkv"  . "mpv")
-          ("webm" . "mpv")
-          ("mp4"  . "mpv")))
-
-  ;; List of times to show in helm-world-time
-  (setq display-time-world-list '(("PST8PDT" "Mountain View")
-                                  ("America/Denver" "Denver")
-                                  ("EST5EDT" "Boston")
-                                  ("UTC" "UTC")
-                                  ("Europe/London" "London")
-                                  ("Europe/Amsterdam" "Amsterdam")
-                                  ("Asia/Bangkok" "Bangkok")
-                                  ("Asia/Tokyo" "Tokyo")
-                                  ("Australia/Sydney" "Sydney")))
-
-  ;; rebind tab to do persistent action
-  (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action)
-  ;; make TAB works in terminal
-  (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action)
-  ;; list actions using C-z
-  (define-key helm-map (kbd "C-z")  'helm-select-action)
-
-  (define-key helm-map (kbd "C-p")   'helm-previous-line)
-  (define-key helm-map (kbd "C-n")   'helm-next-line)
-  (define-key helm-map (kbd "C-M-n") 'helm-next-source)
-  (define-key helm-map (kbd "C-M-p") 'helm-previous-source)
-  (define-key helm-map (kbd "M-N")   'helm-next-source)
-  (define-key helm-map (kbd "M-P")   'helm-previous-source)
-
-  (when (executable-find "curl")
-    (setq helm-google-suggest-use-curl-p t))
-
-  ;; ggrep is gnu grep on OSX
-  (when (executable-find "ggrep")
     (setq helm-grep-default-command
-          "ggrep -a -d skip %e -n%cH -e %p %f"
+          "grep -a -d skip %e -n%cH -e %p %f"
+          ;; may be overridden if 'ggrep' is in path (see below)
           helm-grep-default-recurse-command
-          "ggrep -a -d recurse %e -n%cH -e %p %f"))
+          "grep -a -d recurse %e -n%cH -e %p %f"
+          ;; use CURL, not url-retrieve-synchronously
+          helm-net-prefer-curl t
+          ;; be idle for this many seconds, before updating in delayed sources.
+          helm-input-idle-delay 0
+          ;; wider buffer name in helm-buffers-list
+          helm-buffer-max-length 28 ;; default is 20
+          ;; instead of "..." use a smaller unicode ellipsis
+          helm-buffers-end-truncated-string "…"
+          ;; open helm buffer in another window
+          ;;helm-split-window-default-side 'other
+          ;; set to nil and use <C-backspace> to toggle it in helm-find-files
+          helm-ff-auto-update-initial-value nil
+          ;; if I change the resplit state, re-use my settings
+          helm-reuse-last-window-split-state t
+          ;; don't delete windows to always have 2
+          helm-always-two-windows nil
+          ;; open helm buffer inside current window, don't occupy whole other window
+          helm-split-window-inside-p t
+          ;; display using my function, not helm's (helm is too slow here)
+          helm-display-function #'deos/display-helm-window
+          ;; display helm in a separate frame
+          ;; helm-display-function 'helm-display-buffer-in-own-frame
+          ;; reuse frame so display is faster on Emacs 26+
+          ;; helm-display-buffer-reuse-frame t
+          ;; helm-display-buffer-width 144
+          ;; helm-display-buffer-height 24
+          ;; use undecorated frame on Emacs 26+
+          helm-use-undecorated-frame-option t
+          ;; don't check if the file exists on remote files
+          helm-buffer-skip-remote-checking t
+          ;; limit the number of displayed canidates
+          helm-candidate-number-limit 100
+          ;; don't use recentf stuff in helm-ff, I use C-x C-r for this
+          helm-ff-file-name-history-use-recentf nil
+          ;; move to end or beginning of source when reaching top or bottom
+          ;; of source
+          helm-move-to-line-cycle-in-source t
+          ;; don't display the header line
+          helm-display-header-line nil
+          ;; verbosity for helm tramp messages
+          helm-tramp-verbose 0
+          ;; fuzzy matching
+          helm-recentf-fuzzy-match t
+          helm-locate-fuzzy-match nil ;; locate fuzzy is worthless
+          helm-M-x-fuzzy-match t
+          helm-buffers-fuzzy-matching t
+          helm-semantic-fuzzy-match nil
+          helm-gtags-fuzzy-match nil
+          helm-imenu-fuzzy-match nil
+          helm-apropos-fuzzy-match nil
+          helm-lisp-fuzzy-completion nil
+          helm-completion-in-region-fuzzy-match nil
+          ;; autoresize to 25 rows
+          helm-autoresize-min-height 25
+          helm-autoresize-max-height 25
+          ;; Here are the things helm-mini shows, I add `helm-source-bookmarks'
+          ;; here to the regular default list
+          helm-mini-default-sources '(helm-source-buffers-list
+                                      helm-source-recentf
+                                      helm-source-bookmarks
+                                      helm-source-buffer-not-found)
+          ;; Reduce the list of things for helm-apropos
+          helm-apropos-function-list '(helm-def-source--emacs-commands
+                                       helm-def-source--emacs-functions
+                                       helm-def-source--emacs-variables
+                                       helm-def-source--emacs-faces))
+    :config
+    (use-package helm-files
+      :config (setq helm-ff-file-compressed-list '("gz" "bz2" "zip" "tgz" "xz" "txz")))
+    (use-package helm-buffers
+      :config
+      (add-to-list 'helm-boring-buffer-regexp-list "^TAGS$"))
+    (use-package helm-mode
+      :diminish helm-mode
+      :init
+      (add-hook 'after-init-hook #'helm-mode)
+      (add-hook 'after-init-hook #'helm-autoresize-mode)
+      (add-hook 'after-init-hook #'helm-adaptive-mode)
+      (add-hook 'after-init-hook #'helm-popup-tip-mode))
+    (use-package helm-sys
+      :init (add-hook 'after-init-hook #'helm-top-poll-mode))
+    (use-package helm-grep
+      :config
+      (setq helm-grep-truncate-lines nil)
+      (define-key helm-grep-mode-map (kbd "<return>")  'helm-grep-mode-jump-other-window)
+      (define-key helm-grep-mode-map (kbd "n")  'helm-grep-mode-jump-other-window-forward)
+      (define-key helm-grep-mode-map (kbd "p")  'helm-grep-mode-jump-other-window-backward)
+      (when (executable-find "rg")
+        (setq helm-grep-ag-command "rg --color=always --colors 'match:fg:black' --colors 'match:bg:yellow' --smart-case --no-heading --line-number %s %s %s"
+              helm-grep-ag-pipe-cmd-switches '("--colors 'match:fg:black'" "--colors 'match:bg:yellow'"))))
+    (use-package helm-man)
+    (use-package helm-misc)
+    (use-package helm-elisp)
+    (use-package helm-imenu)
+    (use-package helm-semantic)
+    (use-package helm-ring)
+    (use-package smex :straight t)
+    (use-package helm-smex :straight t)
+    (use-package helm-bookmark
+      :bind ("C-x M-b" . helm-bookmarks))
+    (use-package projectile-ripgrep :straight t)
+    (use-package helm-projectile
+      :straight t
+      :demand t ;; demand it be loaded!
+      :bind (:map projectile-command-map
+                  ("b" . helm-projectile-switch-to-buffer)
+                  ("d" . helm-projectile-find-dir)
+                  ("f" . helm-projectile-find-file)
+                  ("p" . helm-projectile-switch-project)
+                  ("s s" . helm-projectile-ag)
+                  ("s r" . projectile-ripgrep))
+      :init
+      (setq projectile-switch-project-action 'helm-projectile)
+      (helm-projectile-on)
+      (helm-delete-action-from-source
+       "Grep in projects `C-s'"
+       helm-source-projectile-projects)
+      (helm-add-action-to-source
+       "Ag in project C-s'"
+       'helm-do-ag helm-source-projectile-projects)
+      (bind-key "C-s" (defun helm-projectile-do-ag ()
+                        (interactive)
+                        (helm-exit-and-execute-action #'helm-do-ag))
+                helm-projectile-projects-map)
+      (global-set-key (kbd "C-x f") #'helm-projectile-find-file)
+      :config
+      (setq-default helm-truncate-lines t
+                    helm-projectile-truncate-lines t))
 
-  ;; helm-mini instead of recentf
-  (define-key 'help-command (kbd "C-f") 'helm-apropos)
-  (define-key 'help-command (kbd "r") 'helm-info-emacs)
+    (global-set-key (kbd "C-c h") 'helm-command-prefix)
+    (global-unset-key (kbd "C-x c"))
 
-  (defvar helm-httpstatus-source
-    '((name . "HTTP STATUS")
-      (candidates . (("100 Continue") ("101 Switching Protocols")
-                     ("102 Processing") ("200 OK")
-                     ("201 Created") ("202 Accepted")
-                     ("203 Non-Authoritative Information") ("204 No Content")
-                     ("205 Reset Content") ("206 Partial Content")
-                     ("207 Multi-Status") ("208 Already Reported")
-                     ("300 Multiple Choices") ("301 Moved Permanently")
-                     ("302 Found") ("303 See Other")
-                     ("304 Not Modified") ("305 Use Proxy")
-                     ("307 Temporary Redirect") ("400 Bad Request")
-                     ("401 Unauthorized") ("402 Payment Required")
-                     ("403 Forbidden") ("404 Not Found")
-                     ("405 Method Not Allowed") ("406 Not Acceptable")
-                     ("407 Proxy Authentication Required") ("408 Request Timeout")
-                     ("409 Conflict") ("410 Gone")
-                     ("411 Length Required") ("412 Precondition Failed")
-                     ("413 Request Entity Too Large")
-                     ("414 Request-URI Too Large")
-                     ("415 Unsupported Media Type")
-                     ("416 Request Range Not Satisfiable")
-                     ("417 Expectation Failed") ("418 I'm a teapot")
-                     ("421 Misdirected Request")
-                     ("422 Unprocessable Entity") ("423 Locked")
-                     ("424 Failed Dependency") ("425 No code")
-                     ("426 Upgrade Required") ("428 Precondition Required")
-                     ("429 Too Many Requests")
-                     ("431 Request Header Fields Too Large")
-                     ("449 Retry with") ("500 Internal Server Error")
-                     ("501 Not Implemented") ("502 Bad Gateway")
-                     ("503 Service Unavailable") ("504 Gateway Timeout")
-                     ("505 HTTP Version Not Supported")
-                     ("506 Variant Also Negotiates")
-                     ("507 Insufficient Storage") ("509 Bandwidth Limit Exceeded")
-                     ("510 Not Extended")
-                     ("511 Network Authentication Required")))
-      (action . message)))
+    ;; Use popwin for helm buffers, otherwise I can't get helm to display the way
+    ;; I want (at the bottom, without deleting windows)
+    ;; (when (fboundp 'popwin:special-display-config)
+    ;;   (push '("^\*helm.+\*$" :regexp t :height 20) popwin:special-display-config)
+    ;;   (setq helm-display-function 'popwin:pop-to-buffer))
 
-  (defvar helm-clj-http-source
-    '((name . "clj-http options")
-      (candidates
-       .
-       ((":accept - keyword for content type to accept")
-        (":as - output coercion: :json, :json-string-keys, :clojure, :stream, :auto or string")
-        (":basic-auth - string or vector of basic auth creds")
-        (":body - body of request")
-        (":body-encoding - encoding type for body string")
-        (":client-params - apache http client params")
-        (":coerce - when to coerce response body: :always, :unexceptional, :exceptional")
-        (":conn-timeout - timeout for connection")
-        (":connection-manager - connection pooling manager")
-        (":content-type - content-type for request")
-        (":cookie-store - CookieStore object to store/retrieve cookies")
-        (":cookies - map of cookie name to cookie map")
-        (":debug - boolean to print info to stdout")
-        (":debug-body - boolean to print body debug info to stdout")
-        (":decode-body-headers - automatically decode body headers")
-        (":decompress-body - whether to decompress body automatically")
-        (":digest-auth - vector of digest authentication")
-        (":follow-redirects - boolean whether to follow HTTP redirects")
-        (":form-params - map of form parameters to send")
-        (":headers - map of headers")
-        (":ignore-unknown-host? - whether to ignore inability to resolve host")
-        (":insecure? - boolean whether to accept invalid SSL certs")
-        (":json-opts - map of json options to be used for form params")
-        (":keystore - file path to SSL keystore")
-        (":keystore-pass - password for keystore")
-        (":keystore-type - type of SSL keystore")
-        (":length - manually specified length of body")
-        (":max-redirects - maximum number of redirects to follow")
-        (":mime-subtype - type for multipart mime parts")
-        (":multipart - vector of multipart options")
-        (":oauth-token - oauth token")
-        (":proxy-host - hostname of proxy server")
-        (":proxy-ignore-hosts - set of hosts to ignore for proxy")
-        (":proxy-post - port for proxy server")
-        (":query-params - map of query parameters")
-        (":raw-headers - boolean whether to return raw headers with response")
-        (":response-interceptor - function called for each redirect")
-        (":retry-handler - function to handle HTTP retries on IOException")
-        (":save-request? - boolean to return original request with response")
-        (":socket-timeout - timeout for establishing socket")
-        (":throw-entire-message? - whether to throw the entire response on errors")
-        (":throw-exceptions - boolean whether to throw exceptions on 5xx & 4xx")
-        (":trust-store - file path to trust store")
-        (":trust-store-pass - password for trust store")
-        (":trust-store-type - type of trust store")))
-      (action . message)))
+    ;; Shows helm input in the header instead of the footer
+    (setq helm-echo-input-in-header-line t)
+    (defun helm-hide-minibuffer-maybe ()
+      "Hide minibuffer in Helm session if we use the header line as input field."
+      (when (with-helm-buffer helm-echo-input-in-header-line)
+        (let ((ov (make-overlay (point-min) (point-max) nil nil t)))
+          (overlay-put ov 'window (selected-window))
+          (overlay-put ov 'face
+                       (let ((bg-color (face-background 'default nil)))
+                         `(:background ,bg-color :foreground ,bg-color)))
+          (setq-local cursor-type nil))))
+    (add-hook 'helm-minibuffer-set-up-hook #'helm-hide-minibuffer-maybe)
 
-  (defun helm-httpstatus ()
-    (interactive)
-    (helm-other-buffer '(helm-httpstatus-source) "*helm httpstatus*"))
+    ;; Files that helm should know how to open
+    (setq helm-external-programs-associations
+          '(("avi"  . "mpv")
+            ("part" . "mpv")
+            ("mkv"  . "mpv")
+            ("webm" . "mpv")
+            ("mp4"  . "mpv")))
 
-  (defun helm-clj-http ()
-    (interactive)
-    (helm-other-buffer '(helm-clj-http-source) "*helm clj-http flags*")))
+    ;; List of times to show in helm-world-time
+    (setq display-time-world-list '(("PST8PDT" "Mountain View")
+                                    ("America/Denver" "Denver")
+                                    ("EST5EDT" "Boston")
+                                    ("UTC" "UTC")
+                                    ("Europe/London" "London")
+                                    ("Europe/Amsterdam" "Amsterdam")
+                                    ("Asia/Bangkok" "Bangkok")
+                                    ("Asia/Tokyo" "Tokyo")
+                                    ("Australia/Sydney" "Sydney")))
+
+    ;; rebind tab to do persistent action
+    (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action)
+    ;; make TAB works in terminal
+    (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action)
+    ;; list actions using C-z
+    (define-key helm-map (kbd "C-z")  'helm-select-action)
+
+    (define-key helm-map (kbd "C-p")   'helm-previous-line)
+    (define-key helm-map (kbd "C-n")   'helm-next-line)
+    (define-key helm-map (kbd "C-M-n") 'helm-next-source)
+    (define-key helm-map (kbd "C-M-p") 'helm-previous-source)
+    (define-key helm-map (kbd "M-N")   'helm-next-source)
+    (define-key helm-map (kbd "M-P")   'helm-previous-source)
+
+    (when (executable-find "curl")
+      (setq helm-google-suggest-use-curl-p t))
+
+    ;; ggrep is gnu grep on OSX
+    (when (executable-find "ggrep")
+      (setq helm-grep-default-command
+            "ggrep -a -d skip %e -n%cH -e %p %f"
+            helm-grep-default-recurse-command
+            "ggrep -a -d recurse %e -n%cH -e %p %f"))
+
+    ;; helm-mini instead of recentf
+    (define-key 'help-command (kbd "C-f") 'helm-apropos)
+    (define-key 'help-command (kbd "r") 'helm-info-emacs)
+
+    (defvar helm-httpstatus-source
+      '((name . "HTTP STATUS")
+        (candidates . (("100 Continue") ("101 Switching Protocols")
+                       ("102 Processing") ("200 OK")
+                       ("201 Created") ("202 Accepted")
+                       ("203 Non-Authoritative Information") ("204 No Content")
+                       ("205 Reset Content") ("206 Partial Content")
+                       ("207 Multi-Status") ("208 Already Reported")
+                       ("300 Multiple Choices") ("301 Moved Permanently")
+                       ("302 Found") ("303 See Other")
+                       ("304 Not Modified") ("305 Use Proxy")
+                       ("307 Temporary Redirect") ("400 Bad Request")
+                       ("401 Unauthorized") ("402 Payment Required")
+                       ("403 Forbidden") ("404 Not Found")
+                       ("405 Method Not Allowed") ("406 Not Acceptable")
+                       ("407 Proxy Authentication Required") ("408 Request Timeout")
+                       ("409 Conflict") ("410 Gone")
+                       ("411 Length Required") ("412 Precondition Failed")
+                       ("413 Request Entity Too Large")
+                       ("414 Request-URI Too Large")
+                       ("415 Unsupported Media Type")
+                       ("416 Request Range Not Satisfiable")
+                       ("417 Expectation Failed") ("418 I'm a teapot")
+                       ("421 Misdirected Request")
+                       ("422 Unprocessable Entity") ("423 Locked")
+                       ("424 Failed Dependency") ("425 No code")
+                       ("426 Upgrade Required") ("428 Precondition Required")
+                       ("429 Too Many Requests")
+                       ("431 Request Header Fields Too Large")
+                       ("449 Retry with") ("500 Internal Server Error")
+                       ("501 Not Implemented") ("502 Bad Gateway")
+                       ("503 Service Unavailable") ("504 Gateway Timeout")
+                       ("505 HTTP Version Not Supported")
+                       ("506 Variant Also Negotiates")
+                       ("507 Insufficient Storage") ("509 Bandwidth Limit Exceeded")
+                       ("510 Not Extended")
+                       ("511 Network Authentication Required")))
+        (action . message)))
+
+    (defvar helm-clj-http-source
+      '((name . "clj-http options")
+        (candidates
+         .
+         ((":accept - keyword for content type to accept")
+          (":as - output coercion: :json, :json-string-keys, :clojure, :stream, :auto or string")
+          (":basic-auth - string or vector of basic auth creds")
+          (":body - body of request")
+          (":body-encoding - encoding type for body string")
+          (":client-params - apache http client params")
+          (":coerce - when to coerce response body: :always, :unexceptional, :exceptional")
+          (":conn-timeout - timeout for connection")
+          (":connection-manager - connection pooling manager")
+          (":content-type - content-type for request")
+          (":cookie-store - CookieStore object to store/retrieve cookies")
+          (":cookies - map of cookie name to cookie map")
+          (":debug - boolean to print info to stdout")
+          (":debug-body - boolean to print body debug info to stdout")
+          (":decode-body-headers - automatically decode body headers")
+          (":decompress-body - whether to decompress body automatically")
+          (":digest-auth - vector of digest authentication")
+          (":follow-redirects - boolean whether to follow HTTP redirects")
+          (":form-params - map of form parameters to send")
+          (":headers - map of headers")
+          (":ignore-unknown-host? - whether to ignore inability to resolve host")
+          (":insecure? - boolean whether to accept invalid SSL certs")
+          (":json-opts - map of json options to be used for form params")
+          (":keystore - file path to SSL keystore")
+          (":keystore-pass - password for keystore")
+          (":keystore-type - type of SSL keystore")
+          (":length - manually specified length of body")
+          (":max-redirects - maximum number of redirects to follow")
+          (":mime-subtype - type for multipart mime parts")
+          (":multipart - vector of multipart options")
+          (":oauth-token - oauth token")
+          (":proxy-host - hostname of proxy server")
+          (":proxy-ignore-hosts - set of hosts to ignore for proxy")
+          (":proxy-post - port for proxy server")
+          (":query-params - map of query parameters")
+          (":raw-headers - boolean whether to return raw headers with response")
+          (":response-interceptor - function called for each redirect")
+          (":retry-handler - function to handle HTTP retries on IOException")
+          (":save-request? - boolean to return original request with response")
+          (":socket-timeout - timeout for establishing socket")
+          (":throw-entire-message? - whether to throw the entire response on errors")
+          (":throw-exceptions - boolean whether to throw exceptions on 5xx & 4xx")
+          (":trust-store - file path to trust store")
+          (":trust-store-pass - password for trust store")
+          (":trust-store-type - type of trust store")))
+        (action . message)))
+
+    (defun helm-httpstatus ()
+      (interactive)
+      (helm-other-buffer '(helm-httpstatus-source) "*helm httpstatus*"))
+
+    (defun helm-clj-http ()
+      (interactive)
+      (helm-other-buffer '(helm-clj-http-source) "*helm clj-http flags*")))
 
   (use-package helm-ls-git
-    :ensure t
+    :straight t
     :bind ("C-x C-d" . helm-browse-project))
 
   (use-package helm-ls-hg
-    :ensure t)
+    :straight t)
 
-    (use-package helm-ag
-  :ensure t)
+  (use-package helm-ag
+    :straight t)
 
-(use-package helm-swoop
-  :ensure t
-  :bind (("M-i" . helm-swoop)
-         ("M-I" . helm-swoop-back-to-last-point)
-         ("C-c M-i" . helm-multi-swoop))
-  :config
-  ;; When doing isearch, hand the word over to helm-swoop
-  (define-key isearch-mode-map (kbd "M-i") 'helm-swoop-from-isearch)
-  ;; From helm-swoop to helm-multi-swoop-all
-  (define-key helm-swoop-map (kbd "M-i") 'helm-multi-swoop-all-from-helm-swoop)
-  ;; Save buffer when helm-multi-swoop-edit complete
-  (setq helm-multi-swoop-edit-save t
-        ;; If this value is t, split window inside the current window
-        helm-swoop-split-with-multiple-windows t
-        ;; Split direcion. 'split-window-vertically or 'split-window-horizontally
-        helm-swoop-split-direction 'split-window-vertically
-        ;; don't auto select the thing at point
-        helm-swoop-pre-input-function (lambda () "")
-        ;; If nil, you can slightly boost invoke speed in exchange for text
-        ;; color. If I want pretty I'll use helm-occur since it keeps colors
-        helm-swoop-speed-or-color nil))
-(use-package helm-descbinds
-  :ensure t
-  :bind ("C-h b" . helm-descbinds)
-  :init (fset 'describe-bindings 'helm-descbinds))
-
-(use-package helm-flyspell
-  :ensure t
-  :after helm
-  :bind (:map flyspell-mode-map
-              ("C-;" . helm-flyspell-correct)))
-
-(use-package projectile
-  :ensure t
-  :defer 5
-  :commands projectile-global-mode
-  :diminish projectile-mode
-  :init (add-hook 'after-init-hook #'projectile-global-mode)
-  :config
-  (bind-key "C-c p b" #'projectile-switch-to-buffer #'projectile-command-map)
-  (bind-key "C-c p K" #'projectile-kill-buffers #'projectile-command-map)
-
-  ;; global ignores
-  (add-to-list 'projectile-globally-ignored-files ".tern-port")
-  (add-to-list 'projectile-globally-ignored-files "GTAGS")
-  (add-to-list 'projectile-globally-ignored-files "GPATH")
-  (add-to-list 'projectile-globally-ignored-files "GRTAGS")
-  (add-to-list 'projectile-globally-ignored-files "GSYMS")
-  (add-to-list 'projectile-globally-ignored-files ".DS_Store")
-  ;; always ignore .class files
-  (add-to-list 'projectile-globally-ignored-file-suffixes ".class")
-  (use-package helm-projectile
-    :ensure t
-    :init
-    (use-package grep) ;; required for helm-ag to work properly
-    (setq projectile-completion-system 'helm)
-    ;; no fuzziness for projectile-helm
-    (setq helm-projectile-fuzzy-match nil)
-    (helm-projectile-on)
+  (use-package helm-swoop
+    :straight t
+    :bind (("M-i" . helm-swoop)
+           ("M-I" . helm-swoop-back-to-last-point)
+           ("C-c M-i" . helm-multi-swoop))
     :config
-    ;; Add multi-compile to the mix for projects
-    (defun helm-projectile-multi-compile-project (dir)
-      "A Helm action to invoke multi-compile on a project.
-`dir' is the project root."
-      (let ((default-directory dir))
-        (multi-compile-run)))
+    ;; When doing isearch, hand the word over to helm-swoop
+    (define-key isearch-mode-map (kbd "M-i") 'helm-swoop-from-isearch)
+    ;; From helm-swoop to helm-multi-swoop-all
+    (define-key helm-swoop-map (kbd "M-i") 'helm-multi-swoop-all-from-helm-swoop)
+    ;; Save buffer when helm-multi-swoop-edit complete
+    (setq helm-multi-swoop-edit-save t
+          ;; If this value is t, split window inside the current window
+          helm-swoop-split-with-multiple-windows t
+          ;; Split direcion. 'split-window-vertically or 'split-window-horizontally
+          helm-swoop-split-direction 'split-window-vertically
+          ;; don't auto select the thing at point
+          helm-swoop-pre-input-function (lambda () "")
+          ;; If nil, you can slightly boost invoke speed in exchange for text
+          ;; color. If I want pretty I'll use helm-occur since it keeps colors
+          helm-swoop-speed-or-color nil))
+  (use-package helm-descbinds
+    :straight t
+    :bind ("C-h b" . helm-descbinds)
+    :init (fset 'describe-bindings 'helm-descbinds))
 
-    ;; Add new projectile binding for multi-compile
-    (helm-projectile-define-key helm-projectile-projects-map
-      (kbd "M-m")  #'helm-projectile-multi-compile-project)))
+  (use-package helm-flyspell
+    :straight t
+    :after helm
+    :bind (:map flyspell-mode-map
+                ("C-;" . helm-flyspell-correct)))
+
+    (use-package helm-projectile
+      :straight t
+      :init
+      (use-package grep) ;; required for helm-ag to work properly
+      (setq projectile-completion-system 'helm)
+      ;; no fuzziness for projectile-helm
+      (setq helm-projectile-fuzzy-match nil)
+      (helm-projectile-on)
+      :config
+      ;; Add multi-compile to the mix for projects
+      (defun helm-projectile-multi-compile-project (dir)
+        "A Helm action to invoke multi-compile on a project.
+  `dir' is the project root."
+        (let ((default-directory dir))
+          (multi-compile-run)))
+
+      ;; Add new projectile binding for multi-compile
+      (helm-projectile-define-key helm-projectile-projects-map
+        (kbd "M-m")  #'helm-projectile-multi-compile-project)))
 
 #+END_SRC
 * Completion
@@ -2744,7 +3007,7 @@ bindings I use more frequently:
 (add-to-list 'completion-styles 'initials t)
 
 (use-package company
-  :ensure t
+  :straight t
   :diminish
   :bind ((:map company-mode-map ("M-/" . company-complete))
          (:map company-active-map ("M-/" . company-other-backend)
@@ -2759,11 +3022,11 @@ bindings I use more frequently:
                 company-tooltip-align-annotations t)
 
     (use-package company-quickhelp
-      :ensure t
+      :straight t
       :hook (after-init . company-quickhelp-mode))
 
     (use-package company-anaconda
-      :ensure t
+      :straight t
       :config
       (add-to-list 'company-backends 'company-anaconda)))
 ;; Suspend page-break-lines-mode while company menu is active
@@ -2787,7 +3050,7 @@ bindings I use more frequently:
 ** Yasnippets
 #+BEGIN_SRC emacs-lisp
 (use-package yasnippet
-    :ensure t
+    :straight t
     :diminish yas-minor-mode
     :config
     (add-to-list 'yas-snippet-dirs "~/.emacs.d/snippets")
@@ -2880,7 +3143,7 @@ And now let's add a hydra for the skeletons
 ** Writegood mode
 #+BEGIN_SRC emacs-lisp
 (use-package writegood-mode
-  :ensure t
+  :straight t
   :bind ("C-c w" . writegood-mode)
   :config
   (add-to-list 'writegood-weasel-words "actionable"))
@@ -2888,7 +3151,7 @@ And now let's add a hydra for the skeletons
 ** Markup
 #+BEGIN_SRC emacs-lisp
 (use-package markdown-mode
-  :ensure t
+  :straight t
   :mode (("\\`README\\.md\\'" . gfm-mode)
          ("github\\.com.*\\.txt\\'" . gfm-mode)
          ("\\.md\\'" . markdown-mode)
@@ -2903,12 +3166,12 @@ And now let's add a hydra for the skeletons
 ** Asciidocs
 #+BEGIN_SRC emacs-lisp
 (use-package adoc-mode
-  :ensure t)
+  :straight t)
 #+END_SRC
 ** Thesaurus
 #+BEGIN_SRC emacs-lisp
 (use-package synosaurus
-  :ensure t
+  :straight t
   :init
   (setq-default synosaurus-backend 'synosaurus-backend-wordnet)
   (add-hook 'after-init-hook #'synosaurus-mode))
@@ -2916,7 +3179,7 @@ And now let's add a hydra for the skeletons
 ** Fill me in
 #+BEGIN_SRC emacs-lisp
 (use-package fill-column-indicator
-  :ensure t
+  :straight t
   :config
   ;; fix for org -> html export
   (defun fci-mode-override-advice (&rest args))
@@ -2989,7 +3252,7 @@ Turn off whitespace mode when exporting org documents
 ** Highlight indentions
 #+BEGIN_SRC emacs-lisp
 (use-package highlight-indent-guides
-  :ensure t
+  :straight t
   :init
   (setq highlight-indent-guides-method 'character)
   (add-hook 'prog-mode-hook #'highlight-indent-guides-mode))
@@ -2997,7 +3260,7 @@ Turn off whitespace mode when exporting org documents
 ** Flycheck
 #+BEGIN_SRC emacs-lisp
     (use-package flycheck
-      :ensure t
+      :straight t
       :hook (after-init . global-flycheck-mode)
       :init
       (defun my/use-eslint-from-node-modules ()
@@ -3014,7 +3277,7 @@ Turn off whitespace mode when exporting org documents
        (add-to-list 'flycheck-checkers 'proselint)
        (setq flycheck-display-errors-function #'flycheck-display-error-messages-unless-error-list)
        (use-package flycheck-color-mode-line
-         :ensure t)
+         :straight t)
          :hook (flycheck-mode . flycheck-color-mode-line-mode))
 #+END_SRC
 ** Proselint
@@ -3037,7 +3300,7 @@ Help keep those parenthesys balanced
 
 #+BEGIN_SRC emacs-lisp
   (use-package smartparens
-    :ensure t
+    :straight t
     :config
     (add-hook 'prog-mode-hook 'smartparens-mode))
 #+END_SRC
@@ -3046,7 +3309,7 @@ Help keep those parenthesys balanced
 Show me the parenthesys
 #+BEGIN_SRC emacs-lisp
   (use-package rainbow-delimiters
-    :ensure t
+    :straight t
     :config
     (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
 #+END_SRC
@@ -3054,7 +3317,7 @@ Show me the parenthesys
 ** Highlight colors
 #+BEGIN_SRC emacs-lisp
   (use-package rainbow-mode
-    :ensure t
+    :straight t
     :diminish rainbow-mode
     :config
     (setq rainbow-x-colors nil)
@@ -3081,22 +3344,15 @@ Show me the parenthesys
 ** A dash of smartness
 #+BEGIN_SRC emacs-lisp
   (use-package smart-dash
-    :ensure t
+    :straight t
     :config
     (add-hook 'python-mode-hook 'smart-dash-mode))
 #+END_SRC
-** Code Style
-I like the google code style
-#+BEGIN_SRC emacs-lisp
-(use-package google-c-style
-  :ensure t)
-#+END_SRC
-
 ** Dumb-jump
 For jumping dumbly
 #+BEGIN_SRC emacs-lisp
 (use-package dumb-jump
-    :ensure t
+    :straight t
     :diminish dumb-jump-mode
     :bind (("C-M-g" . dumb-jump-go)
            ("C-M-p" . dumb-jump-back)
@@ -3117,20 +3373,20 @@ For jumping dumbly
 ** Editorconfig support
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package editorconfig
-  :ensure t
+  :straight t
   :config
   (editorconfig-mode 1))
 #+END_SRC
 ** Highlight escape sequences
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package highlight-escape-sequences
-  :ensure t
+  :straight t
   :hook (after-init . hes-mode))
 #+END_SRC
 ** Highlight symbols
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package symbol-overlay
-  :ensure t
+  :straight t
   :diminish t
   :config
   :bind (:map symbol-overlay-mode-map
@@ -3142,7 +3398,7 @@ For jumping dumbly
 ** Browse the kill ring
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package browse-kill-ring
-  :ensure t
+  :straight t
   :bind (("M-Y" . browse-kill-ring)
          (:map browse-kill-ring-mode-map
                ("C-g" . browse-kill-ring-quit)
@@ -3153,14 +3409,10 @@ For jumping dumbly
   :config
   (add-to-list 'page-break-lines-modes 'browse-kill-ring-mode))
 #+END_SRC
-** Show matching parenthesis
-#+BEGIN_SRC emacs-lisp :tangle yes
-(add-hook 'after-init-hook 'show-paren-mode)
-#+END_SRC
 ** Cut/copy the line if no region is selected
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package whole-line-or-region
-  :ensure t
+  :straight t
   :diminish t
   :hook (after-init . whole-line-or-region-global-mode))
 #+END_SRC
@@ -3228,11 +3480,11 @@ For jumping dumbly
    (normal-mode)))
 
 (use-package info-colors
-  :ensure t
+  :straight t
   :hook (Info-selection . info-colors-fontify-node))
 
 (use-package regex-tool
-  :ensure t
+  :straight t
   :config
   (setq-default regex-tool-backend 'perl))
 
@@ -3256,11 +3508,11 @@ For jumping dumbly
       (customize-set-variable 'diredp-hide-details-initially-flag nil)
       (use-package dired+
         :disabled t
-        :ensure t)
+        :straight t)
       (use-package dired-aux
         :init
         (use-package dired-async
-          :ensure async))
+          :straight async))
       (put 'dired-find-alternate-file 'disabled nil)
       (setq ls-lisp-dirs-first t
             dired-recursive-copies 'always
@@ -3283,7 +3535,7 @@ For jumping dumbly
 ** Quick-preview provides a nice preview of the thing under the cursor
 #+BEGIN_SRC emacs-lisp
 (use-package quick-preview
-  :ensure t
+  :straight t
   :init
   (global-set-key (kbd "C-c q") 'quick-preview-at-point)
   (define-key dired-mode-map (kbd "Q") 'quick-preview-at-point))
@@ -3291,7 +3543,7 @@ For jumping dumbly
 
 ** Let's use async for everything in dired
 #+BEGIN_SRC emacs-lisp
-(use-package async :ensure t)
+(use-package async :straight t)
 (autoload 'dired-async-mode "dired-async.el" nil t)
 (dired-async-mode 1)
 #+END_SRC
@@ -3299,14 +3551,14 @@ For jumping dumbly
 ** Filter dired results with a filter
 #+BEGIN_SRC emacs-lisp
     (use-package dired-narrow
-      :ensure t
+      :straight t
       :bind (:map dired-mode-map ("/" . dired-narrow)))
 #+END_SRC
 
 ** Icons in a buffer
 #+BEGIN_SRC emacs-lisp
 (use-package all-the-icons-dired
-  :ensure t
+  :straight t
   :diminish all-the-icons-dired-mode
   :init
   (add-hook 'dired-mode-hook 'all-the-icons-dired-mode))
@@ -3315,7 +3567,7 @@ For jumping dumbly
 ** Neotree
 #+BEGIN_SRC emacs-lisp
 (use-package neotree
-  :ensure t
+  :straight t
   :config
   (global-set-key (kbd "C-c n") 'neotree-toggle)
   (setq neo-theme 'arrow)
@@ -3329,7 +3581,7 @@ For jumping dumbly
 The be all, end all mode for all things git
 #+BEGIN_SRC emacs-lisp
 (use-package magit
-  :ensure t
+  :straight t
   :bind (("C-x g" . magit-status)
          ("C-x M-g" . magit-dispatch))
   :config
@@ -3350,10 +3602,10 @@ The be all, end all mode for all things git
     (define-key magit-status-mode-map (kbd "C-M-<up>") 'magit-section-up))
 
   (use-package magit-todos
-    :ensure t)
+    :straight t)
 
   (use-package fullframe
-    :ensure t
+    :straight t
     :config
     (with-eval-after-load 'magit
       (fullframe magit-status magit-mode-quit-window)))
@@ -3392,44 +3644,44 @@ The be all, end all mode for all things git
 ** Various Git helpers
 #+BEGIN_SRC emacs-lisp
 (use-package git-blamed
-  :ensure t)
+  :straight t)
 
 (use-package gitignore-mode
-  :ensure t)
+  :straight t)
 
 (use-package gitconfig-mode
-  :ensure t)
+  :straight t)
 
 (use-package git-timemachine
-  :ensure t
+  :straight t
   :bind (("C-x v t" . git-timemachine-toggle))
   )
 (use-package git-commit
-  :ensure t
+  :straight t
   :hook (git-commit-mode . goto-address-mode))
 #+END_SRC
 ** Github
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package yagist
-  :ensure t)
+  :straight t)
 (use-package bug-reference-github
-  :ensure t
+  :straight t
   :hook (prog-mode . bug-reference-prog-mode))
 
 (use-package github-clone
-  :ensure t)
+  :straight t)
 
 (use-package forge
-  :ensure t)
+  :straight t)
 
 (use-package github-review
-  :ensure t)
+  :straight t)
 #+END_SRC
 * VC
 #+BEGIN_SRC emacs-lisp :tangle yes
 
 (use-package diff-hl
-  :ensure t
+  :straight t
   :hook ((magit-post-refresh . diff-hl-magit-post-refresh)
          (after-init . global-diff-hl-mode))
   :config
@@ -3439,7 +3691,7 @@ The be all, end all mode for all things git
       'diff-hl-diff-goto-hunk)))
 
 (use-package browse-at-remote
-  :ensure t)
+  :straight t)
 #+END_SRC
 * Programming Modes
 ** Python
@@ -3451,7 +3703,7 @@ The be all, end all mode for all things git
 
 (when (executable-find "jupyter")
   (use-package ob-ipython
-    :ensure t
+    :straight t
     :config
     (use-package company
       :config
@@ -3459,7 +3711,7 @@ The be all, end all mode for all things git
     (add-to-list 'org-latex-minted-langs '(ipython "python"))))
 
 (use-package virtualenvwrapper
-  :ensure t
+  :straight t
   :defer t
   :init
   (progn
@@ -3469,7 +3721,7 @@ The be all, end all mode for all things git
                             "~/.virtualenvs"))))
 ;; this requires some setup pip install jedi flake8 autopep8 yapf
 ;; (use-package elpy
-;;   :ensure t
+;;   :straight t
 ;;   :defer t
 ;;   :init
 ;;   (elpy-enable)
@@ -3477,7 +3729,7 @@ The be all, end all mode for all things git
 ;;   (setq elpy-test-django-with-manage t))
 
 (use-package anaconda-mode
-  :ensure t
+  :straight t
   :config
   (add-hook 'python-mode-hook 'anaconda-mode)
   (add-hook 'python-mode-hook 'anaconda-eldoc-mode))
@@ -3485,29 +3737,29 @@ The be all, end all mode for all things git
 *** Kivy
 #+BEGIN_SRC emacs-lisp
 (use-package kivy-mode
-  :ensure t
+  :straight t
   :mode ("\\.kv\\'" . kivy-mode))
 #+END_SRC
 ** C
 #+BEGIN_SRC emacs-lisp
     (use-package irony
-      :ensure t
+      :straight t
       :hook (c-mode . irony-mode))
   (use-package company-irony
-    :ensure t
+    :straight t
     :config
     (add-to-list 'company-backends 'company-irony))
 (use-package flycheck-irony
-  :ensure t
+  :straight t
   :hook (flycheck-mode . flycheck-irony-setup))
 #+END_SRC
 ** C Sharp
 #+BEGIN_SRC emacs-lisp
   (use-package csharp-mode
-    :ensure t)
+    :straight t)
 
 (use-package omnisharp
-  :ensure t
+  :straight t
   :hook ((csharp-mode . omnisharp-mode)
          ;; TODO: 'before-save runs globally - make this buffer local?
          (before-save . omnisharp-code-format-entire-file))
@@ -3517,7 +3769,7 @@ The be all, end all mode for all things git
 ** Groovy
 #+BEGIN_SRC emacs-lisp
 (use-package groovy-mode
-  :ensure t
+  :straight t
   :config
   (setq groovy-indent-offset 2))
 #+END_SRC
@@ -3532,7 +3784,7 @@ let's try all of the major ones
 #+END_SRC
 *** Setup java mode
 #+BEGIN_SRC emacs-lisp
-(use-package shut-up :ensure t)
+(use-package shut-up :straight t)
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp
@@ -3548,11 +3800,7 @@ let's try all of the major ones
   (setq-local fill-column 100)
   (when (fboundp 'deos/turn-on-whitespace-mode)
     (whitespace-mode -1)
-    (deos/turn-on-whitespace-mode))
-  ;; hide the initial comment in the file (usually a license) if hs-minor-mode
-  ;; is enabled
-  (when (boundp' hs-minor-mode)
-    (hs-hide-initial-comment-block)))
+    (deos/turn-on-whitespace-mode)))
 (add-hook 'java-mode-hook #'deos/setup-java)
 (require 'compile)
 (add-to-list 'compilation-error-regexp-alist
@@ -3562,14 +3810,14 @@ let's try all of the major ones
 *** Backspace deletes whole line
 #+BEGIN_SRC emacs-lisp
 (use-package smart-backspace
-  :ensure t
+  :straight t
   :bind ("<C-M-backspace>" . smart-backspace))
 #+END_SRC
 
 *** Java imports
 #+BEGIN_SRC emacs-lisp
 (use-package java-imports
-  :ensure t
+  :straight t
   :config
   (setq java-imports-find-block-function 'java-imports-find-place-sorted-block)
   (add-hook 'java-mode-hook 'java-imports-scan-file))
@@ -3578,7 +3826,7 @@ let's try all of the major ones
 *** Eclim
 #+BEGIN_SRC emacs-lisp
 (use-package eclim
-  :ensure t
+  :straight t
   :disabled t
   :init
   ;; only show errors
@@ -3586,7 +3834,7 @@ let's try all of the major ones
   (when deos/use-eclim
     (add-hook 'java-mode-hook #'eclim-mode)
     (use-package company-emacs-eclim
-      :ensure t
+      :straight t
       :init (company-emacs-eclim-setup))))
 #+END_SRC
 
@@ -3610,7 +3858,7 @@ First you have to install sdkman http://sdkman.io
         helm-gtags-pulse-at-cursor t
         helm-gtags-suggested-key-mapping t)
   (use-package helm-gtags
-    :ensure t
+    :straight t
     ;; not needed because of smart-jump
     :init (helm-gtags-mode t)
     :diminish ""
@@ -3635,7 +3883,7 @@ First you have to install sdkman http://sdkman.io
   (setq ggtags-completing-read-function nil))
 
 (use-package ggtags
-  :ensure t
+  :straight t
   :defer t
   :init
   (progn
@@ -3653,13 +3901,13 @@ First you have to install sdkman http://sdkman.io
 *** JAVA debugging
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package realgud
-  :ensure t)
+  :straight t)
 #+END_SRC
 
 *** Meghanada
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package meghanada
-  :ensure t
+  :straight t
   :init
   ;; Don't auto-start
   (setq meghanada-auto-start nil)
@@ -3673,26 +3921,27 @@ First you have to install sdkman http://sdkman.io
 #+BEGIN_SRC emacs-lisp :tangle yes
 (when (file-exists-p "~/.emacs.d/eclipse.jdt.ls")
   (use-package lsp-mode
-    :ensure t
+    :straight t
     :init
     (when deos/use-lsp
       (use-package lsp-java
-        :ensure t
+        :straight t
         :init
         (require 'lsp-java)
         (require 'lsp-mode)
         (add-hook 'java-mode-hook #'lsp-java-enable)))
     :config
     (use-package lsp-ui
-      :ensure t)))
+      :straight t)))
 #+END_SRC
 
 ** Javascript
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (maybe-require-package 'json-mode)
-  (maybe-require-package 'js2-mode)
-  (maybe-require-package 'typescript-mode)
-  (maybe-require-package 'prettier-js)
+  (use-package json-mode
+:straight t)
+  (use-package js2-mode :straight t)
+  (use-package typescript-mode :straight t)
+  (use-package prettier-js :straight t)
 
   ;; Need to first remove from list if present, since elpa adds entries too, which
   ;; may be in an arbitrary order
@@ -3737,7 +3986,8 @@ First you have to install sdkman http://sdkman.io
 
 
   (when (and (or (executable-find "rg") (executable-find "ag"))
-             (maybe-require-package 'xref-js2))
+             (use-package xref-js2
+:straight t))
     (when (executable-find "rg")
       (setq-default xref-js2-search-program 'rg))
     (defun sanityinc/enable-xref-js2 ()
@@ -3753,7 +4003,7 @@ First you have to install sdkman http://sdkman.io
   ;; Run and interact with an inferior JS via js-comint.el
   ;; ---------------------------------------------------------------------------
 
-  (when (maybe-require-package 'js-comint)
+  (when (use-package js-comint :straight t)
     (setq js-comint-program-command "node")
 
     (defvar inferior-js-minor-mode-map (make-sparse-keymap))
@@ -3765,18 +4015,31 @@ First you have to install sdkman http://sdkman.io
       nil " InfJS" inferior-js-minor-mode-map)
 
     (dolist (hook '(js2-mode-hook js-mode-hook))
-      (add-hook hook 'inferior-js-keys-mode)))
+      (add-hook hook 'inferior-js-keys-mode))
+    (setq inferior-js-program-command "node")
+    (setq inferir-js-mode-hook
+          (lambda ()
+            ;; We lke nice colors
+            (ansi-color-for-comint-mode-on)
+            (add-to-list 'comint-preoutput-filter-functions
+                         (lambda (output)
+                           (replace-regexp-in-string ".*1G\.\.\..*5G" "..."
+                                                     (replace-regexp-in-string ".*1G.*3G" " > " output))))))
+    (global-set-key (kbd "M-g n") 'run-js)
+    (global-set-key (kbd "M-g m") 'js-send-region))
 
   ;; ---------------------------------------------------------------------------
   ;; Alternatively, use skewer-mode
   ;; ---------------------------------------------------------------------------
 
-  (when (maybe-require-package 'skewer-mode)
+  (when (use-package skewer-mode
+:straight t)
     (with-eval-after-load 'skewer-mode
       (add-hook 'skewer-mode-hook
                 (lambda () (inferior-js-keys-mode -1)))))
 
-  (when (maybe-require-package 'add-node-modules-path)
+  (when (use-package add-node-modules-path
+:straight t)
     (dolist (mode '(typescript-mode js-mode js2-mode coffee-mode))
       (add-hook (derived-mode-hook-name mode) 'add-node-modules-path)))
 #+END_SRC
@@ -3785,7 +4048,7 @@ First you have to install sdkman http://sdkman.io
 SX is a stack overflow client that you can use in Emacs
 #+BEGIN_SRC emacs-lisp
 (use-package sx
-  :ensure t
+  :straight t
   :config
   (bind-keys :prefix "C-c s"
              :prefix-map my-sx-map
@@ -3839,14 +4102,14 @@ external browser
   (add-hook 'eww-mode-hook #'toggle-word-wrap)
   (add-hook 'eww-mode-hook #'visual-line-mode)
   :config
-  (use-package s :ensure t)
+  (use-package s :straight t)
   (define-key eww-mode-map "o" 'eww)
   (define-key eww-mode-map "O" 'eww-browse-with-external-browser)
   (define-key eww-mode-map "j" 'next-line)
   (define-key eww-mode-map "k" 'previous-line)
 
   (use-package eww-lnum
-    :ensure t
+    :straight t
     :config
     (bind-key "f" #'eww-lnum-follow eww-mode-map)
     (bind-key "U" #'eww-lnum-universal eww-mode-map)))
@@ -3855,14 +4118,14 @@ external browser
 Vimperator for EWW
 #+BEGIN_SRC emacs-lisp
 (use-package link-hint
-  :ensure t
+  :straight t
   :bind ("C-c f" . link-hint-open-link))
 #+END_SRC
 ** Chat
 Here are some utilities to facilitate text communications between carbon based lifeforms. Nanu-Nanu
 #+BEGIN_SRC emacs-lisp :tangle no
 (use-package jabber
-  :ensure t
+  :straight t
   :init
   (setq jabber-history-enabled t)
   :config
@@ -3881,21 +4144,7 @@ Run some things after everything loads
 #+BEGIN_SRC emacs-lisp :tangle yes
    ;; Hooks
    (setq initial-scratch-message ";; ╔═╗┌─┐┬─┐┌─┐┌┬┐┌─┐┬ ┬\n;; ╚═╗│  ├┬┘├─┤ │ │  ├─┤\n;; ╚═╝└─┘┴└─┴ ┴ ┴ └─┘┴ ┴\n")
-  (require-package 'sudo-edit)
-  (require-package 'gnuplot)
-  (require-package 'lua-mode)
-  (require-package 'htmlize)
-  (when *is-a-mac*
-    (require-package 'osx-location))
-  (unless (eq system-type 'windows-nt)
-    (maybe-require-package 'daemons))
-  (maybe-require-package 'dotenv-mode)
-  (maybe-require-package 'shfmt)
-
-  (when (maybe-require-package 'uptimes)
-    (setq-default uptimes-keep-count 200)
-    (add-hook 'after-init-hook (lambda () (require 'uptimes))))
-
+  
   (when (fboundp 'global-eldoc-mode)
     (add-hook 'after-init-hook 'global-eldoc-mode))
 
