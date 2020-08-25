@@ -1365,16 +1365,6 @@ to get up and running with.
 (add-hook 'term-mode-hook
           (lambda ()
             (setq line-spacing 0)))
-
-
-;; Change global font size easily
-
-(use-package default-text-scale
-:straight t)
-(add-hook 'after-init-hook 'default-text-scale-mode)
-
-(use-package disable-mouse
-:straight t)
 #+END_SRC
 ** Recentf
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -1540,6 +1530,19 @@ to get up and running with.
 
 (when *is-gui*
   (add-hook 'after-init-hook #'deos/setup-fonts))
+#+END_SRC
+** Text resizing
+#+BEGIN_SRC emacs-lisp :tangle yes
+;; Easily adjust the font size in all Emacs frames.
+(use-package default-text-scale
+  :when my/gui?
+  :straight t
+  :defer t
+  :init
+  (general-define-key
+   "M-=" #'default-text-scale-increase
+   "M--" #'default-text-scale-decrease
+   "M-0" #'default-text-scale-reset))
 #+END_SRC
 ** Icons
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -1725,10 +1728,6 @@ Some random navigation keybindings
         try-expand-dabbrev
         try-expand-dabbrev-all-buffers
         try-expand-dabbrev-from-kill))
-
-;; Font size
-(define-key global-map (kbd "C-+") 'text-scale-increase)
-(define-key global-map (kbd "C--") 'text-scale-decrease)
 
 ;; Start or switch to eshell
 (global-set-key (kbd "C-x C-m") 'eshell)
