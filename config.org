@@ -105,6 +105,7 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
   (defconst *is-a-mac* (eq system-type 'darwin))
   (defconst *is-linux* (eq system-type 'gnu/linux))
   (defconst *is-gui* (display-graphic-p))
+  (defconst my/gui? (display-graphic-p))
   (defvar bootstrap-version nil
     "Used by the straight package manager.")
   (defconst my/emacs-dir
@@ -969,7 +970,7 @@ It can also be used for a "refactor-like" thing similar to query-replace.
     (defun my/counsel-projectile-switch-project-dotfiles ()
       "Open my dotfiles project straightaway."
       (interactive)
-      (my/counsel-projectile-switch-project-action-dired "~/dev/dotfiles"))
+      (my/counsel-projectile-switch-project-action-dired "~/.dotfiles"))
 
     (defun my/dired-dotfiles-toggle ()
       "Show/hide dotfiles"
@@ -1540,6 +1541,63 @@ to get up and running with.
 (when *is-gui*
   (add-hook 'after-init-hook #'deos/setup-fonts))
 #+END_SRC
+** Icons
+#+BEGIN_SRC emacs-lisp :tangle yes
+(use-package all-the-icons
+  :when my/gui?
+  :straight t
+  :commands (all-the-icons-octicon
+             all-the-icons-faicon
+             all-the-icons-fileicon
+             all-the-icons-wicon
+             all-the-icons-material
+             all-the-icons-alltheicon)
+
+  :config
+  ;; IMPORTANT: changing the variables below may require restarting
+  ;; Emacs.
+  ;; IMPORTANT: if placeholders are being displayed instead of icons
+  ;; see https://github.com/domtronn/all-the-icons.el#troubleshooting
+
+  (setq all-the-icons-ivy-rich-icon-size 1.0)
+
+  ;; Icons by file name.
+  (add-to-list 'all-the-icons-icon-alist '("\\.conf$" all-the-icons-octicon "settings" :height 1.0 :v-adjust 0.0 :face all-the-icons-dyellow))
+  (add-to-list 'all-the-icons-icon-alist '("\\.service$" all-the-icons-octicon "settings" :height 1.0 :v-adjust 0.0 :face all-the-icons-dyellow))
+  (add-to-list 'all-the-icons-icon-alist '("^config$" all-the-icons-octicon "settings" :height 1.0 :v-adjust 0.0 :face all-the-icons-dyellow))
+
+  ;; Icons by directory name.
+  (add-to-list 'all-the-icons-dir-icon-alist '("emacs" all-the-icons-fileicon "emacs"))
+  (add-to-list 'all-the-icons-dir-icon-alist '("emacs\\.d" all-the-icons-fileicon "emacs"))
+  (add-to-list 'all-the-icons-dir-icon-alist '("spec" all-the-icons-fileicon "test-dir")))
+
+
+;; Ivy/counsel integration for `all-the-icons'.
+(use-package all-the-icons-ivy
+  :when my/gui?
+  :straight t
+  :after (ivy counsel-projectile)
+  :config
+  ;; Adds icons to counsel-projectile-find-file as well.
+  (setq all-the-icons-ivy-file-commands '(counsel-projectile-find-file))
+
+  (all-the-icons-ivy-setup))
+
+
+;; Displays icons for all buffers in Ivy.
+(use-package all-the-icons-ivy-rich
+  :when my/gui?
+  :straight t
+  :init (all-the-icons-ivy-rich-mode 1))
+
+
+;; Adds dired support to all-the-icons.
+(use-package all-the-icons-dired
+  :when my/gui?
+  :straight t
+  :defer t
+  :hook (dired-mode . all-the-icons-dired-mode))
+#+END_SRC
 ** Monitor Switching
 Sometimes I want to plug my laptop into a larger monitor, or give presentations,
 so I'd like to have a single function I can call to adjust any sizes that are
@@ -1603,26 +1661,6 @@ to go back to a normal setup."
   (use-package minimap :straight t)
   (when (not minimap-mode)
     (minimap-mode 1)))
-#+END_SRC
-** Mode line
-*** Powerline mode
-#+BEGIN_SRC emacs-lisp
-(use-package powerline
-  :straight t
-  :config
-  (setq powerline-default-separator 'utf-8))
-#+END_SRC
-*** Feebleline mode
-Minimalist mode line
-#+BEGIN_SRC emacs-lisp
-(use-package feebleline
-  :straight t)
-#+END_SRC
-*** Nyan Cat
-Just for fun
-#+BEGIN_SRC emacs-lisp
-(use-package nyan-mode
-  :straight t)
 #+END_SRC
 ** Codenotes
 #+BEGIN_SRC emacs-lisp
