@@ -19,14 +19,15 @@ makefile to make installing convenient
 ** Check for minimum emacs version
 Don't let old fools use this
 #+BEGIN_SRC emacs-lisp :tangle yes
-;; turn on emacs debugging to diagnose errors
-;;(setq debug-on-error t)
+  ;; turn on emacs debugging to diagnose errors
+  (setq debug-on-init t)
+  (setq debug-on-error t)
 
-(let ((minver "24.5"))
-  (when (version< emacs-version minver)
-    (error "Your Emacs is too old -- this config requires v%s or higher" minver)))
-(when (version< emacs-version "25.1")
-  (message "Your Emacs is old, and some functionality in this config will be disabled. Please upgrade if possible."))
+  (let ((minver "24.5"))
+    (when (version< emacs-version minver)
+      (error "Your Emacs is too old -- this config requires v%s or higher" minver)))
+  (when (version< emacs-version "25.1")
+    (message "Your Emacs is old, and some functionality in this config will be disabled. Please upgrade if possible."))
 #+END_SRC
 ** Benchmarking
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -955,198 +956,202 @@ It can also be used for a "refactor-like" thing similar to query-replace.
 :END:
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (use-package hydra
-    :straight t
-    :defer t
+          (use-package hydra
+            :straight t
+            :defer t
 
-    :init
-    (defun my/counsel-projectile-switch-project-action-dired (project)
-      "Open dired when switching projects with counsel-projectile."
-      (let ((projectile-switch-project-action
-             (lambda ()
-               (projectile-dired))))
-        (counsel-projectile-switch-project-by-name project)))
+            :init
+            (defun my/counsel-projectile-switch-project-action-dired (project)
+              "Open dired when switching projects with counsel-projectile."
+              (let ((projectile-switch-project-action
+                     (lambda ()
+                       (projectile-dired))))
+                (counsel-projectile-switch-project-by-name project)))
 
-    (defun my/counsel-projectile-switch-project-dotfiles ()
-      "Open my dotfiles project straightaway."
-      (interactive)
-      (my/counsel-projectile-switch-project-action-dired "~/.dotfiles"))
+            (defun my/counsel-projectile-switch-project-dotfiles ()
+              "Open my dotfiles project straightaway."
+              (interactive)
+              (my/counsel-projectile-switch-project-action-dired "~/.dotfiles"))
 
-    (defun my/dired-dotfiles-toggle ()
-      "Show/hide dotfiles"
-      (interactive)
-      (when (equal major-mode 'dired-mode)
-        ;; If currently showing
-        (if (or (not (boundp 'dired-dotfiles-show-p)) dired-dotfiles-show-p)
-            (progn
-              (set (make-local-variable 'dired-dotfiles-show-p) nil)
-              (dired-mark-files-regexp "^\\\.")
-              (dired-do-kill-lines))
-          ;; Otherwise just revert to re-show
-          (progn (revert-buffer)
-                 (set (make-local-variable 'dired-dotfiles-show-p) t)))))
+            (defun my/dired-dotfiles-toggle ()
+              "Show/hide dotfiles"
+              (interactive)
+              (when (equal major-mode 'dired-mode)
+                ;; If currently showing
+                (if (or (not (boundp 'dired-dotfiles-show-p)) dired-dotfiles-show-p)
+                    (progn
+                      (set (make-local-variable 'dired-dotfiles-show-p) nil)
+                      (dired-mark-files-regexp "^\\\.")
+                      (dired-do-kill-lines))
+                  ;; Otherwise just revert to re-show
+                  (progn (revert-buffer)
+                         (set (make-local-variable 'dired-dotfiles-show-p) t)))))
 
-    (defun my/async-shell-command-no-window (command)
-      "Execute string COMMAND asynchronously without opening buffer."
-      (interactive "sAsync shell command: ")
-      (let* ((buffer-name "*Async Shell Command*")
-             (output-buffer (get-buffer-create buffer-name))
-             (process (let ((display-buffer-alist (list (list buffer-name #'display-buffer-no-window))))
-                        (async-shell-command command output-buffer)
-                        (get-buffer-process output-buffer)))
-             (sentinel `(lambda (process signal)
-                          (when (memq (process-status process) '(exit signal))
-                            (shell-command-sentinel process signal)
-                            ;; Here you could run arbitrary code when the
-                            ;; command is successful.
-                            ;; (when (zerop (process-exit-status process))
-                            ;;   (message "%s" ,cmd))
-                            ))))
-        (when (process-live-p process)
-          (set-process-sentinel process sentinel))))
+            (defun my/async-shell-command-no-window (command)
+              "Execute string COMMAND asynchronously without opening buffer."
+              (interactive "sAsync shell command: ")
+              (let* ((buffer-name "*Async Shell Command*")
+                     (output-buffer (get-buffer-create buffer-name))
+                     (process (let ((display-buffer-alist (list (list buffer-name #'display-buffer-no-window))))
+                                (async-shell-command command output-buffer)
+                                (get-buffer-process output-buffer)))
+                     (sentinel `(lambda (process signal)
+                                  (when (memq (process-status process) '(exit signal))
+                                    (shell-command-sentinel process signal)
+                                    ;; Here you could run arbitrary code when the
+                                    ;; command is successful.
+                                    ;; (when (zerop (process-exit-status process))
+                                    ;;   (message "%s" ,cmd))
+                                    ))))
+                (when (process-live-p process)
+                  (set-process-sentinel process sentinel))))
 
-    (defun my/async-shell-region-no-window (begin end)
-      "Execute the REGION as a COMMAND asynchronously without opening buffer."
-      (interactive "r")
-      (my/async-shell-command-no-window
-       (buffer-substring-no-properties begin end)))
+            (defun my/async-shell-region-no-window (begin end)
+              "Execute the REGION as a COMMAND asynchronously without opening buffer."
+              (interactive "r")
+              (my/async-shell-command-no-window
+               (buffer-substring-no-properties begin end)))
 
-    (defun my/projectile-run-async-shell-command-no-window-in-root ()
-      "Invoke `my/async-shell-command-no-window' in the project's root."
-      (interactive)
-      (projectile-with-default-dir (projectile-ensure-project (projectile-project-root))
-        (call-interactively 'my/async-shell-command-no-window)))
+            (defun my/projectile-run-async-shell-command-no-window-in-root ()
+              "Invoke `my/async-shell-command-no-window' in the project's root."
+              (interactive)
+              (projectile-with-default-dir (projectile-ensure-project (projectile-project-root))
+                (call-interactively 'my/async-shell-command-no-window)))
 
-    (defun my/window-resize-right (arg)
-      (interactive "p")
-      (if (let ((windmove-wrap-around))
-            (windmove-find-other-window 'right))
-        (enlarge-window-horizontally arg)
-        (shrink-window-horizontally arg)))
+            (defun my/window-resize-right (arg)
+              (interactive "p")
+              (if (let ((windmove-wrap-around))
+                    (windmove-find-other-window 'right))
+                (enlarge-window-horizontally arg)
+                (shrink-window-horizontally arg)))
 
-    (defun my/window-resize-left (arg)
-      (interactive "p")
-      (if (let ((windmove-wrap-around))
-            (windmove-find-other-window 'right))
-        (shrink-window-horizontally arg)
-        (enlarge-window-horizontally arg)))
+            (defun my/window-resize-left (arg)
+              (interactive "p")
+              (if (let ((windmove-wrap-around))
+                    (windmove-find-other-window 'right))
+                (shrink-window-horizontally arg)
+                (enlarge-window-horizontally arg)))
 
-    (defun my/window-resize-up (arg)
-      (interactive "p")
-      (if (let ((windmove-wrap-around))
-            (windmove-find-other-window 'up))
-        (enlarge-window arg)
-        (shrink-window arg)))
+            (defun my/window-resize-up (arg)
+              (interactive "p")
+              (if (let ((windmove-wrap-around))
+                    (windmove-find-other-window 'up))
+                (enlarge-window arg)
+                (shrink-window arg)))
 
-    (defun my/window-resize-down (arg)
-      (interactive "p")
-      (if (let ((windmove-wrap-around))
-            (windmove-find-other-window 'up))
-        (shrink-window arg)
-        (enlarge-window arg)))
+            (defun my/window-resize-down (arg)
+              (interactive "p")
+              (if (let ((windmove-wrap-around))
+                    (windmove-find-other-window 'up))
+                (shrink-window arg)
+                (enlarge-window arg)))
 
-    :config
-    ;; For more hydra examples, have a look at:
-    ;; https://github.com/abo-abo/hydra/blob/master/hydra-examples.el
+            :config
+            ;; For more hydra examples, have a look at:
+            ;; https://github.com/abo-abo/hydra/blob/master/hydra-examples.el
 
-    (defhydra hydra-projectile (:hint nil :foreign-keys nil :exit t :idle 0.5)
-      "
-  PROJECT: %(projectile-project-root)
-   ^Search^                ^Buffers^                    ^Cache^                 ^Command
-  ^^^^^^^----------------------------------------------------------------------------------------------
-   _s_: rg (mini-buffer)   _a_: alternate               _c_: cache clear        _r_ run async
-   _S_: rg (deadgrep)      _A_: alternate (other win)   _i_: include project    _R_ run async no window
-   ^ ^                     _b_: switch to buffer        _x_: remove project     _C_ compile
-   ^ ^                     _d_: dired                   _X_: cleanup projects   _T_ test
-   ^ ^                     _K_: kill all buffers        _z_: cache current
-  "
-      ("A" projectile-find-implementation-or-test-other-window)
-      ("C" projectile-compile-project)
-      ("K" projectile-kill-buffers)
-      ("R" my/projectile-run-async-shell-command-no-window-in-root)
-      ("S" deadgrep)
-      ("T" projectile-test-project)
-      ("X" projectile-cleanup-known-projects)
-      ("a" projectile-toggle-between-implementation-and-test)
-      ("b" counsel-projectile-switch-to-buffer)
-      ("c" projectile-invalidate-cache)
-      ("d" projectile-dired)
-      ("i" projectile-add-known-project)
-      ("r" projectile-run-async-shell-command-in-root)
-      ("s" counsel-projectile-rg)
-      ("x" projectile-remove-known-project)
-      ("z" projectile-cache-current-file)
+            (defhydra hydra-projectile (:hint nil :foreign-keys nil :exit t :idle 0.5)
+              "
+          PROJECT: %(projectile-project-root)
+           ^Search^                ^Buffers^                    ^Cache^                 ^Command
+          ^^^^^^^----------------------------------------------------------------------------------------------
+           _s_: rg (mini-buffer)   _a_: alternate               _c_: cache clear        _r_ run async
+           _S_: rg (deadgrep)      _A_: alternate (other win)   _i_: include project    _R_ run async no window
+           ^ ^                     _b_: switch to buffer        _x_: remove project     _C_ compile
+           ^ ^                     _d_: dired                   _X_: cleanup projects   _T_ test
+           ^ ^                     _K_: kill all buffers        _z_: cache current
+          "
+              ("A" projectile-find-implementation-or-test-other-window)
+              ("C" projectile-compile-project)
+              ("K" projectile-kill-buffers)
+              ("R" my/projectile-run-async-shell-command-no-window-in-root)
+              ("S" deadgrep)
+              ("T" projectile-test-project)
+              ("X" projectile-cleanup-known-projects)
+              ("a" projectile-toggle-between-implementation-and-test)
+              ("b" counsel-projectile-switch-to-buffer)
+              ("c" projectile-invalidate-cache)
+              ("d" projectile-dired)
+              ("i" projectile-add-known-project)
+              ("r" projectile-run-async-shell-command-in-root)
+              ("s" counsel-projectile-rg)
+              ("x" projectile-remove-known-project)
+              ("z" projectile-cache-current-file)
 
-      ("p" counsel-projectile-switch-project "switch project")
-      ("." my/counsel-projectile-switch-project-dotfiles "switch dotfiles")
-      ("q" nil "quit"))
+              ("p" counsel-projectile-switch-project "switch project")
+              ("." my/counsel-projectile-switch-project-dotfiles "switch dotfiles")
+              ("q" nil "quit"))
 
-    (defhydra hydra-dired (:hint nil :foreign-keys run :exit nil)
-      "
-  _v_: view         _m_: mark           _l_: redisplay       _i_: insert subdir   wdired
-  _V_: view other   _u_: unmark         _g_: refresh         _$_: hide subdir     C-x C-q: edit
-  _o_: open other   _U_: unmark all     _=_: diff            _w_: kill subdir     C-c C-c: commit
-  _M_: chmod        _t_: toggle marks   _s_: sort            _X_: shell command   C-c ESC: abort
-  _G_: chgrp        _S_: symlink        _H_: toggle hidden
-  _O_: chown        _Z_: zip/unzip
-  ^ ^
-  "
-      ("$" diredp-hide-subdir-nomove)
-      ("=" diredp-ediff)
-      ("G" dired-do-chgrp)
-      ("H" my/dired-dotfiles-toggle)
-      ("M" dired-do-chmod)
-      ("O" dired-do-chown)
-      ("S" dired-do-symlink)
-      ("T" dired-hide-details-mode)
-      ("U" dired-unmark-all-marks)
-      ("V" dired-display-file)
-      ("X" dired-do-shell-command)
-      ("Z" dired-do-compress)
-      ("e" dired-ediff-files)
-      ("g" revert-buffer)
-      ("i" dired-maybe-insert-subdir)
-      ("l" dired-do-redisplay)
-      ("m" dired-mark)
-      ("o" dired-find-file-other-window)
-      ("s" dired-sort-toggle-or-edit)
-      ("t" dired-toggle-marks)
-      ("u" dired-unmark)
-      ("v" dired-view-file)
-      ("w" dired-kill-subdir)
+            (defhydra hydra-dired (:hint nil :foreign-keys run :exit nil)
+              "
+          _v_: view         _m_: mark           _l_: redisplay       _i_: insert subdir   wdired
+          _V_: view other   _u_: unmark         _g_: refresh         _$_: hide subdir     C-x C-q: edit
+          _o_: open other   _U_: unmark all     _=_: diff            _w_: kill subdir     C-c C-c: commit
+          _M_: chmod        _t_: toggle marks   _s_: sort            _X_: shell command   C-c ESC: abort
+          _G_: chgrp        _S_: symlink        _H_: toggle hidden
+          _O_: chown        _Z_: zip/unzip
+          ^ ^
+          "
+              ("$" diredp-hide-subdir-nomove)
+              ("=" diredp-ediff)
+              ("G" dired-do-chgrp)
+              ("H" my/dired-dotfiles-toggle)
+              ("M" dired-do-chmod)
+              ("O" dired-do-chown)
+              ("S" dired-do-symlink)
+              ("T" dired-hide-details-mode)
+              ("U" dired-unmark-all-marks)
+              ("V" dired-display-file)
+              ("X" dired-do-shell-command)
+              ("Z" dired-do-compress)
+              ("e" dired-ediff-files)
+              ("g" revert-buffer)
+              ("i" dired-maybe-insert-subdir)
+              ("l" dired-do-redisplay)
+              ("m" dired-mark)
+              ("o" dired-find-file-other-window)
+              ("s" dired-sort-toggle-or-edit)
+              ("t" dired-toggle-marks)
+              ("u" dired-unmark)
+              ("v" dired-view-file)
+              ("w" dired-kill-subdir)
 
-      ("C" dired-do-copy          "copy")
-      ("D" dired-do-delete        "remove")
-      ("+" dired-create-directory "mkdir")
-      ("R" dired-do-rename        "rename")
-      ("q" nil                    "quit"))
+              ("C" dired-do-copy          "copy")
+              ("D" dired-do-delete        "remove")
+              ("+" dired-create-directory "mkdir")
+              ("R" dired-do-rename        "rename")
+              ("q" nil                    "quit"))
 
-    (defhydra hydra-window (:hint nil :exit nil)
-      ("=" balance-windows "balance windows")
-      ("h" buf-move-left "swap left")
-      ("j" buf-move-down "swap down")
-      ("k" buf-move-up "swap up")
-      ("l" buf-move-right "swap right")
-      ("u" winner-undo "undo")
-      ("r" winner-redo "redo")
-      ("q" nil "quit"))
+            (defhydra hydra-window (:hint nil :exit nil)
+              ("=" balance-windows "balance windows")
+              ("h" buf-move-left "swap left")
+              ("j" buf-move-down "swap down")
+              ("k" buf-move-up "swap up")
+              ("l" buf-move-right "swap right")
+              ("u" winner-undo "undo")
+              ("r" winner-redo "redo")
+              ("q" nil "quit"))
 
-    (defhydra hydra-tab (:hint nil :exit nil)
-      ("+" eyebrowse-create-window-config "create")
-      ("-" eyebrowse-close-window-config "remove")
-      ("l" eyebrowse-next-window-config "next")
-      ("h" eyebrowse-prev-window-config "previous")
-      ("q" nil "quit"))
+            (defhydra hydra-tab (:hint nil :exit nil)
+              ("+" eyebrowse-create-window-config "create")
+              ("-" eyebrowse-close-window-config "remove")
+              ("l" eyebrowse-next-window-config "next")
+              ("h" eyebrowse-prev-window-config "previous")
+              ("q" nil "quit"))
 
-    (general-define-key
-     :prefix "C-c"
-     "w" #'hydra-window/body
-     "p" #'hydra-projectile/body
-     "t" #'hydra-tab/body)
+            (general-define-key
+             :prefix "C-c"
+             "w" #'hydra-window/body
+             "p" #'hydra-projectile/body
+             "t" #'hydra-tab/body
+             "s" #'deos/hydra-skeleton/body
+             "u" #'hydra-undo-tree/undo-tree-undo
+             "A" #'deos/hydra-about-emacs/body
+              )
 
-    (general-define-key
-     :keymaps 'dired-mode-map
-     "C-c d" #'hydra-dired/body))
+            (general-define-key
+             :keymaps 'dired-mode-map
+             "C-c d" #'hydra-dired/body))
 #+END_SRC
 
 Here's a Hydra for information about the system (and emacs) that I stole from a
@@ -1185,19 +1190,17 @@ And finally, the main EOS Hydra for entry:
 
 #+BEGIN_SRC emacs-lisp
 (defhydra deos/hydra nil
-  "
+"
 ╭────────────────────────────────────────────────────────╯
-  [_a_] Org Agenda       [_E_] ERC       [_m_] Mail
+  [_E_] ERC       [_m_] Mail
   [_t_] Toggle map       [_T_] Twitter
-  [_s_] Skeletons                        [_g_] Gnus
+  [_g_] Gnus
   [_p_] Proced           [_W_] Weather   [(] Macros
   [_c_] Multi-compile    [_R_] RSS       [`] Errors
   [_d_] Downloads        [_D_] Debbugs
 
   [_q_] quit
 "
-  ("a" (org-agenda nil " ") :exit t)
-  ("A" deos/hydra-about-emacs/body :exit t)
   ("t" deos/hydra-toggle-map/body :exit t)
   ("T" deos/start-or-jump-to-twitter :exit t)
   ("g" gnus :exit t)
@@ -1207,7 +1210,6 @@ And finally, the main EOS Hydra for entry:
   ("c" multi-compile-run :exit t)
   ("E" (when (y-or-n-p "Really start ERC?") (start-erc)) :exit t)
   ("R" elfeed :exit t)
-  ("s" deos/hydra-skeleton/body :exit t)
   ("p" proced :exit t)
   ("W" wttrin :exit t)
   ("q" nil :exit t))
@@ -1238,8 +1240,6 @@ visualize it in ascii art if needed.
   ("l"   undo-tree-load-history)
   ("u"   undo-tree-visualize "visualize" :color blue)
   ("q"   nil "quit" :color blue))
-
-(global-set-key (kbd "M-,") 'hydra-undo-tree/undo-tree-undo)
 #+END_SRC
 
 ** GPG and gpg-agent (as well as SSH agent)
@@ -1681,12 +1681,8 @@ to go back to a normal setup."
                                     '(("\\<\\(NOTE\\|FIXME\\|TODO\\|BUG\\|HACK\\|REFACTOR\\|THE HORROR\\)" 1 font-lock-warning-face t)))))
 #+END_SRC
 * Navigation
-Here are some navigation tricks that I've acquired over the years
+** Here are some navigation tricks that I've acquired over the years
 #+BEGIN_SRC emacs-lisp :tangle yes
-(global-set-key (kbd "C-x +") 'balance-windows-area)
-
-(global-set-key (kbd "C-c y") #'bury-buffer)
-(global-set-key (kbd "C-c C-y") #'bury-buffer)
 (global-set-key (kbd "C-c r") #'revert-buffer)
 
 ;; ==== Window switching ====
@@ -1701,7 +1697,7 @@ Here are some navigation tricks that I've acquired over the years
 (global-set-key (kbd "<C-tab>") #'other-window)
 (global-set-key (kbd "C-x C-o") #'other-window)
 #+END_SRC
-Transpose the buffers
+** Transpose the buffers
 #+BEGIN_SRC emacs-lisp :tangle yes
 (defun transpose-buffers (arg)
   "Transpose the buffers shown in two windows."
@@ -1718,7 +1714,7 @@ Transpose the buffers
 (global-set-key (kbd "C-x 4 t") 'transpose-buffers)
 #+END_SRC
 
-Some random navigation keybindings
+** Some random navigation keybindings
 #+BEGIN_SRC emacs-lisp :tangle yes
 (global-set-key (kbd "C-x C-l") 'toggle-truncate-lines)
 
@@ -1744,7 +1740,7 @@ Some random navigation keybindings
 (global-set-key (kbd "C-c C-x") 'execute-extended-command)
 #+END_SRC
 
-Highlight helpers
+** Highlight helpers
 #+BEGIN_SRC emacs-lisp :tangle yes
 (use-package hl-anything
   :straight t
@@ -3450,11 +3446,11 @@ First you have to install sdkman http://sdkman.io
 * Extras
 ** Stack Overflow
 SX is a stack overflow client that you can use in Emacs
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp :tangle yes
 (use-package sx
   :straight t
   :config
-  (bind-keys :prefix "C-c s"
+  (bind-keys :prefix "C-c o"
              :prefix-map my-sx-map
              :prefix-docstring "Global keymap for SX."
              ("q" . sx-tab-all-questions)
