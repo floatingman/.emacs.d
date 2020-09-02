@@ -179,10 +179,13 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
   (menu-bar-mode -1)
 
   ;; Remove top tool bar (only respected in GUI Emacs).
-  (tool-bar-mode -1)
+  (when (fboundp 'tool-bar-mode)
+      (tool-bar-mode -1))
 
   ;; Remove scroll bar (only respected in GUI Emacs).
-  (toggle-scroll-bar -1)
+  (when (fboundp 'set-scroll-bar-mode)
+    (set-scroll-bar-mode nil))
+
 
   ;; Never save backup files
   (setq make-backup-files nil)
