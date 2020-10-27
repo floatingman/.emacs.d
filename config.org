@@ -1,8 +1,6 @@
 #+TITLE: Daniel Newman's Literate Emacs Configuration
 #+AUTHOR: Daniel Newman
 #+EMAIL: dwnewman78@gmail.com
-#+SETUPFILE: ~/.emacs.d/setupfiles/emacs.setup
-#+STARTUP: overview
 
 * The Beginning
 :PROPERTIES:
