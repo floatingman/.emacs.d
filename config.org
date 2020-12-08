@@ -1,7 +1,14 @@
 #+TITLE: Daniel Newman's Literate Emacs Configuration
 #+AUTHOR: Daniel Newman
 #+EMAIL: dwnewman78@gmail.com
+#+PROPERTY: header-args:emacs-lisp :tangle ~/.emacs.d/init.el
 
+* Table of Contents
+:PROPERTIES:
+:TOC:      :include all :ignore this
+:END:
+:CONTENTS:
+:END:
 * The Beginning
 :PROPERTIES:
 :CUSTOM_ID: init
@@ -16,7 +23,7 @@ makefile to make installing convenient
 
 ** Check for minimum emacs version
 Don't let old fools use this
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
   ;; turn on emacs debugging to diagnose errors
 ;;  (setq debug-on-init t)
 ;;  (setq debug-on-error t)
@@ -28,7 +35,7 @@ Don't let old fools use this
     (message "Your Emacs is old, and some functionality in this config will be disabled. Please upgrade if possible."))
 #+END_SRC
 ** Benchmarking
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (defun sanityinc/time-subtract-millis (b a)
   (* 1000.0 (float-time (time-subtract b a))))
 
@@ -100,7 +107,7 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
 
 #+END_SRC
 ** Setup some variables for use in other config files
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
   (defconst *is-a-mac* (eq system-type 'darwin))
   (defconst *is-linux* (eq system-type 'gnu/linux))
   (defconst *is-gui* (display-graphic-p))
@@ -122,57 +129,60 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
   (defconst my/color-gray "#5F5F5F")
 #+END_SRC
 ** Setup package manager
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (defun my/install-package-manager ()
-    (let ((bootstrap-file
-           (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-          (bootstrap-version 5))
-      (unless (file-exists-p bootstrap-file)
-        (with-current-buffer
-            (url-retrieve-synchronously
-             "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-             'silent 'inhibit-cookies)
-          (goto-char (point-max))
-          (eval-print-last-sexp)))
-      (load bootstrap-file nil 'nomessage))
+#+BEGIN_SRC emacs-lisp 
 
-    ;; Auto-install `use-package'.
-    (straight-use-package 'use-package))
+  (require 'package)
 
-  ;; Install straight
-  (my/install-package-manager)
+  (setq package-archives '(("melpa" . "https://melpa.org/packages/")
+			   ("melpa-stable" . "https://stable.melpa.org/packages/")
+			   ("org" . "https://orgmode.org/elpa/")
+			   ("elpa" . "https://elpa.gnu.org/packages/")))
 
 
+  (package-initialize)
+  (unless package-archive-contents
+      (package-refresh-contents))
+
+  ;; Initialize use-package on non-Linux platforms
+  (unless (package-installed-p 'use-package)
+      (package-install 'use-package))
+  (require 'use-package)
+
+  ;; Uncomment this to get a reading on packages that get loaded at startup
+  ;; (setq use-package-verbose t)
+
+  ;; ensure packages by default
+  ;; (setq use-package-always-ensure t)
 
   (use-package fullframe
-    :straight t)
+    :ensure t)
   (fullframe list-packages quit-window)
 
 
   (let ((package-check-signature nil))
     (use-package gnu-elpa-keyring-update
-      :straight t))
+      :ensure t))
 
 
   (defun sanityinc/set-tabulated-list-column-width (col-name width)
     "Set any column with name COL-NAME to the given WIDTH."
     (when (> width (length col-name))
       (cl-loop for column across tabulated-list-format
-               when (string= col-name (car column))
-               do (setf (elt column 1) width))))
+	       when (string= col-name (car column))
+	       do (setf (elt column 1) width))))
 
   (defun sanityinc/maybe-widen-package-menu-columns ()
     "Widen some columns of the package menu table to avoid truncation."
     (when (boundp 'tabulated-list-format)
       (sanityinc/set-tabulated-list-column-width "Version" 13)
       (let ((longest-archive-name (apply 'max (mapcar 'length (mapcar 'car package-archives)))))
-        (sanityinc/set-tabulated-list-column-width "Archive" longest-archive-name))))
+	(sanityinc/set-tabulated-list-column-width "Archive" longest-archive-name))))
 
   (add-hook 'package-menu-mode-hook 'sanityinc/maybe-widen-package-menu-columns)
 #+END_SRC
 
 ** Basic emacs options
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
   ;; Remove top menubar
   (menu-bar-mode -1)
 
@@ -274,7 +284,7 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
                 fill-column 80)
 #+END_SRC
 ** Utils
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
   (define-obsolete-function-alias 'after-load 'with-eval-after-load "")
 
   ;;----------------------------------------------------------------------------
@@ -366,7 +376,7 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
 
 #+END_SRC
 ** Load site-lisp
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (eval-when-compile (require 'cl))
 (defun sanityinc/add-subdirs-to-load-path (parent-dir)
   "Adds every non-hidden subdir of PARENT-DIR to `load-path'."
@@ -414,7 +424,7 @@ source file under ~/.emacs.d/site-lisp/name/"
 ** Setup environment variables from shell
 #+BEGIN_SRC emacs-lisp
   (use-package exec-path-from-shell
-    :straight t
+    :ensure t
     :defer t
     :init
     (with-eval-after-load 'exec-path-from-shell
@@ -435,19 +445,19 @@ source file under ~/.emacs.d/site-lisp/name/"
 This is the place where a lot of default config is set. Most variables
 and functions should be in this file
 ** Load some packages
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
   (use-package diminish
-:straight t)
+:ensure t)
   (use-package scratch
-:straight t)
+:ensure t)
   (use-package command-log-mode
-:straight t)
+:ensure t)
 #+END_SRC
 ** General for better key definitions
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 ;; More convenient key definitions.
 (use-package general
-  :straight t
+  :ensure t
   :demand t
 
   :config
@@ -456,11 +466,11 @@ and functions should be in this file
    "C-x k" #'kill-this-buffer))
 #+END_SRC
 ** Evil mode
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 ;; Let's be honest here, there's nothing more productive than vi
 ;; key bindings in the right hands.
 (use-package evil
-  :straight t
+  :ensure t
 
   :preface
   ;; Do not load evil keybindings, because we'll use
@@ -524,7 +534,7 @@ and functions should be in this file
 
 ;; Add evil bindings beyond the default like calendar and help-mode.
 (use-package evil-collection
-  :straight t
+  :ensure t
 
   :after
   (evil)
@@ -538,9 +548,9 @@ and functions should be in this file
       user-mail-address "dwnewman78@gmail.com")
 #+END_SRC
 ** Some defaults
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (use-package diminish
-  :straight t
+  :ensure t
   :init (diminish 'auto-fill-function ""))
 
 (add-hook 'after-init-hook 'global-auto-revert-mode)
@@ -552,7 +562,7 @@ and functions should be in this file
 ** UTF-8 all the way!
 #+begin_src emacs-lisp
 (use-package list-unicode-display
-  :straight t)
+  :ensure t)
 (defun sanityinc/locale-var-encoding (v)
   "Return the encoding portion of the locale string V, or nil if missing."
   (when v
@@ -593,23 +603,23 @@ and functions should be in this file
 #+END_SRC
 
 ** No borders
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (let ((no-border '(internal-border-width . 0)))
   (add-to-list 'default-frame-alist no-border)
   (add-to-list 'initial-frame-alist no-border))
 #+END_SRC
 
 ** Display line numbers
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (when (fboundp 'display-line-numbers-mode)
   (setq-default display-line-numbers-width 3)
   (add-hook 'prog-mode-hook 'display-line-numbers-mode))
 #+END_SRC
 
 ** Preview goto
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (use-package goto-line-preview
-  :straight t
+  :ensure t
   :config
   (global-set-key [remap goto-line] 'goto-line-preview))
 (when (fboundp 'display-line-numbers-mode)
@@ -626,9 +636,9 @@ and functions should be in this file
 #+END_SRC
 
 ** Page breaks
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (use-package page-break-lines
-  :straight t
+  :ensure t
   :diminish t
   :hook (after-init . global-page-break-lines-mode))
 #+END_SRC
@@ -747,7 +757,7 @@ and functions should be in this file
 #+END_SRC
 
 ** Some local minor modes clash with CUA rectangle selection
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (defvar-local sanityinc/suspended-modes-during-cua-rect nil
   "Modes that should be re-activated when cua-rect selection is done.")
 
@@ -775,9 +785,9 @@ and functions should be in this file
 (setq calc-display-sci-low -5)
 #+END_SRC
 ** Never kill the scratch
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (use-package immortal-scratch
-  :straight t
+  :ensure t
   :hook (after-init . immortal-scratch-mode))
 #+END_SRC
 ** Start a server if not running, but a only for gui-only:
@@ -833,7 +843,7 @@ Here I set it back to a *sane* value:
 
 #+BEGIN_SRC emacs-lisp
 (use-package ws-butler
-  :straight t
+  :ensure t
   :diminish ws-butler-mode
   :init
   (add-hook 'prog-mode-hook #'ws-butler-mode)
@@ -845,7 +855,7 @@ Here I set it back to a *sane* value:
 
 #+BEGIN_SRC emacs-lisp
 (use-package auto-indent-mode
-  :straight t)
+  :ensure t)
 #+END_SRC
 
 ** Usually =M-SPC= is bound to ~just-one-space~, but [[https://github.com/jcpetkovich/shrink-whitespace.el][shrink-whitespace]] is actually a better alternative because it can shrink space between lines.
@@ -856,7 +866,7 @@ the link to this package.
 
 #+BEGIN_SRC emacs-lisp
 (use-package shrink-whitespace
-  :straight t
+  :ensure t
   :bind ("M-SPC" . shrink-whitespace))
 #+END_SRC
 
@@ -866,7 +876,7 @@ It can also be used for a "refactor-like" thing similar to query-replace.
 
 #+BEGIN_SRC emacs-lisp
 (use-package anzu
-  :straight t
+  :ensure t
   :defer t
   :bind ("M-%" . anzu-query-replace-regexp)
   :config
@@ -920,10 +930,10 @@ It can also be used for a "refactor-like" thing similar to query-replace.
 #+END_SRC
 
 ** Eyebrowse, manage window configs
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 ;; IMPORTANT: if defered, eyebrowse won't work hydra.
 (use-package eyebrowse
-  :straight t
+  :ensure t
   :init
   ;; Use the scratch buffer when creating new tabs.
   (setq eyebrowse-new-workspace t)
@@ -936,15 +946,15 @@ It can also be used for a "refactor-like" thing similar to query-replace.
 #+END_SRC
 
 ** Swap buffers
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (use-package buffer-move
-  :straight t
+  :ensure t
   :defer t)
 #+END_SRC
 ** Deadgrep for grepping the dead
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (use-package deadgrep
-  :straight t
+  :ensure t
   :commands (deadgrep)
   :config
   (with-eval-after-load 'evil
@@ -956,9 +966,9 @@ It can also be used for a "refactor-like" thing similar to query-replace.
 :CUSTOM_ID: eos-hydra-map
 :END:
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
           (use-package hydra
-            :straight t
+            :ensure t
             :defer t
 
             :init
@@ -1224,7 +1234,7 @@ visualize it in ascii art if needed.
 
 #+BEGIN_SRC emacs-lisp
 (use-package undo-tree
-  :straight t
+  :ensure t
   :init (global-undo-tree-mode t)
   :defer t
   :diminish ""
@@ -1283,7 +1293,7 @@ and running very quickly. My personal word dictionary is at =~/.flydict=.
 While I used to use Hunspell, I've gone back to aspell because it's a bit easier
 to get up and running with.
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
   (require 'ispell)
   ;; Standard location of personal dictionary
   (setq ispell-personal-dictionary "~/.flydict")
@@ -1298,7 +1308,7 @@ to get up and running with.
 ** Which Key
 #+BEGIN_SRC emacs-lisp
 (use-package which-key
-  :straight t
+  :ensure t
   :config
   (which-key-mode))
 #+END_SRC
@@ -1311,7 +1321,7 @@ to get up and running with.
 (global-set-key (kbd "C-c I") 'find-config)
 #+END_SRC
 ** Stop C-z from minimizing windows under OSX
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (defun sanityinc/maybe-suspend-frame ()
   (interactive)
   (unless (and *is-a-mac* window-system)
@@ -1320,12 +1330,12 @@ to get up and running with.
 (global-set-key (kbd "C-z") 'sanityinc/maybe-suspend-frame)
 #+END_SRC
 ** Suppress GUI features
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (setq use-file-dialog nil)
 (setq inhibit-startup-screen t)
 #+END_SRC
 ** Basic gui functions
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (defun sanityinc/adjust-opacity (frame incr)
   "Adjust the background opacity of FRAME by increment INCR."
   (unless (display-graphic-p frame)
@@ -1351,7 +1361,7 @@ to get up and running with.
 
 (when *is-a-mac*
   (when (use-package ns-auto-titlebar
-:straight t)
+:ensure t)
     (ns-auto-titlebar-mode)))
 
 ;; Non-zero values for `line-spacing' can mess up ansi-term and co,
@@ -1361,7 +1371,7 @@ to get up and running with.
             (setq line-spacing 0)))
 #+END_SRC
 ** Recentf
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
   (use-package recentf
     :no-require t
     :hook (kill-emacs . recentf-cleanup)
@@ -1383,9 +1393,9 @@ to get up and running with.
     (recentf-mode +1))
 #+END_SRC
 ** Helpful mode for more helpful help
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
   (use-package helpful
-    :straight t
+    :ensure t
     :commands (helpful--read-symbol)
     :init
     (general-define-key
@@ -1394,17 +1404,17 @@ to get up and running with.
 #+END_SRC
 * Appearance
 ** Theme
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
   (use-package color-theme-sanityinc-solarized
-    :straight t
+    :ensure t
     :defer t)
 
   (use-package color-theme-sanityinc-tomorrow
-    :straight t
+    :ensure t
     :defer t)
 
   (use-package zenburn-theme
-    :straight t
+    :ensure t
     :defer t)
 
   ;; Don't prompt to confirm theme safety. This avoids problems with
@@ -1442,7 +1452,7 @@ to get up and running with.
 
 
   (use-package dimmer
-    :straight t
+    :ensure t
     :init
     (setq-default dimmer-fraction 0.15)
     :hook (after-init . dimmer-mode)
@@ -1459,10 +1469,10 @@ to get up and running with.
       (add-to-list 'dimmer-exclusion-predicates 'sanityinc/display-non-graphic-p)))
 #+END_SRC
 ** Mode line
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 ;; A minimal and modern mode-line.
 (use-package doom-modeline
-  :straight t
+  :ensure t
   :defer t
   :hook (after-init . my/init-load-theme)
   :preface
@@ -1551,11 +1561,11 @@ to get up and running with.
   (add-hook 'after-init-hook #'deos/setup-fonts))
 #+END_SRC
 ** Text resizing
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 ;; Easily adjust the font size in all Emacs frames.
 (use-package default-text-scale
   :when my/gui?
-  :straight t
+  :ensure t
   :defer t
   :init
   (general-define-key
@@ -1564,10 +1574,10 @@ to get up and running with.
    "M-0" #'default-text-scale-reset))
 #+END_SRC
 ** Icons
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (use-package all-the-icons
   :when my/gui?
-  :straight t
+  :ensure t
   :commands (all-the-icons-octicon
              all-the-icons-faicon
              all-the-icons-fileicon
@@ -1597,7 +1607,7 @@ to get up and running with.
 ;; Ivy/counsel integration for `all-the-icons'.
 (use-package all-the-icons-ivy
   :when my/gui?
-  :straight t
+  :ensure t
   :after (ivy counsel-projectile)
   :config
   ;; Adds icons to counsel-projectile-find-file as well.
@@ -1609,14 +1619,14 @@ to get up and running with.
 ;; Displays icons for all buffers in Ivy.
 (use-package all-the-icons-ivy-rich
   :when my/gui?
-  :straight t
+  :ensure t
   :init (all-the-icons-ivy-rich-mode 1))
 
 
 ;; Adds dired support to all-the-icons.
 (use-package all-the-icons-dired
   :when my/gui?
-  :straight t
+  :ensure t
   :defer t
   :hook (dired-mode . all-the-icons-dired-mode))
 #+END_SRC
@@ -1680,7 +1690,7 @@ to go back to a normal setup."
   (delete-other-windows)
   (text-scale-increase 1)
   (setq line-spacing 5)
-  (use-package minimap :straight t)
+  (use-package minimap :ensure t)
   (when (not minimap-mode)
     (minimap-mode 1)))
 #+END_SRC
@@ -1693,7 +1703,7 @@ to go back to a normal setup."
 #+END_SRC
 * Navigation
 ** Here are some navigation tricks that I've acquired over the years
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (global-set-key (kbd "C-c r") #'revert-buffer)
 
 ;; ==== Window switching ====
@@ -1709,7 +1719,7 @@ to go back to a normal setup."
 (global-set-key (kbd "C-x C-o") #'other-window)
 #+END_SRC
 ** Transpose the buffers
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (defun transpose-buffers (arg)
   "Transpose the buffers shown in two windows."
   (interactive "p")
@@ -1726,7 +1736,7 @@ to go back to a normal setup."
 #+END_SRC
 
 ** Some random navigation keybindings
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (global-set-key (kbd "C-x C-l") 'toggle-truncate-lines)
 
 ;; join line to next line
@@ -1752,9 +1762,9 @@ to go back to a normal setup."
 #+END_SRC
 
 ** Highlight helpers
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (use-package hl-anything
-  :straight t
+  :ensure t
   :diminish hl-highlight-mode
   :commands hl-highlight-mode
   :init
@@ -1766,7 +1776,7 @@ to go back to a normal setup."
 #+END_SRC
 
 ** Isearch
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 ; Use regex searches by default.
 ;;(global-set-key (kbd "C-s") 'isearch-forward-regexp)
 ;;(global-set-key (kbd "C-r") 'isearch-backward-regexp)
@@ -1796,7 +1806,7 @@ permanently."
 #+END_SRC
 
 ** Mices
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 ;; mouse integration
 (require 'mouse)
 (xterm-mouse-mode t)
@@ -1811,16 +1821,16 @@ permanently."
 #+END_SRC
 
 ** Move text
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (use-package move-text
-  :straight t
+  :ensure t
   :init (move-text-default-bindings))
 #+END_SRC
 
 ** Folding
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (use-package origami
-  :straight t
+  :ensure t
   :bind (:map origami-mode-map
               ("C-c f" . origami-recursively-toggle-node)
               ("C-c F" . origami-toggle-all-nodes)))
@@ -1845,13 +1855,13 @@ permanently."
  `org-todo-keywords' is customised here to provide corresponding
  TODO states, which should make sense to GTD adherents.
 ** Org-mode configuration
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
     (when *is-a-mac*
       (use-package grab-mac-link
-        :straight t))
+        :ensure t))
 
     (use-package org-cliplink
-      :straight t)
+      :ensure t)
 
     (define-key global-map (kbd "C-c l") 'org-store-link)
     (define-key global-map (kbd "C-c a") 'org-agenda)
@@ -1890,7 +1900,7 @@ permanently."
 
   ;; Supplemental evil-mode key-bindings to org-mode.
   (use-package evil-org
-    :straight t
+    :ensure t
 
     :after
     (org evil)
@@ -1902,7 +1912,7 @@ permanently."
     (add-hook 'org-mode-hook 'evil-org-mode))
 
   (use-package writeroom-mode
-      :straight t)
+      :ensure t)
 
     (define-minor-mode prose-mode
       "Set up a buffer for prose editing.
@@ -2167,7 +2177,7 @@ permanently."
     
 
     (use-package org-pomodoro
-      :straight t)
+      :ensure t)
     (setq org-pomodoro-keep-killed-pomodoro-time t)
     (with-eval-after-load 'org-agenda
       (define-key org-agenda-mode-map (kbd "P") 'org-pomodoro))
@@ -2229,7 +2239,7 @@ I use deft to take quick notes and search through those notes
 
 #+BEGIN_SRC emacs-lisp
 (use-package deft
-  :straight t
+  :ensure t
   :bind ("C-x t" . deft)
   :config
   (setq deft-extension '("org" "txt" "tex" "text" "md")
@@ -2241,11 +2251,11 @@ I use deft to take quick notes and search through those notes
 * Command completion
 ** Projectile, the project interaction library for Emacs
 
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 
   ;; NOTE: It require https://github.com/sharkdp/fd
   (use-package projectile
-    :straight t
+    :ensure t
 
     ;; Defer because it'll be loaded by counsel-projectile.
     :defer t
@@ -2289,9 +2299,9 @@ I use deft to take quick notes and search through those notes
      "ja" #'projectile-toggle-between-implementation-and-test))
 #+END_SRC
 ** Ivy and related things
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
   (use-package counsel
-    :straight t
+    :ensure t
     :defer t
 
     :init
@@ -2319,7 +2329,7 @@ I use deft to take quick notes and search through those notes
 
   ;; Ivy for searching and matching
   (use-package ivy
-    :straight t
+    :ensure t
     :defer t
     :hook (emacs-startup . ivy-mode)
     :init
@@ -2349,14 +2359,14 @@ I use deft to take quick notes and search through those notes
      [remap switch-to-buffer-other-window] #'ivy-switch-buffer-other-window))
 
   (use-package amx
-    :straight t
+    :ensure t
     :init
     (setq amx-save-file (concat my/cache-dir "amx")
           amx-history-length 10))
 
   ;; Gives an overview of the current regex search candidates.
   (use-package swiper
-    :straight t
+    :ensure t
     :defer t
     :init
     (setq swiper-action-recenter t)
@@ -2378,7 +2388,7 @@ I use deft to take quick notes and search through those notes
 
 ;; Ivy UI for Projectile.
 (use-package counsel-projectile
-  :straight t
+  :ensure t
 
   :defer 0
 
@@ -2394,7 +2404,7 @@ I use deft to take quick notes and search through those notes
    '((default counsel-projectile-switch-project-action-dired))))
 ;; More friendly interface for ivy (discoverability).
 (use-package ivy-rich
-  :straight t
+  :ensure t
   :defer t
   :config
   ;; These configurations were adapted from the README:
@@ -2439,7 +2449,7 @@ I use deft to take quick notes and search through those notes
 ** Company
 #+BEGIN_SRC emacs-lisp
   (use-package company
-    :straight t
+    :ensure t
     :hook (after-init . global-company-mode)
     :commands (company-complete-common
                company-manual-begin
@@ -2448,7 +2458,7 @@ I use deft to take quick notes and search through those notes
 ** Yasnippets
 #+BEGIN_SRC emacs-lisp
 (use-package yasnippet
-    :straight t
+    :ensure t
     :diminish yas-minor-mode
     :config
     (add-to-list 'yas-snippet-dirs "~/.emacs.d/snippets")
@@ -2484,14 +2494,14 @@ all over the place and take forever to load ಠ_ಠ
 (define-skeleton deos/org-wrap-elisp
   "Wrap text with #+BEGIN_SRC / #+END_SRC for the emacs-lisp code"
   nil
-  > "#+BEGIN_SRC emacs-lisp :tangle yes" \n
+  > "#+BEGIN_SRC emacs-lisp " \n
   > _ \n
   > "#+END_SRC" \n)
 
   (define-skeleton deos/org-wrap-source
   "Wrap text with #+BEGIN_SRC / #+END_SRC for a code type"
   "Language: "
-  > "#+BEGIN_SRC " str ":tangle yes" \n
+  > "#+BEGIN_SRC " str "" \n
   > _ \n
   > "#+END_SRC" \n)
 
@@ -2541,7 +2551,7 @@ And now let's add a hydra for the skeletons
 ** Markup
 #+BEGIN_SRC emacs-lisp
 (use-package markdown-mode
-  :straight t
+  :ensure t
   :mode (("\\`README\\.md\\'" . gfm-mode)
          ("github\\.com.*\\.txt\\'" . gfm-mode)
          ("\\.md\\'" . markdown-mode)
@@ -2554,10 +2564,10 @@ And now let's add a hydra for the skeletons
   (add-hook 'markdown-mode-hook #'flyspell-mode))
 #+END_SRC
 ** Comments
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 ;; Comment/uncomment lines efficiently. Like Nerd Commenter in Vim.
 (use-package evil-nerd-commenter
-  :straight t
+  :ensure t
 
   :after (evil)
 
@@ -2569,11 +2579,11 @@ And now let's add a hydra for the skeletons
     "M-;" #'evilnc-comment-or-uncomment-lines))
 #+END_SRC
 ** Surround mode
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 ;; Emulates Surround.vim for Evil. Everything about "surroundings":
 ;; parentheses, brackets, quotes, XML tags, and more.
 (use-package evil-surround
-  :straight t
+  :ensure t
 
   :after (evil)
 
@@ -2589,12 +2599,12 @@ And now let's add a hydra for the skeletons
 ** Asciidocs
 #+BEGIN_SRC emacs-lisp
 (use-package adoc-mode
-  :straight t)
+  :ensure t)
 #+END_SRC
 ** Thesaurus
 #+BEGIN_SRC emacs-lisp
 (use-package synosaurus
-  :straight t
+  :ensure t
   :init
   (setq-default synosaurus-backend 'synosaurus-backend-wordnet)
   (add-hook 'after-init-hook #'synosaurus-mode))
@@ -2602,7 +2612,7 @@ And now let's add a hydra for the skeletons
 ** Fill me in
 #+BEGIN_SRC emacs-lisp
 (use-package fill-column-indicator
-  :straight t
+  :ensure t
   :config
   ;; fix for org -> html export
   (defun fci-mode-override-advice (&rest args))
@@ -2675,7 +2685,7 @@ Turn off whitespace mode when exporting org documents
 ** Highlight indentions
 #+BEGIN_SRC emacs-lisp
 (use-package highlight-indent-guides
-  :straight t
+  :ensure t
   :init
   (setq highlight-indent-guides-method 'character)
   (add-hook 'prog-mode-hook #'highlight-indent-guides-mode))
@@ -2683,7 +2693,7 @@ Turn off whitespace mode when exporting org documents
 ** Flycheck
 #+BEGIN_SRC emacs-lisp
     (use-package flycheck
-      :straight t
+      :ensure t
       :hook (after-init . global-flycheck-mode)
       :init
       (defun my/use-eslint-from-node-modules ()
@@ -2700,7 +2710,7 @@ Turn off whitespace mode when exporting org documents
        (add-to-list 'flycheck-checkers 'proselint)
        (setq flycheck-display-errors-function #'flycheck-display-error-messages-unless-error-list)
        (use-package flycheck-color-mode-line
-         :straight t)
+         :ensure t)
          :hook (flycheck-mode . flycheck-color-mode-line-mode))
 #+END_SRC
 ** Proselint
@@ -2722,7 +2732,7 @@ right more gooder
 Show me the parenthesys
 #+BEGIN_SRC emacs-lisp
   (use-package rainbow-delimiters
-    :straight t
+    :ensure t
     :config
     (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
 #+END_SRC
@@ -2730,7 +2740,7 @@ Show me the parenthesys
 ** Highlight colors
 #+BEGIN_SRC emacs-lisp
   (use-package rainbow-mode
-    :straight t
+    :ensure t
     :diminish rainbow-mode
     :config
     (setq rainbow-x-colors nil)
@@ -2755,10 +2765,10 @@ Show me the parenthesys
 (add-hook 'after-init-hook 'electric-indent-mode)
 #+END_SRC
 ** Avy-mode for text navigation
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 ;; Utility package for jumping to visible text across windows and frames.
 (use-package avy
-  :straight t
+  :ensure t
   :defer t
   :init
   (general-define-key
@@ -2771,9 +2781,9 @@ Show me the parenthesys
 #+END_SRC
 ** Dumb-jump
 For jumping dumbly
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (use-package dumb-jump
-  :straight t
+  :ensure t
   :init
   ;; Use ivy instead of the default popup for multiple options.
   (setq dumb-jump-selector 'ivy)
@@ -2787,7 +2797,7 @@ For jumping dumbly
   (add-hook 'xref-backend-functions #'dumb-jump-xref-activate))
 #+END_SRC
 ** Watchwords
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (defun deos/add-watchwords ()
   "Highlight FIXME, TODO, and NOCOMMIT in code TODO"
   (font-lock-add-keywords
@@ -2798,22 +2808,22 @@ For jumping dumbly
 (add-hook 'prog-mode-hook #'deos/add-watchwords)
 #+END_SRC
 ** Editorconfig support
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
   (use-package editorconfig
-    :straight t
+    :ensure t
     :defer t
     :hook (prog-mode . editorconfig-mode))
 #+END_SRC
 ** Highlight escape sequences
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (use-package highlight-escape-sequences
-  :straight t
+  :ensure t
   :hook (after-init . hes-mode))
 #+END_SRC
 ** Highlight symbols
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (use-package highlight-symbol
-  :straight t
+  :ensure t
   :defer t
   :hook ((emacs-lisp-mode ruby-mode) . highlight-symbol-mode)
   :init
@@ -2821,9 +2831,9 @@ For jumping dumbly
   (setq highlight-symbol-idle-delay 0.5))
 #+END_SRC
 ** Browse the kill ring
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (use-package browse-kill-ring
-  :straight t
+  :ensure t
   :bind (("M-Y" . browse-kill-ring)
          (:map browse-kill-ring-mode-map
                ("C-g" . browse-kill-ring-quit)
@@ -2835,14 +2845,14 @@ For jumping dumbly
   (add-to-list 'page-break-lines-modes 'browse-kill-ring-mode))
 #+END_SRC
 ** Cut/copy the line if no region is selected
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (use-package whole-line-or-region
-  :straight t
+  :ensure t
   :diminish t
   :hook (after-init . whole-line-or-region-global-mode))
 #+END_SRC
 ** NXML for xml editing
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
   (add-auto-mode
    'nxml-mode
    (concat "\\."
@@ -2887,7 +2897,7 @@ For jumping dumbly
     (shell-command-on-region beg end "tidy -xml -q -i" (current-buffer) t "*tidy-errors*" t))
 #+END_SRC
 ** Miscellaneous
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (add-hook 'prog-mode-hook 'goto-address-prog-mode)
 (setq goto-address-mail-face 'link)
 
@@ -2905,11 +2915,11 @@ For jumping dumbly
    (normal-mode)))
 
 (use-package info-colors
-  :straight t
+  :ensure t
   :hook (Info-selection . info-colors-fontify-node))
 
 (use-package regex-tool
-  :straight t
+  :ensure t
   :config
   (setq-default regex-tool-backend 'perl))
 
@@ -2980,7 +2990,7 @@ For jumping dumbly
 ** Quick-preview provides a nice preview of the thing under the cursor
 #+BEGIN_SRC emacs-lisp
 (use-package quick-preview
-  :straight t
+  :ensure t
   :init
   (global-set-key (kbd "C-c q") 'quick-preview-at-point)
   (define-key dired-mode-map (kbd "Q") 'quick-preview-at-point))
@@ -2989,7 +2999,7 @@ For jumping dumbly
 ** Neotree
 #+BEGIN_SRC emacs-lisp
 (use-package neotree
-  :straight t
+  :ensure t
   :config
   (global-set-key (kbd "C-c n") 'neotree-toggle)
   (setq neo-theme 'arrow)
@@ -3001,9 +3011,9 @@ For jumping dumbly
 * Git
 ** Magit
 The be all, end all mode for all things git
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
   (use-package magit
-    :straight t
+    :ensure t
     :bind (("C-x g" . magit-status)
            ("C-x M-g" . magit-dispatch))
     :config
@@ -3024,10 +3034,10 @@ The be all, end all mode for all things git
       (define-key magit-status-mode-map (kbd "C-M-<up>") 'magit-section-up))
 
     (use-package magit-todos
-      :straight t)
+      :ensure t)
 
     (use-package fullframe
-      :straight t
+      :ensure t
       :config
       (with-eval-after-load 'magit
         (fullframe magit-status magit-mode-quit-window)))
@@ -3064,7 +3074,7 @@ The be all, end all mode for all things git
     )
   ;; Evil keybindings for Magit.
   (use-package evil-magit
-    :straight t
+    :ensure t
     :defer t
 
     :hook (magit-mode . evil-magit-init)
@@ -3075,44 +3085,44 @@ The be all, end all mode for all things git
 ** Various Git helpers
 #+BEGIN_SRC emacs-lisp
 (use-package git-blamed
-  :straight t)
+  :ensure t)
 
 (use-package gitignore-mode
-  :straight t)
+  :ensure t)
 
 (use-package gitconfig-mode
-  :straight t)
+  :ensure t)
 
 (use-package git-timemachine
-  :straight t
+  :ensure t
   :bind (("C-x v t" . git-timemachine-toggle))
   )
 (use-package git-commit
-  :straight t
+  :ensure t
   :hook (git-commit-mode . goto-address-mode))
 #+END_SRC
 ** Github
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (use-package yagist
-  :straight t)
+  :ensure t)
 (use-package bug-reference-github
-  :straight t
+  :ensure t
   :hook (prog-mode . bug-reference-prog-mode))
 
 (use-package github-clone
-  :straight t)
+  :ensure t)
 
 (use-package forge
-  :straight t)
+  :ensure t)
 
 (use-package github-review
-  :straight t)
+  :ensure t)
 #+END_SRC
 * VC
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 
 (use-package diff-hl
-  :straight t
+  :ensure t
   :hook ((magit-post-refresh . diff-hl-magit-post-refresh)
          (after-init . global-diff-hl-mode))
   :config
@@ -3122,7 +3132,7 @@ The be all, end all mode for all things git
       'diff-hl-diff-goto-hunk)))
 
 (use-package browse-at-remote
-  :straight t)
+  :ensure t)
 #+END_SRC
 * Programming Modes
 ** Python
@@ -3133,7 +3143,7 @@ The be all, end all mode for all things git
   (define-key python-mode-map (kbd "<backtab>") 'python-back-indent))
 
 (use-package virtualenvwrapper
-  :straight t
+  :ensure t
   :defer t
   :init
   (progn
@@ -3143,7 +3153,7 @@ The be all, end all mode for all things git
                             "~/.virtualenvs"))))
 ;; this requires some setup pip install jedi flake8 autopep8 yapf
 ;; (use-package elpy
-;;   :straight t
+;;   :ensure t
 ;;   :defer t
 ;;   :init
 ;;   (elpy-enable)
@@ -3151,7 +3161,7 @@ The be all, end all mode for all things git
 ;;   (setq elpy-test-django-with-manage t))
 
 (use-package anaconda-mode
-  :straight t
+  :ensure t
   :config
   (add-hook 'python-mode-hook 'anaconda-mode)
   (add-hook 'python-mode-hook 'anaconda-eldoc-mode))
@@ -3159,29 +3169,29 @@ The be all, end all mode for all things git
 *** Kivy
 #+BEGIN_SRC emacs-lisp
 (use-package kivy-mode
-  :straight t
+  :ensure t
   :mode ("\\.kv\\'" . kivy-mode))
 #+END_SRC
 ** C
 #+BEGIN_SRC emacs-lisp
   (use-package irony
-    :straight t
+    :ensure t
     :hook (c-mode . irony-mode))
   (use-package company-irony
-    :straight t
+    :ensure t
     :config
     (add-to-list 'company-backends 'company-irony))
   (use-package flycheck-irony
-    :straight t
+    :ensure t
     :hook (flycheck-mode . flycheck-irony-setup))
 #+END_SRC
 ** C Sharp
 #+BEGIN_SRC emacs-lisp
   (use-package csharp-mode
-    :straight t)
+    :ensure t)
 
 (use-package omnisharp
-  :straight t
+  :ensure t
   :hook ((csharp-mode . omnisharp-mode)
          ;; TODO: 'before-save runs globally - make this buffer local?
          (before-save . omnisharp-code-format-entire-file))
@@ -3191,7 +3201,7 @@ The be all, end all mode for all things git
 ** Groovy
 #+BEGIN_SRC emacs-lisp
 (use-package groovy-mode
-  :straight t
+  :ensure t
   :config
   (setq groovy-indent-offset 2))
 #+END_SRC
@@ -3206,7 +3216,7 @@ let's try all of the major ones
 #+END_SRC
 *** Setup java mode
 #+BEGIN_SRC emacs-lisp
-(use-package shut-up :straight t)
+(use-package shut-up :ensure t)
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp
@@ -3232,14 +3242,14 @@ let's try all of the major ones
 *** Backspace deletes whole line
 #+BEGIN_SRC emacs-lisp
 (use-package smart-backspace
-  :straight t
+  :ensure t
   :bind ("<C-M-backspace>" . smart-backspace))
 #+END_SRC
 
 *** Java imports
 #+BEGIN_SRC emacs-lisp
 (use-package java-imports
-  :straight t
+  :ensure t
   :config
   (setq java-imports-find-block-function 'java-imports-find-place-sorted-block)
   (add-hook 'java-mode-hook 'java-imports-scan-file))
@@ -3248,7 +3258,7 @@ let's try all of the major ones
 *** Eclim
 #+BEGIN_SRC emacs-lisp
 (use-package eclim
-  :straight t
+  :ensure t
   :disabled t
   :init
   ;; only show errors
@@ -3256,7 +3266,7 @@ let's try all of the major ones
   (when deos/use-eclim
     (add-hook 'java-mode-hook #'eclim-mode)
     (use-package company-emacs-eclim
-      :straight t
+      :ensure t
       :init (company-emacs-eclim-setup))))
 #+END_SRC
 
@@ -3268,7 +3278,7 @@ First you have to install sdkman http://sdkman.io
 #+END_SRC
 
 *** GTAGS
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (defun deos/setup-helm-gtags ()
   (interactive)
   ;; this variables must be set before load helm-gtags
@@ -3280,7 +3290,7 @@ First you have to install sdkman http://sdkman.io
         helm-gtags-pulse-at-cursor t
         helm-gtags-suggested-key-mapping t)
   (use-package helm-gtags
-    :straight t
+    :ensure t
     ;; not needed because of smart-jump
     :init (helm-gtags-mode t)
     :diminish ""
@@ -3305,7 +3315,7 @@ First you have to install sdkman http://sdkman.io
   (setq ggtags-completing-read-function nil))
 
 (use-package ggtags
-  :straight t
+  :ensure t
   :defer t
   :init
   (progn
@@ -3321,15 +3331,15 @@ First you have to install sdkman http://sdkman.io
 #+END_SRC
 
 *** JAVA debugging
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (use-package realgud
-  :straight t)
+  :ensure t)
 #+END_SRC
 
 *** Meghanada
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (use-package meghanada
-  :straight t
+  :ensure t
   :init
   ;; Don't auto-start
   (setq meghanada-auto-start nil)
@@ -3340,28 +3350,28 @@ First you have to install sdkman http://sdkman.io
 #+END_SRC
 
 *** LSP-mode
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
 (when (file-exists-p "~/.emacs.d/eclipse.jdt.ls")
   (use-package lsp-mode
-    :straight t
+    :ensure t
     :init
     (when deos/use-lsp
       (use-package lsp-java
-        :straight t
+        :ensure t
         :init
         (require 'lsp-java)
         (require 'lsp-mode)
         (add-hook 'java-mode-hook #'lsp-java-enable)))
     :config
     (use-package lsp-ui
-      :straight t)))
+      :ensure t)))
 #+END_SRC
 
 ** Javascript
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (use-package js2-mode :straight t)
-  (use-package typescript-mode :straight t)
-  (use-package prettier-js :straight t)
+#+BEGIN_SRC emacs-lisp 
+  (use-package js2-mode :ensure t)
+  (use-package typescript-mode :ensure t)
+  (use-package prettier-js :ensure t)
 
   ;; Need to first remove from list if present, since elpa adds entries too, which
   ;; may be in an arbitrary order
@@ -3407,7 +3417,7 @@ First you have to install sdkman http://sdkman.io
 
   (when (and (or (executable-find "rg") (executable-find "ag"))
              (use-package xref-js2
-:straight t))
+:ensure t))
     (when (executable-find "rg")
       (setq-default xref-js2-search-program 'rg))
     (defun sanityinc/enable-xref-js2 ()
@@ -3423,7 +3433,7 @@ First you have to install sdkman http://sdkman.io
   ;; Run and interact with an inferior JS via js-comint.el
   ;; ---------------------------------------------------------------------------
 
-  (when (use-package js-comint :straight t)
+  (when (use-package js-comint :ensure t)
     (setq js-comint-program-command "node")
 
     (defvar inferior-js-minor-mode-map (make-sparse-keymap))
@@ -3453,19 +3463,19 @@ First you have to install sdkman http://sdkman.io
   ;; ---------------------------------------------------------------------------
 
   (when (use-package skewer-mode
-:straight t)
+:ensure t)
     (with-eval-after-load 'skewer-mode
       (add-hook 'skewer-mode-hook
                 (lambda () (inferior-js-keys-mode -1)))))
 
   (when (use-package add-node-modules-path
-:straight t)
+:ensure t)
     (dolist (mode '(typescript-mode js-mode js2-mode coffee-mode))
       (add-hook (derived-mode-hook-name mode) 'add-node-modules-path)))
 #+END_SRC
 
 ** Emacs Lisp
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
   (use-package emacs-lisp-mode
     :no-require t
 
@@ -3518,45 +3528,45 @@ First you have to install sdkman http://sdkman.io
 #+END_SRC
 
 ** Dockerfile
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
   (use-package dockerfile-mode
-    :straight t
+    :ensure t
     ;; Any file starting with "Dockerfile" should enable this mode.
     :mode (("^Dockerfile" . dockerfile-mode)))
 #+END_SRC
 
 ** Yaml mode
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
   (use-package yaml-mode
-    :straight t
+    :ensure t
     :mode "\\.ya?ml\\'")
 #+END_SRC
 
 ** CSV Files
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
   (use-package csv-mode
-    :straight t
+    :ensure t
     :defer t)
 #+END_SRC
 
 ** JSON Files
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
   (use-package json-mode
-    :straight t
+    :ensure t
     :defer t)
 #+END_SRC
 
 ** GraphQL
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
   (use-package graphql-mode
-    :straight t
+    :ensure t
     :defer t)
 #+END_SRC
 
 ** Plantuml for diagrams
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
   (use-package plantuml-mode
-    :straight t
+    :ensure t
     :mode ("\\.puml\\'" . plantuml-mode)
     :init
     (setq plantuml-executable-path "~/.local/bin/plantuml")
@@ -3567,9 +3577,9 @@ First you have to install sdkman http://sdkman.io
 #+END_SRC
 
 ** Web Development
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
   (use-package web-mode
-    :straight t
+    :ensure t
     :mode "\\.\\(?:\\(?:h\\(?:bs\\|tml\\)\\|liquid\\|tmpl\\)\\)\\'"
     :init
     (setq web-mode-markup-indent-offset 2)
@@ -3581,9 +3591,9 @@ First you have to install sdkman http://sdkman.io
 #+END_SRC
 
 ** Typescript
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
   (use-package tide
-    :straight t
+    :ensure t
     :hook (typescript-mode . tide-setup)
     :mode ("\\.\\(ts\\|tsx\\)\\'" . typescript-mode)
     :config
@@ -3633,14 +3643,14 @@ external browser
   (add-hook 'eww-mode-hook #'toggle-word-wrap)
   (add-hook 'eww-mode-hook #'visual-line-mode)
   :config
-  (use-package s :straight t)
+  (use-package s :ensure t)
   (define-key eww-mode-map "o" 'eww)
   (define-key eww-mode-map "O" 'eww-browse-with-external-browser)
   (define-key eww-mode-map "j" 'next-line)
   (define-key eww-mode-map "k" 'previous-line)
 
   (use-package eww-lnum
-    :straight t
+    :ensure t
     :config
     (bind-key "f" #'eww-lnum-follow eww-mode-map)
     (bind-key "U" #'eww-lnum-universal eww-mode-map)))
@@ -3649,14 +3659,14 @@ external browser
 Vimperator for EWW
 #+BEGIN_SRC emacs-lisp
 (use-package link-hint
-  :straight t
+  :ensure t
   :bind ("C-c f" . link-hint-open-link))
 #+END_SRC
 ** Chat
 Here are some utilities to facilitate text communications between carbon based lifeforms. Nanu-Nanu
 #+BEGIN_SRC emacs-lisp :tangle no
 (use-package jabber
-  :straight t
+  :ensure t
   :init
   (setq jabber-history-enabled t)
   :config
@@ -3672,7 +3682,7 @@ Here are some utilities to facilitate text communications between carbon based l
 #+END_SRC
 * Hooks
 Run some things after everything loads
-#+BEGIN_SRC emacs-lisp :tangle yes
+#+BEGIN_SRC emacs-lisp 
    ;; Hooks
    (setq initial-scratch-message ";; ╔═╗┌─┐┬─┐┌─┐┌┬┐┌─┐┬ ┬\n;; ╚═╗│  ├┬┘├─┤ │ │  ├─┤\n;; ╚═╝└─┘┴└─┴ ┴ ┴ └─┘┴ ┴\n")
 
