@@ -8,6 +8,172 @@
 :TOC:      :include all :ignore this
 :END:
 :CONTENTS:
+- [[#the-beginning][The Beginning]]
+  - [[#check-for-minimum-emacs-version][Check for minimum emacs version]]
+  - [[#benchmarking][Benchmarking]]
+  - [[#setup-some-variables-for-use-in-other-config-files][Setup some variables for use in other config files]]
+  - [[#setup-package-manager][Setup package manager]]
+  - [[#basic-emacs-options][Basic emacs options]]
+  - [[#utils][Utils]]
+  - [[#load-site-lisp][Load site-lisp]]
+  - [[#setup-environment-variables-from-shell][Setup environment variables from shell]]
+- [[#the-core][The Core]]
+  - [[#load-some-packages][Load some packages]]
+  - [[#general-for-better-key-definitions][General for better key definitions]]
+  - [[#evil-mode][Evil mode]]
+  - [[#its-about-to-get-personal][It's about to get personal]]
+  - [[#some-defaults][Some defaults]]
+  - [[#utf-8-all-the-way][UTF-8 all the way!]]
+  - [[#when-i-select-a-region-and-start-typing-just-delete-the-region-automatically-this-ends-up-working-great-with-expand-region][When I select a region and start typing, just delete the region automatically. This ends up working great with expand-region]]
+  - [[#dont-warn-me-about-large-files-unless-theyre-at-least-25mb][Don't warn me about large files unless they're at least 25mb:]]
+  - [[#if-you-change-buffer-or-focus-disable-the-current-buffers-mark][If you change buffer, or focus, disable the current buffer's mark:]]
+  - [[#dont-indicate-empty-lines-or-the-end-of-a-buffer-with-visual-marks-the-lines-are-cleaned-up-automatically-anyway][Don't indicate empty lines or the end of a buffer with visual marks (the lines are cleaned up automatically anyway)]]
+  - [[#no-borders][No borders]]
+  - [[#display-line-numbers][Display line numbers]]
+  - [[#preview-goto][Preview goto]]
+  - [[#why-would-you-not-want-to-know-linescolumns-in-your-mode-line][Why would you not want to know lines/columns in your mode-line?]]
+  - [[#page-breaks][Page breaks]]
+  - [[#ignore-case-when-using-completion-for-file-names][Ignore case when using completion for file names:]]
+  - [[#confirm-before-killing-emacs-but-only-on-graphical-sessions][Confirm before killing emacs, but only on graphical sessions]]
+  - [[#its-much-easier-to-move-around-lines-based-on-how-they-are-displayed-rather-than-the-actual-line-this-helps-a-ton-with-long-log-file-lines-that-may-be-wrapped][It's much easier to move around lines based on how they are displayed, rather than the actual line. This helps a ton with long log file lines that may be wrapped:]]
+  - [[#hide-the-mouse-while-typing][Hide the mouse while typing:]]
+  - [[#set-up-the-fill-column-to-80-characters-and-set-tab-width-to-2][Set up the fill-column to 80 characters and set tab width to 2]]
+  - [[#fix-some-weird-color-escape-sequences][Fix some weird color escape sequences]]
+  - [[#resolve-symlinks][Resolve symlinks:]]
+  - [[#require-a-newline-at-the-end-of-files][Require a newline at the end of files:]]
+  - [[#uniquify-buffers-using-angle-brackets-so-you-get-foo-and-foo2][Uniquify buffers, using angle brackets, so you get foo and foo<2>:]]
+  - [[#search-and-searchreplace-using-regex-by-default-since-thats-usually-what-i-want-to-do][Search (and search/replace) using regex by default, since that's usually what I want to do:]]
+  - [[#just-kill-this-buffer-dont-prompt-me][Just kill this buffer, don't prompt me.]]
+  - [[#single-space-still-ends-a-sentence][Single space still ends a sentence:]]
+  - [[#split-windows-a-bit-better-dont-split-horizontally-i-have-a-widescreen-p][Split windows a bit better (don't split horizontally, I have a widescreen :P)]]
+  - [[#make-sure-auto-automatically-rescan-for-imenu-changes][Make sure auto automatically rescan for imenu changes:]]
+  - [[#seed-the-random-number-generator][Seed the random number generator:]]
+  - [[#switch-to-unified-diffs-by-default][Switch to unified diffs by default:]]
+  - [[#turn-on-auto-fill-mode-in-text-buffers][Turn on auto-fill mode in text buffers:]]
+  - [[#some-local-minor-modes-clash-with-cua-rectangle-selection][Some local minor modes clash with CUA rectangle selection]]
+  - [[#set-the-internal-calculator-not-to-go-to-scientific-form-quite-so-quickly][Set the internal calculator not to go to scientific form quite so quickly:]]
+  - [[#never-kill-the-scratch][Never kill the scratch]]
+  - [[#start-a-server-if-not-running-but-a-only-for-gui-only][Start a server if not running, but a only for gui-only:]]
+  - [[#prettify-all-the-symbols-if-available-an-emacs-244-feature][Prettify all the symbols, if available (an Emacs 24.4 feature):]]
+  - [[#emacs-foolishly-defaults-to-adding-the---insecure-flag][Emacs (foolishly) defaults to adding the --insecure flag.]]
+  - [[#toggle-line-wrapping-with-c-x-c-l][Toggle line wrapping with C-x C-l]]
+  - [[#save-whatevers-in-the-current-system-clipboard-before-replacing-it-with-the-emacs-text][Save whatever's in the current (system) clipboard before replacing it with the Emacs' text.]]
+  - [[#clean-up-whitespace][Clean up whitespace]]
+  - [[#on-the-other-hand-auto-indenting-can-be-really-handy][On the other hand, auto-indenting can be really handy.]]
+  - [[#usually-m-spc-is-bound-to-just-one-space-but-shrink-whitespace-is-actually-a-better-alternative-because-it-can-shrink-space-between-lines][Usually M-SPC is bound to just-one-space, but shrink-whitespace is actually a better alternative because it can shrink space between lines.]]
+  - [[#anzu-shows-the-number-of-search-hits-in-the-modeline-which-is-handy][Anzu shows the number of search hits in the modeline, which is handy.]]
+  - [[#also-add-a-thing-for-yanking-the-entire-symbol-into-the-query-while-searching][Also, add a thing for yanking the entire symbol into the query while searching:]]
+  - [[#desktops-and-sessions][Desktops and sessions]]
+  - [[#eyebrowse-manage-window-configs][Eyebrowse, manage window configs]]
+  - [[#swap-buffers][Swap buffers]]
+  - [[#deadgrep-for-grepping-the-dead][Deadgrep for grepping the dead]]
+  - [[#hydra][Hydra]]
+  - [[#gpg-and-gpg-agent-as-well-as-ssh-agent][GPG and gpg-agent (as well as SSH agent)]]
+  - [[#spell-check-and-flyspell-settings][Spell check and flyspell settings]]
+  - [[#which-key][Which Key]]
+  - [[#open-the-config-file][Open the config file]]
+  - [[#stop-c-z-from-minimizing-windows-under-osx][Stop C-z from minimizing windows under OSX]]
+  - [[#suppress-gui-features][Suppress GUI features]]
+  - [[#basic-gui-functions][Basic gui functions]]
+  - [[#recentf][Recentf]]
+  - [[#helpful-mode-for-more-helpful-help][Helpful mode for more helpful help]]
+- [[#appearance][Appearance]]
+  - [[#theme][Theme]]
+  - [[#mode-line][Mode line]]
+  - [[#fonts][Fonts]]
+  - [[#text-resizing][Text resizing]]
+  - [[#icons][Icons]]
+  - [[#monitor-switching][Monitor Switching]]
+  - [[#codenotes][Codenotes]]
+- [[#navigation][Navigation]]
+  - [[#here-are-some-navigation-tricks-that-ive-acquired-over-the-years][Here are some navigation tricks that I've acquired over the years]]
+  - [[#transpose-the-buffers][Transpose the buffers]]
+  - [[#some-random-navigation-keybindings][Some random navigation keybindings]]
+  - [[#highlight-helpers][Highlight helpers]]
+  - [[#isearch][Isearch]]
+  - [[#mices][Mices]]
+  - [[#move-text][Move text]]
+  - [[#folding][Folding]]
+- [[#org-mode][Org-mode]]
+  - [[#org-mode-configuration][Org-mode configuration]]
+  - [[#org-mode-bullet-points][Org-mode Bullet Points]]
+  - [[#automatically-tangle-on-save][Automatically "Tangle" on Save]]
+  - [[#block-templates-for-easy-org-babel-editing][Block Templates for easy Org Babel editing]]
+  - [[#update-table-of-contents-on-save][Update Table of Contents on Save]]
+  - [[#deft][Deft]]
+- [[#command-completion][Command completion]]
+  - [[#projectile-the-project-interaction-library-for-emacs][Projectile, the project interaction library for Emacs]]
+  - [[#ivy-and-related-things][Ivy and related things]]
+- [[#completion][Completion]]
+  - [[#company][Company]]
+  - [[#yasnippets][Yasnippets]]
+- [[#editing][Editing]]
+  - [[#skeleton-code][Skeleton Code]]
+  - [[#markup][Markup]]
+  - [[#comments][Comments]]
+  - [[#surround-mode][Surround mode]]
+  - [[#asciidocs][Asciidocs]]
+  - [[#thesaurus][Thesaurus]]
+  - [[#fill-me-in][Fill me in]]
+  - [[#whitespace][Whitespace]]
+  - [[#highlight-indentions][Highlight indentions]]
+  - [[#flycheck][Flycheck]]
+  - [[#proselint][Proselint]]
+  - [[#delimiters][Delimiters]]
+  - [[#highlight-colors][Highlight colors]]
+  - [[#indentation][Indentation]]
+  - [[#add-them-parenth-pairs][Add them parenth pairs]]
+  - [[#avy-mode-for-text-navigation][Avy-mode for text navigation]]
+  - [[#dumb-jump][Dumb-jump]]
+  - [[#watchwords][Watchwords]]
+  - [[#editorconfig-support][Editorconfig support]]
+  - [[#highlight-escape-sequences][Highlight escape sequences]]
+  - [[#highlight-symbols][Highlight symbols]]
+  - [[#browse-the-kill-ring][Browse the kill ring]]
+  - [[#cutcopy-the-line-if-no-region-is-selected][Cut/copy the line if no region is selected]]
+  - [[#nxml-for-xml-editing][NXML for xml editing]]
+  - [[#miscellaneous][Miscellaneous]]
+- [[#file-browsing][File Browsing]]
+  - [[#directory-editing-and-navigation][Directory Editing and Navigation]]
+  - [[#quick-preview-provides-a-nice-preview-of-the-thing-under-the-cursor][Quick-preview provides a nice preview of the thing under the cursor]]
+  - [[#neotree][Neotree]]
+- [[#git][Git]]
+  - [[#magit][Magit]]
+  - [[#various-git-helpers][Various Git helpers]]
+  - [[#github][Github]]
+- [[#vc][VC]]
+- [[#programming-modes][Programming Modes]]
+  - [[#python][Python]]
+    - [[#kivy][Kivy]]
+  - [[#c][C]]
+  - [[#c-sharp][C Sharp]]
+  - [[#groovy][Groovy]]
+  - [[#java][Java]]
+    - [[#which-major-mode][Which major mode]]
+    - [[#setup-java-mode][Setup java mode]]
+    - [[#backspace-deletes-whole-line][Backspace deletes whole line]]
+    - [[#java-imports][Java imports]]
+    - [[#eclim][Eclim]]
+    - [[#sdkman][SDKman]]
+    - [[#gtags][GTAGS]]
+    - [[#java-debugging][JAVA debugging]]
+    - [[#meghanada][Meghanada]]
+    - [[#lsp-mode][LSP-mode]]
+  - [[#javascript][Javascript]]
+  - [[#emacs-lisp][Emacs Lisp]]
+  - [[#dockerfile][Dockerfile]]
+  - [[#yaml-mode][Yaml mode]]
+  - [[#csv-files][CSV Files]]
+  - [[#json-files][JSON Files]]
+  - [[#graphql][GraphQL]]
+  - [[#plantuml-for-diagrams][Plantuml for diagrams]]
+  - [[#web-development][Web Development]]
+  - [[#typescript][Typescript]]
+- [[#extras][Extras]]
+  - [[#web-browsing][Web Browsing]]
+    - [[#eww][EWW]]
+  - [[#chat][Chat]]
+- [[#hooks][Hooks]]
 :END:
 * The Beginning
 :PROPERTIES:
@@ -2231,6 +2397,58 @@ permanently."
          (sql . t)
          (sqlite . t))))
 #+END_SRC
+** Org-mode Bullet Points
+#+BEGIN_SRC emacs-lisp
+  (use-package org-superstar
+    :ensure t
+    :after org
+    :hook (org-mode . org-superstar-mode)
+    :custom
+    (org-superstar-remove-leading-stars t)
+    (org-superstar-headline-bullets-list '("◉" "○" "●" "○" "●" "○" "●")))
+#+END_SRC
+** Automatically "Tangle" on Save
+Handy tip from
+[[https://leanpub.com/lit-config/read#leanpub-auto-configuring-emacs-and--org-mode-for-literate-programming][this
+book]] on literate programming.
+#+BEGIN_SRC emacs-lisp
+  ;; Since we don't want to disable org-confirm-babel-evaluate all
+  ;; of the time, do it around the after-save-hook
+  (defun dn/org-babel-tangle-dont-ask ()
+    ;; Dynamic scoping to the rescue
+    (let ((org-confirm-babel-evaluate nil))
+      (org-babel-tangle)))
+
+  (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'dn/org-babel-tangle-dont-ask
+                                                'run-at-end 'only-in-org-mode)))
+#+END_SRC
+** Block Templates for easy Org Babel editing
+These templates enable you to type things like =<el= and then hit =Tab= to expand
+the template.  More documentation can be found at the Org Mode [[https://orgmode.org/manual/Easy-templates.html][Easy Templates]]
+documentation page.
+
+#+begin_src emacs-lisp
+
+  ;; This is needed as of Org 9.2
+  (require 'org-tempo)
+
+  (add-to-list 'org-structure-template-alist '("sh" . "src sh"))
+  (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+  (add-to-list 'org-structure-template-alist '("sc" . "src scheme"))
+  (add-to-list 'org-structure-template-alist '("ts" . "src typescript"))
+  (add-to-list 'org-structure-template-alist '("py" . "src python"))
+  (add-to-list 'org-structure-template-alist '("yaml" . "src yaml"))
+  (add-to-list 'org-structure-template-alist '("json" . "src json"))
+
+#+end_src
+
+** Update Table of Contents on Save
+It's nice to have a table of contents section for long literate configuration files. Using org-make-toc to automatically update the ToC in any header with a property named TOC
+#+begin_src emacs-lisp
+  (use-package org-make-toc
+    :ensure t
+    :hook (org-mode . org-make-toc-mode))
+#+end_src
 ** Deft
 :LOGBOOK:
 CLOCK: [2020-08-17 Mon 17:17]--[2020-08-17 Mon 17:18] =>  0:01

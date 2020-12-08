@@ -142,7 +142,7 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
   (when (boundp 'tabulated-list-format)
     (sanityinc/set-tabulated-list-column-width "Version" 13)
     (let ((longest-archive-name (apply 'max (mapcar 'length (mapcar 'car package-archives)))))
-      (sanityinc/set-tabulated-list-column-width "Archive" longest-archive-name))))
+  (sanityinc/set-tabulated-list-column-width "Archive" longest-archive-name))))
 
 (add-hook 'package-menu-mode-hook 'sanityinc/maybe-widen-package-menu-columns)
 
@@ -1838,6 +1838,39 @@ permanently."
        (,(if (locate-library "ob-sh") 'sh 'shell) . t)
        (sql . t)
        (sqlite . t))))
+
+(use-package org-superstar
+  :ensure t
+  :after org
+  :hook (org-mode . org-superstar-mode)
+  :custom
+  (org-superstar-remove-leading-stars t)
+  (org-superstar-headline-bullets-list '("◉" "○" "●" "○" "●" "○" "●")))
+
+;; Since we don't want to disable org-confirm-babel-evaluate all
+;; of the time, do it around the after-save-hook
+(defun dn/org-babel-tangle-dont-ask ()
+  ;; Dynamic scoping to the rescue
+  (let ((org-confirm-babel-evaluate nil))
+    (org-babel-tangle)))
+
+(add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'dn/org-babel-tangle-dont-ask
+                                              'run-at-end 'only-in-org-mode)))
+
+;; This is needed as of Org 9.2
+(require 'org-tempo)
+
+(add-to-list 'org-structure-template-alist '("sh" . "src sh"))
+(add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+(add-to-list 'org-structure-template-alist '("sc" . "src scheme"))
+(add-to-list 'org-structure-template-alist '("ts" . "src typescript"))
+(add-to-list 'org-structure-template-alist '("py" . "src python"))
+(add-to-list 'org-structure-template-alist '("yaml" . "src yaml"))
+(add-to-list 'org-structure-template-alist '("json" . "src json"))
+
+(use-package org-make-toc
+  :ensure t
+  :hook (org-mode . org-make-toc-mode))
 
 (use-package deft
   :ensure t
