@@ -9,6 +9,8 @@
 :END:
 :CONTENTS:
 - [[#the-beginning][The Beginning]]
+  - [[#enable-debugging-if-needed][Enable debugging if needed]]
+  - [[#startup-performance][Startup Performance]]
   - [[#check-for-minimum-emacs-version][Check for minimum emacs version]]
   - [[#benchmarking][Benchmarking]]
   - [[#setup-some-variables-for-use-in-other-config-files][Setup some variables for use in other config files]]
@@ -186,13 +188,29 @@ did things the way I did
 
 I am going to attempt to arrange my code in modules and provide a
 makefile to make installing convenient
+** Enable debugging if needed
+#+begin_src emacs-lisp
+;; turn on emacs debugging to diagnose errors
+;;  (setq debug-on-init t)
+;;  (setq debug-on-error t)
+#+end_src
+** Startup Performance
+#+begin_src emacs-lisp
+    ;; The default is 800 kilobytes.  Measured in bytes.
+    (setq gc-cons-threshold (* 50 1000 1000))
 
+    ;; Profile emacs startup
+    (add-hook 'emacs-startup-hook
+          (lambda ()
+            (message "*** Emacs loaded in %s with %d garbage collections."
+                 (format "%.2f seconds"
+                     (float-time
+                  (time-subtract after-init-time before-init-time)))
+                 gcs-done)))
+#+end_src
 ** Check for minimum emacs version
 Don't let old fools use this
 #+BEGIN_SRC emacs-lisp 
-  ;; turn on emacs debugging to diagnose errors
-;;  (setq debug-on-init t)
-;;  (setq debug-on-error t)
 
   (let ((minver "24.5"))
     (when (version< emacs-version minver)
@@ -278,8 +296,6 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
   (defconst *is-linux* (eq system-type 'gnu/linux))
   (defconst *is-gui* (display-graphic-p))
   (defconst my/gui? (display-graphic-p))
-  (defvar bootstrap-version nil
-    "Used by the straight package manager.")
   (defconst my/emacs-dir
     (eval-when-compile (file-truename user-emacs-directory))
     "The path to the currently loaded .emacs.d directory. Must end with a slash.")
@@ -359,7 +375,6 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
   ;; Remove scroll bar (only respected in GUI Emacs).
   (when (fboundp 'set-scroll-bar-mode)
     (set-scroll-bar-mode nil))
-
 
   ;; Never save backup files
   (setq make-backup-files nil)

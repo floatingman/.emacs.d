@@ -2,11 +2,23 @@
 ;;  (setq debug-on-init t)
 ;;  (setq debug-on-error t)
 
-  (let ((minver "24.5"))
-    (when (version< emacs-version minver)
-      (error "Your Emacs is too old -- this config requires v%s or higher" minver)))
-  (when (version< emacs-version "25.1")
-    (message "Your Emacs is old, and some functionality in this config will be disabled. Please upgrade if possible."))
+;; The default is 800 kilobytes.  Measured in bytes.
+(setq gc-cons-threshold (* 50 1000 1000))
+
+;; Profile emacs startup
+(add-hook 'emacs-startup-hook
+      (lambda ()
+        (message "*** Emacs loaded in %s with %d garbage collections."
+             (format "%.2f seconds"
+                 (float-time
+              (time-subtract after-init-time before-init-time)))
+             gcs-done)))
+
+(let ((minver "24.5"))
+  (when (version< emacs-version minver)
+    (error "Your Emacs is too old -- this config requires v%s or higher" minver)))
+(when (version< emacs-version "25.1")
+  (message "Your Emacs is old, and some functionality in this config will be disabled. Please upgrade if possible."))
 
 (defun sanityinc/time-subtract-millis (b a)
   (* 1000.0 (float-time (time-subtract b a))))
@@ -81,8 +93,6 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
 (defconst *is-linux* (eq system-type 'gnu/linux))
 (defconst *is-gui* (display-graphic-p))
 (defconst my/gui? (display-graphic-p))
-(defvar bootstrap-version nil
-  "Used by the straight package manager.")
 (defconst my/emacs-dir
   (eval-when-compile (file-truename user-emacs-directory))
   "The path to the currently loaded .emacs.d directory. Must end with a slash.")
@@ -156,7 +166,6 @@ LOAD-DURATION is the time taken in milliseconds to load FEATURE.")
 ;; Remove scroll bar (only respected in GUI Emacs).
 (when (fboundp 'set-scroll-bar-mode)
   (set-scroll-bar-mode nil))
-
 
 ;; Never save backup files
 (setq make-backup-files nil)
