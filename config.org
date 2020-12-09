@@ -1918,8 +1918,6 @@ to go back to a normal setup."
 
 ** Some random navigation keybindings
 #+BEGIN_SRC emacs-lisp 
-(global-set-key (kbd "C-x C-l") 'toggle-truncate-lines)
-
 ;; join line to next line
 (global-set-key (kbd "M-j")
                 (lambda ()
@@ -2690,13 +2688,13 @@ I use deft to take quick notes and search through those notes
 #+END_SRC
 ** Yasnippets
 #+BEGIN_SRC emacs-lisp
-(use-package yasnippet
-    :ensure t
-    :diminish yas-minor-mode
-    :config
-    (add-to-list 'yas-snippet-dirs "~/.emacs.d/snippets")
-    (yas-global-mode)
-    (global-set-key (kbd "M-/") 'company-yasnippet))
+  (use-package yasnippet
+      :ensure t
+      :diminish yas-minor-mode
+      :config
+      (add-to-list 'yas-snippet-dirs "~/.emacs.d/snippets")
+      (yas-global-mode)
+    )
 #+END_SRC
 
 * Editing
@@ -2801,11 +2799,8 @@ And now let's add a hydra for the skeletons
 ;; Comment/uncomment lines efficiently. Like Nerd Commenter in Vim.
 (use-package evil-nerd-commenter
   :ensure t
-
   :after (evil)
-
   :commands (evilnc-comment-or-uncomment-lines)
-
   :init
   ;; Improved toggle comment/uncomment lines.
   (general-define-key
@@ -3305,15 +3300,6 @@ The be all, end all mode for all things git
              (compilation-buffer-name-function (lambda (major-mode-name) "*git-svn*")))
         (compile (concat "git svn " command))))
     )
-  ;; Evil keybindings for Magit.
-  (use-package evil-magit
-    :ensure t
-    :defer t
-
-    :hook (magit-mode . evil-magit-init)
-
-    :init
-    (setq evil-magit-state 'normal))
 #+END_SRC
 ** Various Git helpers
 #+BEGIN_SRC emacs-lisp
@@ -3330,9 +3316,6 @@ The be all, end all mode for all things git
   :ensure t
   :bind (("C-x v t" . git-timemachine-toggle))
   )
-(use-package git-commit
-  :ensure t
-  :hook (git-commit-mode . goto-address-mode))
 #+END_SRC
 ** Github
 #+BEGIN_SRC emacs-lisp 

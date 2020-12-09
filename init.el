@@ -1390,8 +1390,6 @@ to go back to a normal setup."
 
 (global-set-key (kbd "C-x 4 t") 'transpose-buffers)
 
-(global-set-key (kbd "C-x C-l") 'toggle-truncate-lines)
-
 ;; join line to next line
 (global-set-key (kbd "M-j")
                 (lambda ()
@@ -2094,7 +2092,7 @@ permanently."
     :config
     (add-to-list 'yas-snippet-dirs "~/.emacs.d/snippets")
     (yas-global-mode)
-    (global-set-key (kbd "M-/") 'company-yasnippet))
+  )
 
 (require 'skeleton)
 
@@ -2181,11 +2179,8 @@ permanently."
 ;; Comment/uncomment lines efficiently. Like Nerd Commenter in Vim.
 (use-package evil-nerd-commenter
   :ensure t
-
   :after (evil)
-
   :commands (evilnc-comment-or-uncomment-lines)
-
   :init
   ;; Improved toggle comment/uncomment lines.
   (general-define-key
@@ -2618,15 +2613,6 @@ indentation rules."
            (compilation-buffer-name-function (lambda (major-mode-name) "*git-svn*")))
       (compile (concat "git svn " command))))
   )
-;; Evil keybindings for Magit.
-(use-package evil-magit
-  :ensure t
-  :defer t
-
-  :hook (magit-mode . evil-magit-init)
-
-  :init
-  (setq evil-magit-state 'normal))
 
 (use-package git-blamed
   :ensure t)
@@ -2641,9 +2627,6 @@ indentation rules."
   :ensure t
   :bind (("C-x v t" . git-timemachine-toggle))
   )
-(use-package git-commit
-  :ensure t
-  :hook (git-commit-mode . goto-address-mode))
 
 (use-package yagist
   :ensure t)
